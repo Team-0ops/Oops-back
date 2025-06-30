@@ -1,7 +1,7 @@
 # Oops-back
 ## 📠 Git Convention
 
-### 🤝 Branch Naming Convention
+### Branch Naming Convention
 
 | Prefix  | Description                      |
 |---------|----------------------------------|
@@ -10,5 +10,46 @@
 | feature | 기능 단위 개발 브랜치               |
 | hotfix  | 서비스 중 긴급 수정 브랜치            |
 
-#### 📌 브랜치 구조
+#### 브랜치 구조
+
+main
+└── develop
+└── feature/...
+main
+└── hotfix/...
+
+
+- 브랜치 네이밍은 `kebab-case` 사용
+- 브랜치 이름 예시:
+  - `feature/login-api`
+  - `feature/post-scrap`
+  - `hotfix/fix-token-bug`
+- 참고: [우아한테크 깃 플로우](https://techblog.woowahan.com/2553/)
+
+---
+
+### Commit Convention
+
+| Prefix   | Description                                     |
+|----------|-------------------------------------------------|
+| feat     | 새로운 기능 구현                                  |
+| fix      | 버그 수정, 예외 처리 등 기능 개선                    |
+| refactor | 기능 변화 없이 코드 구조 개선                        |
+| setting  | 패키지 설치, 환경 설정 등 개발 환경 세팅               |
+| docs     | 문서 작성 및 수정 (README, 주석 등)                |
+| chore    | 기타 작업 (빌드, 테스트 코드 수정 등)               |
+
+#### 커밋 작성 규칙
+
+- 형식: `<type>: <작업 내용>`
+- 예시:
+  - `feat: 회원가입 API 구현`
+  - `fix: 실패담 작성 예외 처리`
+  - `refactor: 리뷰 점수 검증 로직 분리`
+- 여러 작업을 동시에 한 경우, **핵심 작업을 먼저** 쓰고, 한 줄에 하나씩 작성
+
+---
+
+이 컨벤션은 팀원들이 협업할 때 **일관된 브랜치 관리와 커밋 로그 유지**를 돕기 위해 필수적입니다.  
+GitHub에 `README.md`로 바로 추가해도 깔끔하게 렌더링됩니다. 필요하면 추가로 **PR 템플릿이나 이슈 템플릿**도 만들어 드릴게요!
 
