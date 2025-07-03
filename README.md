@@ -24,7 +24,6 @@ main
   - `feature/login-api`
   - `feature/post-scrap`
   - `hotfix/fix-token-bug`
-- 참고: [우아한테크 깃 플로우](https://techblog.woowahan.com/2553/)
 
 ---
 
