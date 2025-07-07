@@ -18,9 +18,6 @@
   │         ├── application-dev.yml 
   │         ├── application-local.yml 
 ```
----
-
-아래는 요청하신 내용을 README에 넣을 수 있도록 마크다운 형식으로 정리한 버전입니다:
 
 ---
 
