@@ -20,6 +20,11 @@
 ```
 
 ---
+## 🔧 프로젝트 설정
+
+- **프로젝트명**: Oops
+- **Spring Boot 버전**: 3.5.3
+- **Java 버전**: 17
 
 ## 📁 Branch Strategy
 
@@ -133,4 +138,33 @@
 | 🧹  | `chore`    | 빌드, 패키지 매니저 설정 등 기타 변경            |
 
 ---
+## 📦 기본 응답 통일 코드
 
+- `BaseResponse<T>`: 모든 API 응답을 통일된 형식(`code`, `message`, `data`)으로 감싸 반환합니다.
+- 응답 상태 관리는 `SuccessStatus`, `ErrorStatus` Enum 클래스를 통해 일관되게 처리합니다.
+
+---
+
+## ⚠️ 공통 예외 처리 코드
+
+- `ExceptionAdvice`: `@RestControllerAdvice`를 이용한 전역 예외 처리 클래스입니다.
+- `GeneralException` 및 다양한 커스텀 예외 클래스를 통해 예외를 계층적으로 관리합니다.
+- 일관된 에러 포맷(`BaseResponse`)으로 클라이언트에 응답을 전달합니다.
+
+---
+
+## 📘 Swagger 설정 코드
+
+- `SwaggerConfig`를 통해 Swagger UI를 설정하였습니다.
+- 개발 중 API 명세는 다음 주소에서 확인할 수 있습니다:
+  - [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+---
+
+## 🔐 인증 처리 설정 코드
+
+- `Spring Security`와 `JWT(Json Web Token)`를 기반으로 인증을 구현하였습니다.
+- 핵심 구성 요소:
+  - `JwtUtil`: 토큰 생성 및 검증 유틸리티
+  - `JwtAuthenticationFilter`: JWT 필터링을 위한 커스텀 필터
+  - `SecurityConfig`: 인가 및 보안 설정 구성
