@@ -1,29 +1,22 @@
 # Oops-back
 ## 📠 Git Convention
 
-### Branch Naming Convention
-
-| Prefix  | Description                      |
-|---------|----------------------------------|
-| main    | 실제 서비스가 배포되는 브랜치         |
-| develop | 배포 전 전체 개발이 이루어지는 브랜치   |
-| feature | 기능 단위 개발 브랜치               |
-| hotfix  | 서비스 중 긴급 수정 브랜치            |
-
-#### 브랜치 구조
-
-main
-└── develop
-└── feature/...
-main
-└── hotfix/...
+###프로젝트 구조
+Oops-backend/
+├── src/
+│   └── main/
+│       ├── java/Oops/backend/
+│       │   ├── auth/
+│       │   ├── common/
+│       │   ├── config/
+│       │   ├── domain/
+│       │   └── ...
+│       └── resources/
+│           ├── application.yml
+│           ├── application-dev.yml
+│           ├── application-local.yml
 
 
-- 브랜치 네이밍은 `kebab-case` 사용
-- 브랜치 이름 예시:
-  - `feature/login-api`
-  - `feature/post-scrap`
-  - `hotfix/fix-token-bug`
 
 ---
 
