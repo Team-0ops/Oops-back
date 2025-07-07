@@ -1,21 +1,20 @@
 # Oops-back
 ## 📠 Git Convention
 
-###프로젝트 구조
+### 📁 프로젝트 구조
 Oops-backend/
 ├── src/
-│   └── main/
-│       ├── java/Oops/backend/
-│       │   ├── auth/
-│       │   ├── common/
-│       │   ├── config/
-│       │   ├── domain/
-│       │   └── ...
-│       └── resources/
-│           ├── application.yml
-│           ├── application-dev.yml
-│           ├── application-local.yml
-
+│ └── main/
+│ ├── java/Oops/backend/
+│ │ ├── auth/
+│ │ ├── common/
+│ │ ├── config/
+│ │ ├── domain/
+│ │ └── ...
+│ └── resources/
+│ ├── application.yml
+│ ├── application-dev.yml
+│ ├── application-local.yml
 
 
 ---
