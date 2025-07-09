@@ -1,7 +1,15 @@
 package Oops.backend.auth.controller;
-import Oops.backend.auth.domain.LoginRequest;
+import Oops.backend.auth.dto.request.JoinDto;
+import Oops.backend.auth.dto.request.LoginRequest;
+import Oops.backend.auth.service.AuthService;
+import Oops.backend.common.response.BaseResponse;
+import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.jwt.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +20,15 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final JwtUtil jwtUtil;
+
+    private final AuthService authService;
+
+    @Operation(summary = "회원가입", description = "새로운 사용자를 등록")
+    @PostMapping("/api/auth/join")
+    public ResponseEntity<BaseResponse> join(@Valid @RequestBody JoinDto joinDto, HttpServletResponse response) {
+        this.authService.join(joinDto, response);
+        return BaseResponse.onSuccess(SuccessStatus._CREATED);
+    }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
