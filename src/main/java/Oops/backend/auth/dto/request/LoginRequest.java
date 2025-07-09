@@ -1,3 +1,3 @@
-package Oops.backend.auth.domain;
+package Oops.backend.auth.dto.request;
 
 public record LoginRequest(String email, String password) {}
