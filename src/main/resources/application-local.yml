@@ -3,13 +3,24 @@ spring:
     activate:
       on-profile: local
 
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: #LOCAL_DB_URL:
-    username: #LOCAL_DB_USERNAME:
-    password: #LOCAL_DB_PASSWORD:
+    url: jdbc:mysql://localhost:3306/oops
+    username: root
+    password: 1234
 
   jpa:
     hibernate:
       ddl-auto: update
+
+encryption:
+  pbkdf2:
+    salt: your_salt_value
+    iteration-count: 10000
+    key-length: 256
+
+security:
+  jwt:
+    token:
+      secret-key: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+      expire-length: 1800000
