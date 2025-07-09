@@ -2,7 +2,9 @@ package Oops.backend.domain.user.domain;
 
 import Oops.backend.domain.common.BaseEntity;
 import jakarta.persistence.Column;
+import lombok.Builder;
 
+@Builder
 public class User extends BaseEntity {
     @Column(length = 100, nullable = false)
     private String username;
