@@ -138,33 +138,69 @@
 | 🧹  | `chore`    | 빌드, 패키지 매니저 설정 등 기타 변경            |
 
 ---
-## 📦 기본 응답 통일 코드
+## 📦 기본 응답 통일 
 
-- `BaseResponse<T>`: 모든 API 응답을 통일된 형식(`code`, `message`, `data`)으로 감싸 반환합니다.
-- 응답 상태 관리는 `SuccessStatus`, `ErrorStatus` Enum 클래스를 통해 일관되게 처리합니다.
+- 모든 API는 BaseResponse<T> 형식으로 응답됩니다.
+
+- 성공/실패 응답은 SuccessStatus, ErrorStatus enum으로 일관성 있게 관리합니다.
+```md
+return new BaseResponse(true, "COMMON200", "SUCCESS!", null, data);
+```
+---
+
+## ⚠️ 공통 예외 처리 
+
+- @RestControllerAdvice를 활용해 모든 예외를 통합 처리합니다.
+
+- 커스텀 예외는 GeneralException으로 정의하며, 응답은 BaseResponse 포맷 유지
+
+```md
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<BaseResponse> handleValidation(MethodArgumentNotValidException e) {
+    return BaseResponse.onFailure(ErrorStatus.VALIDATION_ERROR, e.getMessage());
+}
+```
 
 ---
 
-## ⚠️ 공통 예외 처리 코드
+## 📘 Swagger 설정 
+- Swagger(OpenAPI 3.0) 설정을 통해 API 명세를 확인할 수 있습니다.
 
-- `ExceptionAdvice`: `@RestControllerAdvice`를 이용한 전역 예외 처리 클래스입니다.
-- `GeneralException` 및 다양한 커스텀 예외 클래스를 통해 예외를 계층적으로 관리합니다.
-- 일관된 에러 포맷(`BaseResponse`)으로 클라이언트에 응답을 전달합니다.
+- 접속 주소: http://localhost:8080/swagger-ui/index.html
+
+```md
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+            .info(new Info()
+                .title("Oops API")
+                .description("실패 경험 공유 플랫폼")
+                .version("1.0.0"));
+    }
+}
+```
 
 ---
 
-## 📘 Swagger 설정 코드
+## 🔐 인증 처리 설정 (Spring Security + JWT)
+- 로그인 시 JWT 발급, 이후 요청 시 Authorization: Bearer {token} 헤더 사용
 
-- `SwaggerConfig`를 통해 Swagger UI를 설정하였습니다.
-- 개발 중 API 명세는 다음 주소에서 확인할 수 있습니다:
-  - [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- 인증 필터에서 토큰 검증 및 사용자 인증 처리
+```md
+// 로그인 예시
+@PostMapping("/login")
+public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    String token = jwtUtil.generateToken(1L); // 예시
+    return ResponseEntity.ok(token);
+}
+```
 
----
-
-## 🔐 인증 처리 설정 코드
-
-- `Spring Security`와 `JWT(Json Web Token)`를 기반으로 인증을 구현하였습니다.
-- 핵심 구성 요소:
-  - `JwtUtil`: 토큰 생성 및 검증 유틸리티
-  - `JwtAuthenticationFilter`: JWT 필터링을 위한 커스텀 필터
-  - `SecurityConfig`: 인가 및 보안 설정 구성
+```md
+// JWT 필터 예시
+if (jwtUtil.validateToken(token)) {
+    Long userId = jwtUtil.extractUserId(token);
+    SecurityContextHolder.getContext().setAuthentication(...);
+}
+```
