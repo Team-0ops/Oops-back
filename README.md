@@ -202,6 +202,5 @@ public ResponseEntity<String> login(@RequestBody LoginRequest request) {
 if (jwtUtil.validateToken(token)) {
     Long userId = jwtUtil.extractUserId(token);
     SecurityContextHolder.getContext().setAuthentication(...);
-
 }
 ```
