@@ -1,4 +1,4 @@
-package Oops.backend.auth;
+package Oops.backend.domain.auth;
 
 
 import org.springframework.beans.factory.annotation.Value;

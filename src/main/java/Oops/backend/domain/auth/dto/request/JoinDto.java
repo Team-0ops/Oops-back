@@ -1,4 +1,4 @@
-package Oops.backend.auth.dto.request;
+package Oops.backend.domain.auth.dto.request;
 
 
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +14,7 @@ public class JoinDto {
     private String email;
 
     @NotBlank(message = "닉네임이 비어있습니다.")
-    private String username;
+    private String userName;
 
     @NotBlank(message = "비밀번호기 비어있습니다.")
     private String password;

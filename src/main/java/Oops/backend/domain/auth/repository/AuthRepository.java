@@ -1,6 +1,6 @@
-package Oops.backend.auth.repository;
+package Oops.backend.domain.auth.repository;
 
-import Oops.backend.domain.user.domain.User;
+import Oops.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

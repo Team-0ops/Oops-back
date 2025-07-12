@@ -1,4 +1,4 @@
-package Oops.backend.auth;
+package Oops.backend.domain.auth;
 
 
 import Oops.backend.domain.jwt.JwtUtil;

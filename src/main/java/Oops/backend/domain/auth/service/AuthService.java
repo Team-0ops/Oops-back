@@ -1,13 +1,14 @@
-package Oops.backend.auth.service;
+package Oops.backend.domain.auth.service;
 
-import Oops.backend.auth.PasswordHashEncryption;
-import Oops.backend.auth.dto.request.JoinDto;
+import Oops.backend.domain.auth.PasswordHashEncryption;
+import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
-import Oops.backend.domain.user.domain.User;
+import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import Oops.backend.auth.repository.AuthRepository;
+import Oops.backend.domain.auth.repository.AuthRepository;
 
 @Service
 @AllArgsConstructor
@@ -27,7 +28,7 @@ public class AuthService {
         User user = User.builder()
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
-                .username(joinDto.getUsername())
+                .userName(joinDto.getUserName())
                 .build();
 
         authRepository.save(user);
@@ -39,7 +40,7 @@ public class AuthService {
     public void isEmailExist(String email) {
         User user = this.authRepository.findByEmail(email);
         if (user != null) {
-            throw new RuntimeException("이미 존재하는 이메일 입니다.");
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
         }
     }
 

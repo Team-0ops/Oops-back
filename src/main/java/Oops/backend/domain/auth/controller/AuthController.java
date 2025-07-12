@@ -1,7 +1,7 @@
-package Oops.backend.auth.controller;
-import Oops.backend.auth.dto.request.JoinDto;
-import Oops.backend.auth.dto.request.LoginRequest;
-import Oops.backend.auth.service.AuthService;
+package Oops.backend.domain.auth.controller;
+import Oops.backend.domain.auth.dto.request.JoinDto;
+import Oops.backend.domain.auth.dto.request.LoginRequest;
+import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.jwt.JwtUtil;
@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
