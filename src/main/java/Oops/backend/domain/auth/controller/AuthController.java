@@ -1,14 +1,18 @@
 package Oops.backend.domain.auth.controller;
+import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.request.LoginRequest;
 import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
-import Oops.backend.domain.jwt.JwtUtil;
+import Oops.backend.domain.user.dto.request.LoginDto;
+import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
-    private final JwtUtil jwtUtil;
 
     private final AuthService authService;
 
@@ -29,11 +31,16 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._CREATED);
     }
 
+    // 로그인
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        // 실제 유저 조회 + 비밀번호 체크 필요
-        Long userId = 1L; // 테스트 용도로 고정된 유저 아이디 사용
-        String token = jwtUtil.generateToken(userId);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<BaseResponse> login(@RequestBody LoginDto loginDto, HttpServletResponse request) {
+        authService.login(loginDto, request);
+        return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
+    @GetMapping("/getUserInfo")
+    public ResponseEntity<BaseResponse> getUserInfo(@AuthenticatedUser User user) {
+        String name = user.getUserName();
+        return BaseResponse.onSuccess(SuccessStatus._OK, name);
     }
 }
