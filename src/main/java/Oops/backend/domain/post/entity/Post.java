@@ -56,6 +56,15 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private PostGroup postGroup; // PostGroup이 있다면 ManyToOne 처리 가능
+
+    public void plusCheer(){
+        this.likes++;
+    }
+
+    public void minusCheer(){
+        this.likes--;
+    }
+
 }
 
 
