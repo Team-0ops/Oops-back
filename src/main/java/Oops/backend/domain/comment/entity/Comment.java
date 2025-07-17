@@ -9,7 +9,9 @@ import org.yaml.snakeyaml.comments.CommentType;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Comment extends BaseEntity {
 
     @Column
@@ -29,26 +31,4 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-
-    @Builder
-    private Comment(Post post, User user, String content){
-
-        this.post = post;
-        this.likes = 0;
-        this.user = user;
-        this.content = content;
-
-    }
-
-
-    public static Comment of(Post post, User user, String content){
-
-        return Comment.builder()
-                .post(post)
-                .user(user)
-                .content(content)
-                .build();
-
-    }
-
 }

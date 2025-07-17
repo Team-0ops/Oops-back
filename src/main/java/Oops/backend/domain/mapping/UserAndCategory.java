@@ -1,7 +1,8 @@
-package Oops.backend.domain.user.entity;
+package Oops.backend.domain.mapping;
 
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.common.BaseEntity;
+import Oops.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
