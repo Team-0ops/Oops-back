@@ -20,7 +20,7 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/api/auth/login",
-                        "api/auth/join",
+                        "/api/auth/join",
                         "/hello",
                         "/health",
                         "/public/**",
