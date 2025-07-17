@@ -201,6 +201,6 @@ public ResponseEntity<String> login(@RequestBody LoginRequest request) {
 // JWT 필터 예시
 if (jwtUtil.validateToken(token)) {
     Long userId = jwtUtil.extractUserId(token);
-    SecurityContextHolder.getContext().setAuthentication(...);
+    SecurityContextHolder.getContext().setAuthentication(....);
 }
 ```
