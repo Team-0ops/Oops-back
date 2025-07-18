@@ -22,7 +22,7 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("Oops - 실패담 공유 플랫폼 API")
                         .description("""
-                        😅 **웁스(Whoops)**는 실패 경험을 나누고 공감하며 함께 성장하는 웹 플랫폼입니다.
+                        😅 **웁스(oops)**는 실패 경험을 나누고 공감하며 함께 성장하는 웹 플랫폼입니다.
 
                         🙌 누구나 실수할 수 있지만, 그 경험은 누군가에겐 큰 인사이트가 됩니다.
                         

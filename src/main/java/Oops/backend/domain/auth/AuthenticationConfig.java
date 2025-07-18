@@ -26,7 +26,10 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                         "/public/**",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "/swagger-resources/**"
+                        "/swagger-resources/**",
+                        "/api/mypage/posts",
+                        "/api/mypage/lessons",
+                        "/api/mypage/profile"
                 );
     }
 
