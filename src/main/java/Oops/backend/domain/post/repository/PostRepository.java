@@ -1,7 +1,7 @@
 package Oops.backend.domain.post.repository;
 
 import Oops.backend.domain.post.entity.Post;
-import org.springframework.data.domain.Page;
+import Oops.backend.domain.category.entity.Category;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -52,4 +52,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findTop3BestPostsByTopic(@Param("topicId") Long topicId,
                                         @Param("cutoff") LocalDateTime cutoff,
                                         Pageable pageable);
+
+    /**
+     * 제목 또는 본문에 해당 키워드가 포함된 게시글 조회
+     */
+    @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%")
+    List<Post> findByKeyword(@Param("keyword") String keyword);
+
+    /**
+     * 특정 카테고리 리스트에 포함된 게시글
+     */
+    List<Post> findByCategoryIn(List<Category> categories);
 }

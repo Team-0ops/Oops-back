@@ -1,5 +1,9 @@
 package Oops.backend.domain.post.service;
 
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.domain.category.entity.Category;
+import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
@@ -14,9 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 public class FeedServiceImpl implements FeedService {
     private final PostRepository postRepository;
     private final UserAndCategoryRepository userAndCategoryRepository;
+    private final CategoryRepository categoryRepository;
 
     /**
      * 홈화면 첫로딩
@@ -39,12 +42,13 @@ public class FeedServiceImpl implements FeedService {
         List<Post> bestPosts = postRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
 
         List<PostResponse.PostPreviewDto> bestPreviewDtos = bestPosts.stream()
-                .map(this::convertToPreviewDto)
+                .map(PostResponse.PostPreviewDto::from)
                 .collect(Collectors.toList());
 
         PostResponse.PostPreviewListDto bestListDto = PostResponse.PostPreviewListDto.builder()
                 .name("베스트 Failers")
                 .posts(bestPreviewDtos)
+                .isLast(true)
                 .build();
 
         result.add(bestListDto); // 항상 베스트 리스트는 추가
@@ -69,30 +73,18 @@ public class FeedServiceImpl implements FeedService {
         List<Post> posts = postRepository.findTop10ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topTen);
 
         List<PostResponse.PostPreviewDto> markedPreviewDtos = posts.stream()
-                .map(this::convertToPreviewDto)
+                .map(PostResponse.PostPreviewDto::from)
                 .collect(Collectors.toList());
 
         PostResponse.PostPreviewListDto markedListDto = PostResponse.PostPreviewListDto.builder()
                 .name("즐겨찾기한 카테고리")
                 .posts(markedPreviewDtos)
+                .isLast(true)
                 .build();
 
         result.add(markedListDto);
 
         return result;
-    }
-
-    private PostResponse.PostPreviewDto convertToPreviewDto(Post post) {
-        return PostResponse.PostPreviewDto.builder()
-                .postId(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .categoryName(post.getCategory().getName())
-                .likes(post.getLikes())
-                .comments(post.getComments() != null ? post.getComments().size() : 0)
-                .views(post.getWatching())
-                .image(post.getImages() != null && !post.getImages().isEmpty() ? post.getImages().get(0) : null)
-                .build();
     }
 
     /**
@@ -104,15 +96,68 @@ public class FeedServiceImpl implements FeedService {
         List<Post> latestPostPerCategories = postRepository.findLatestPostPerCategory();
 
         List<PostResponse.PostPreviewDto> previewDtos = latestPostPerCategories.stream()
-                .map(this::convertToPreviewDto)
+                .map(PostResponse.PostPreviewDto::from)
                 .collect(Collectors.toList());
 
         PostResponse.PostPreviewListDto listDto = PostResponse.PostPreviewListDto.builder()
                 .name("카테고리 목록")
                 .posts(previewDtos)
+                .isLast(true)
                 .build();
 
         return listDto;
     }
 
+    /**
+     * 실패담 검색
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto searchPosts(String keyword, Pageable pageable){
+        if (keyword == null || keyword.isEmpty()) {
+            throw new GeneralException(ErrorStatus.INVALID_SEARCH_KEYWORD);
+        }
+
+        // 카테고리 레포에서 검색어가 포함된 카테고리 조회
+        List<Category> categories = categoryRepository.findByNameContainingIgnoreCase(keyword);
+
+        // 카테고리에 포함된 게시글 조회
+        List<Post> categoryPosts = categories.isEmpty()
+                ? Collections.emptyList()
+                : postRepository.findByCategoryIn(categories);
+
+        // 게시글의 제목/본문에 검색어가 포함된 게시글 조회
+        List<Post> keywordPosts = postRepository.findByKeyword(keyword);
+
+        // 두 결과 합치고 중복 제거
+        Set<Post> mergedPosts = new HashSet<>();
+        mergedPosts.addAll(categoryPosts);
+        mergedPosts.addAll(keywordPosts);
+
+        // 최신순 정렬 + 페이징 적용
+        List<Post> sortedPosts = mergedPosts.stream()
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+
+        int totalSize = sortedPosts.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), totalSize);
+
+        List<Post> pagedPosts = (start > totalSize)
+                ? Collections.emptyList()
+                : sortedPosts.subList(start, end);
+
+        boolean isLast = end >= totalSize;
+
+        // DTO로 변환
+        List<PostResponse.PostPreviewDto> previewDtos = pagedPosts.stream()
+                .map(PostResponse.PostPreviewDto::from)
+                .collect(Collectors.toList());
+
+        return PostResponse.PostPreviewListDto.builder()
+                .name("검색 결과")
+                .posts(previewDtos)
+                .isLast(isLast)
+                .build();
+    }
 }
