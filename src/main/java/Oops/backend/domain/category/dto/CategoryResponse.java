@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class CategoryResponse {
 
     /**
-     * 전체 카테고리 목록 조회
+     * 카테고리 조회
      */
     @Builder
     @Getter

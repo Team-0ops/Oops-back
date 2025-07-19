@@ -16,8 +16,5 @@ public class RandomTopic extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
-    private LocalDate startDate;
-
-    @Column(nullable = false)
-    private LocalDate endDate;
+    private Long nextTopicId;
 }
