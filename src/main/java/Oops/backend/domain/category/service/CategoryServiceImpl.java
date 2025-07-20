@@ -88,12 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void addFavoriteCategory(Long categoryId, User user){
-        // 요청 유효성 검증
-        if (categoryId == null) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST);
-        }else if (categoryId < 1 || categoryId > 15){
-            throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
-        }
+        checkValid(categoryId);
 
         // 요청에 맞는 카테고리 검색
         Category category = categoryRepository.findById(categoryId)
@@ -120,12 +115,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void deleteFavoriteCategory(Long categoryId, User user) {
-        // 요청 유효성 검증
-        if (categoryId == null) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST);
-        }else if (categoryId < 1 || categoryId > 15){
-            throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
-        }
+        checkValid(categoryId);
 
         // 해당 유저-카테고리 즐겨찾기 존재 여부 확인
         UserAndCategory userAndCategory = userAndCategoryRepository.findByUserIdAndCategoryId(user.getId(), categoryId)
@@ -133,5 +123,14 @@ public class CategoryServiceImpl implements CategoryService {
 
         // 삭제
         userAndCategoryRepository.delete(userAndCategory);
+    }
+
+    private void checkValid(Long categoryId){
+        // 요청 유효성 검증
+        if (categoryId == null) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST);
+        }else if (categoryId < 1 || categoryId > 15){
+            throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
+        }
     }
 }
