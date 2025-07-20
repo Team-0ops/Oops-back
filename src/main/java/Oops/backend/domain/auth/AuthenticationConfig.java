@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class AuthenticationConfig implements WebMvcConfigurer {
     private final AuthenticationInterceptor authenticationInterceptor;
-    private final AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver;
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
@@ -30,8 +29,13 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                 );
     }
 
+
     @Override
     public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(authenticatedUserArgumentResolver);
     }
+
+
+
+
 }
