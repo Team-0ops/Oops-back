@@ -34,11 +34,15 @@ public enum ErrorStatus {
     // 랜덤 주제 관련 에러
     INVALID_TOPIC_ID(HttpStatus.BAD_REQUEST, "TOPIC400", "해당 랜덤 주제 ID는 존재하지 않습니다. 1 ~ 20 범위 내의 ID를 요청해주세요. "),
 
+    // 게시물 관련 에러
+    NO_POST(HttpStatus.NOT_FOUND, "POST404", "현재 게시물이 존재하지 않습니다."),
+
     // 카테고리 관련 에러
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY404", "해당 카테고리를 찾을 수 없습니다."),
     INVALID_CATEGORY_ID(HttpStatus.BAD_REQUEST, "CATEGORY400", "해당 카테고리 ID는 존재하지 않습니다. 1 ~ 15 범위 내의 ID를 요청해주세요. "),
     ALREADY_FAVORITE_CATEGORY(HttpStatus.BAD_REQUEST, "CATEGORY400", "이미 즐겨찾기한 카테고리입니다."),
-    NO_FAVORITE_CATEGORY(HttpStatus.BAD_REQUEST, "CATEGORY400", "즐겨찾기 되어있지 않은 카테고리입니다.");
+    NO_FAVORITE_CATEGORY(HttpStatus.BAD_REQUEST, "CATEGORY400", "즐겨찾기 되어있지 않은 카테고리입니다."),
+    NO_BOOKMARKED(HttpStatus.BAD_REQUEST, "CATEGORY400", "해당 사용자가 즐겨찾기한 카테고리가 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

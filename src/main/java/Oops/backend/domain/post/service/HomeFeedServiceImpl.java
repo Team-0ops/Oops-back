@@ -7,6 +7,7 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.repository.HomeFeedRepository;
 import Oops.backend.domain.post.repository.PostRepository;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.entity.UserAndCategory;
@@ -23,8 +24,8 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class FeedServiceImpl implements FeedService {
-    private final PostRepository postRepository;
+public class HomeFeedServiceImpl implements HomeFeedService {
+    private final HomeFeedRepository homeFeedRepository;
     private final UserAndCategoryRepository userAndCategoryRepository;
     private final CategoryRepository categoryRepository;
 
@@ -39,7 +40,7 @@ public class FeedServiceImpl implements FeedService {
 
         // 1. 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
-        List<Post> bestPosts = postRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
+        List<Post> bestPosts = homeFeedRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
 
         List<PostResponse.PostPreviewDto> bestPreviewDtos = bestPosts.stream()
                 .map(PostResponse.PostPreviewDto::from)
@@ -70,7 +71,7 @@ public class FeedServiceImpl implements FeedService {
         }
 
         Pageable topTen = PageRequest.of(0, 10);
-        List<Post> posts = postRepository.findTop10ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topTen);
+        List<Post> posts = homeFeedRepository.findTop10ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topTen);
 
         List<PostResponse.PostPreviewDto> markedPreviewDtos = posts.stream()
                 .map(PostResponse.PostPreviewDto::from)
@@ -93,7 +94,7 @@ public class FeedServiceImpl implements FeedService {
     @Override
     @Transactional(readOnly = true)
     public PostResponse.PostPreviewListDto getLaterPostList() {
-        List<Post> latestPostPerCategories = postRepository.findLatestPostPerCategory();
+        List<Post> latestPostPerCategories = homeFeedRepository.findLatestPostPerCategory();
 
         List<PostResponse.PostPreviewDto> previewDtos = latestPostPerCategories.stream()
                 .map(PostResponse.PostPreviewDto::from)
@@ -124,10 +125,10 @@ public class FeedServiceImpl implements FeedService {
         // 카테고리에 포함된 게시글 조회
         List<Post> categoryPosts = categories.isEmpty()
                 ? Collections.emptyList()
-                : postRepository.findByCategoryIn(categories);
+                : homeFeedRepository.findByCategoryIn(categories);
 
         // 게시글의 제목/본문에 검색어가 포함된 게시글 조회
-        List<Post> keywordPosts = postRepository.findByKeyword(keyword);
+        List<Post> keywordPosts = homeFeedRepository.findByKeyword(keyword);
 
         // 두 결과 합치고 중복 제거
         Set<Post> mergedPosts = new HashSet<>();
