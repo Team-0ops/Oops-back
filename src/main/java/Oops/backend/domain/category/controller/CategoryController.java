@@ -28,6 +28,7 @@ public class CategoryController {
     @GetMapping
     @Operation(summary = "전체 카테고리 조회 API",description = "전체 15개의 카테고리를 조회하는 api이며, 카테고리 이름과 즐겨찾기 여부를 반환합니다.")
     public ResponseEntity<BaseResponse> getCategoryList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+
         List<CategoryResponse.CategoryResponseDto> result = categoryService.getCategories(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
@@ -53,6 +54,7 @@ public class CategoryController {
     @PostMapping("/{categoryId}/bookmark")
     @Operation(summary = "카테고리 즐겨찾기 설정 API",description = "선택된 카테고리를 즐겨찾기로 설정합니다.")
     public ResponseEntity<BaseResponse> bookmarked (@PathVariable Long categoryId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+
         categoryService.addFavoriteCategory(categoryId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
@@ -63,6 +65,7 @@ public class CategoryController {
     @DeleteMapping("/{categoryId}/unbookmark")
     @Operation(summary = "카테고리 즐겨찾기 해제 API",description = "선택된 카테고리를 즐겨찾기 해제합니다.")
     public ResponseEntity<BaseResponse> unbookmarked (@PathVariable Long categoryId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+
         categoryService.deleteFavoriteCategory(categoryId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
