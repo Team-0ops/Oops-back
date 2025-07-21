@@ -31,6 +31,9 @@ public enum ErrorStatus {
     // 사용자 관련 에러
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER404", "해당 사용자를 찾을 수 없습니다."),
 
+    // 랜덤 주제 관련 에러
+    INVALID_TOPIC_ID(HttpStatus.BAD_REQUEST, "TOPIC400", "해당 랜덤 주제 ID는 존재하지 않습니다. 1 ~ 20 범위 내의 ID를 요청해주세요. "),
+
     // 카테고리 관련 에러
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY404", "해당 카테고리를 찾을 수 없습니다."),
     INVALID_CATEGORY_ID(HttpStatus.BAD_REQUEST, "CATEGORY400", "해당 카테고리 ID는 존재하지 않습니다. 1 ~ 15 범위 내의 ID를 요청해주세요. "),

@@ -34,8 +34,4 @@ public class AuthenticationConfig implements WebMvcConfigurer {
     public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(authenticatedUserArgumentResolver);
     }
-
-
-
-
 }

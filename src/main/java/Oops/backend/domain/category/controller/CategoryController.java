@@ -7,7 +7,6 @@ import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.category.dto.CategoryResponse;
 import Oops.backend.domain.category.service.CategoryService;
-import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,7 +21,6 @@ import java.util.List;
 @RequestMapping("/api/categories")
 public class CategoryController {
     private final CategoryService categoryService;
-    private final AuthenticationContext authenticationContext;
 
     /**
      * 전체 카테고리명 조회

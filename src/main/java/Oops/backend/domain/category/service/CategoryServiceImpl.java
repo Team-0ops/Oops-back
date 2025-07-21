@@ -9,9 +9,6 @@ import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.entity.UserAndCategory;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -115,6 +111,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void deleteFavoriteCategory(Long categoryId, User user) {
+
         checkValid(categoryId);
 
         // 해당 유저-카테고리 즐겨찾기 존재 여부 확인
