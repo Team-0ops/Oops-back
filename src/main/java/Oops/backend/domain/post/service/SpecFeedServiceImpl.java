@@ -6,6 +6,7 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.SpecFeedRepository;
 import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional
-    public PostResponse.PostPreviewListDto getMarkedPostList(LocalDateTime cutoff, Pageable pageable, User user){
+    public PostResponse.PostPreviewListDto getMarkedPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, User user){
         // 사용자가 즐겨찾기한 카테고리 아이디 조회
         List<Long> userCategoryIds = userAndCategoryRepository.findCategoryIdsByUser(user);
         if (userCategoryIds.isEmpty()){
@@ -53,7 +54,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         }
 
         // 즐찾 카테고리의 게시글 최신순 정렬하여 allPosts에 저장
-        Page<Post> posts = specFeedRepository.findByCategoryIdInAndCreatedAtBefore(userCategoryIds, cutoff, pageable);
+        Page<Post> posts = specFeedRepository.findByCategoryIdInAndSituationAndCreatedAtBefore(userCategoryIds, situation, cutoff, pageable);
 
         return toPreviewListDto(posts, "즐겨찾기한 실패담");
     }
@@ -63,12 +64,12 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional
-    public PostResponse.PostPreviewListDto getPostByCategoryList(LocalDateTime cutoff, Pageable pageable, Long categoryId){
+    public PostResponse.PostPreviewListDto getPostByCategoryList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId){
 
         String categoryName = categoryRepository.findNameById(categoryId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.CATEGORY_NOT_FOUND));
 
-        Page<Post> posts = specFeedRepository.findByCategoryIdAndCreatedAtBeforeWithCategory(categoryId, cutoff, pageable);
+        Page<Post> posts = specFeedRepository.findByCategoryIdAndSituationAndCreatedAtBeforeWithCategory(categoryId, situation, cutoff, pageable);
 
         return toPreviewListDto(posts, categoryName + " 실패담");
     }

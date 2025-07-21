@@ -1,6 +1,7 @@
 package Oops.backend.domain.post.repository;
 
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.model.Situation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,19 +25,31 @@ public interface SpecFeedRepository extends JpaRepository<Post, Long> {
     Page<Post> sortByBestPost(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 
     /**
-     * 즐겨찾기 피드 : 사용자가 즐겨찾기한 카테고리의 게시글 최신순으로 정렬하여 조회
+     * 즐겨찾기 피드 : 사용자가 즐겨찾기한 카테고리의 게시글 중 해당 situation만 최신순으로 정렬하여 조회
      */
-    Page<Post> findByCategoryIdInAndCreatedAtBefore(List<Long> categoryIds, LocalDateTime cutoff, Pageable pageable);
+    Page<Post> findByCategoryIdInAndSituationAndCreatedAtBefore(
+            List<Long> categoryIds,
+            Situation situation,
+            LocalDateTime cutoff,
+            Pageable pageable
+    );
 
     /**
      * 카테고리별 피드 : 특정 카테고리 아이디에 해당하는 게시글 최신순 정렬하여 조회
      */
     @Query("""
-        SELECT p FROM Post p
-        JOIN FETCH p.category
-        WHERE p.category.id = :categoryId AND p.createdAt < :cutoff
-        """)
-    Page<Post> findByCategoryIdAndCreatedAtBeforeWithCategory(@Param("categoryId") Long categoryId, @Param("cutoff") LocalDateTime cutoff, Pageable pageable);
+    SELECT p FROM Post p
+    JOIN FETCH p.category
+    WHERE p.category.id = :categoryId
+      AND p.situation = :situation
+      AND p.createdAt < :cutoff
+    """)
+    Page<Post> findByCategoryIdAndSituationAndCreatedAtBeforeWithCategory(
+            @Param("categoryId") Long categoryId,
+            @Param("situation") Situation situation,
+            @Param("cutoff") LocalDateTime cutoff,
+            Pageable pageable
+    );
 
     /**
      * 저번 주 랜덤 주제 top 3 게시글 조회
