@@ -2,6 +2,7 @@ package Oops.backend.domain.user.entity;
 
 import Oops.backend.domain.common.BaseEntity;
 import Oops.backend.domain.luckyDraw.entity.LuckyDraw;
+import Oops.backend.domain.tag.entity.Tag;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseEntity {
@@ -31,4 +33,8 @@ public class User extends BaseEntity {
     @OneToMany
     @Column
     private List<LuckyDraw> lastLuckyDraws;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @Column
+    private List<Tag> tags;
 }
