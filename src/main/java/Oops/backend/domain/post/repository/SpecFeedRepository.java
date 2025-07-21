@@ -25,7 +25,7 @@ public interface SpecFeedRepository extends JpaRepository<Post, Long> {
     Page<Post> sortByBestPost(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 
     /**
-     * 즐겨찾기 피드 : 사용자가 즐겨찾기한 카테고리의 게시글 중 해당 situation만 최신순으로 정렬하여 조회
+     * 즐겨찾기 피드 : 사용자가 즐겨찾기한 카테고리의 게시글 (요청 situation에 맞는) 최신순 정렬하여 조회
      */
     Page<Post> findByCategoryIdInAndSituationAndCreatedAtBefore(
             List<Long> categoryIds,
@@ -35,11 +35,11 @@ public interface SpecFeedRepository extends JpaRepository<Post, Long> {
     );
 
     /**
-     * 카테고리별 피드 : 특정 카테고리 아이디에 해당하는 게시글 최신순 정렬하여 조회
+     * 카테고리별 피드 : 특정 카테고리 아이디에 해당하는 게시글 (요청 situation에 맞는) 최신순 정렬하여 조회
      */
     @Query("""
     SELECT p FROM Post p
-    JOIN FETCH p.category
+    JOIN p.category
     WHERE p.category.id = :categoryId
       AND p.situation = :situation
       AND p.createdAt < :cutoff
@@ -52,14 +52,50 @@ public interface SpecFeedRepository extends JpaRepository<Post, Long> {
     );
 
     /**
-     * 저번 주 랜덤 주제 top 3 게시글 조회
+     * 이번주 랜덤주제 피드 : 이번주 랜덤주제에 대한 게시글 (요청 situation에 맞는) 최신순 정렬하여 조회
      */
+    @Query("""
+    SELECT p FROM Post p
+    JOIN p.topic t
+    WHERE t.id = :topicId
+      AND p.situation = :situation
+      AND p.createdAt < :cutoff
+""")
+    Page<Post> findByTopicIdAndSituationAndCreatedAtBefore(
+            @Param("topicId") Long topicId,
+            @Param("situation") Situation situation,
+            @Param("cutoff") LocalDateTime cutoff,
+            Pageable pageable
+    );
+
+    /**
+     * 저번주 랜덤주제 피드 : 저번주 랜덤주제에 대한 게시글 top 3과 그 외 게시글 (요청 situation에 맞는) 최신순 정렬하여 조회
+     */
+    // 저번 주 랜덤 주제 top 3 게시글 조회
     @Query("SELECT p FROM Post p " +
             "LEFT JOIN p.comments c " +
             "WHERE p.topic.id = :topicId AND p.createdAt <= :cutoff " +
             "GROUP BY p " +
             "ORDER BY (p.watching + 5 * p.likes + 10 * COUNT(c)) DESC")
-    List<Post> findTop3BestPostsByTopic(@Param("topicId") Long topicId,
+    Page<Post> findTop3BestPostsByTopic(@Param("topicId") Long topicId,
                                         @Param("cutoff") LocalDateTime cutoff,
                                         Pageable pageable);
+
+    // top 3을 제외한 저번주 랜덤 주제 게시글 조회
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.topic.id = :topicId
+      AND p.situation = :situation
+      AND p.createdAt < :cutoff
+      AND (p.id NOT IN :excludedIds)
+    ORDER BY p.watching DESC
+""")
+    Page<Post> findFilteredPostsExcludingIds(
+            @Param("topicId") Long topicId,
+            @Param("situation") Situation situation,
+            @Param("cutoff") LocalDateTime cutoff,
+            @Param("excludedIds") List<Long> excludedIds,
+            Pageable pageable
+    );
+
 }
