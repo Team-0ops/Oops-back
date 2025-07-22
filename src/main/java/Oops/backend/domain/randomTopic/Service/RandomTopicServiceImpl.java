@@ -4,6 +4,7 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.post.repository.SpecFeedRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.dto.RandomTopicResponse;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
@@ -22,7 +23,7 @@ import java.util.List;
 public class RandomTopicServiceImpl implements RandomTopicService {
 
     private final RandomTopicRepository randomTopicRepository;
-    private final PostRepository postRepository;
+    private final SpecFeedRepository SpecFeedRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,7 +46,7 @@ public class RandomTopicServiceImpl implements RandomTopicService {
 
         // 사용자가 저번주 주제에 대하여 인기글에 선정되었는지 여부
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
-        List<Post> bestPosts = postRepository.findTop3BestPostsByTopic(lastTopicId, cutoff, PageRequest.of(0, 3));
+        List<Post> bestPosts = SpecFeedRepository.findTop3BestPostsByTopic(lastTopicId, cutoff, PageRequest.of(0, 3));
 
         boolean isBestUser = bestPosts.stream()
                 .anyMatch(post -> post.getUser().getId().equals(user.getId()));
