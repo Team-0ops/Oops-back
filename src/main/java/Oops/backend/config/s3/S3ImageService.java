@@ -1,8 +1,7 @@
-package capstone.mju.backend.global.s3;
+package Oops.backend.config.s3;
 
-import capstone.mju.backend.domain.common.error.ErrorCode;
+import Oops.backend.common.status.ErrorStatus;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -12,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +35,7 @@ public class S3ImageService {
 
     public String upload(MultipartFile image) {
         if (image.isEmpty() || Objects.isNull(image.getOriginalFilename())) {
-            throw new S3Exception(ErrorCode.EMPTY_FILE_EXCEPTION);
+            throw new S3Exception(ErrorStatus.EMPTY_FILE_EXCEPTION);
         }
         return this.uploadImage(image);
     }
@@ -47,32 +45,32 @@ public class S3ImageService {
         try {
             return this.uploadImageToS3(image);
         } catch (IOException e) {
-            throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_UPLOAD);
+            throw new S3Exception(ErrorStatus.IO_EXCEPTION_ON_IMAGE_UPLOAD);
         }
     }
 
     private void validateImageFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf(".");
         if (lastDotIndex == -1) {
-            throw new S3Exception(ErrorCode.NO_FILE_EXTENSION);
+            throw new S3Exception(ErrorStatus.NO_FILE_EXTENSION);
         }
 
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
         List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif");
 
         if (!allowedExtensionList.contains(extension)) {
-            throw new S3Exception(ErrorCode.INVALID_FILE_EXTENSION);
+            throw new S3Exception(ErrorStatus.INVALID_FILE_EXTENSION);
         }
     }
 
     private String uploadImageToS3(MultipartFile image) throws IOException {
         if (image == null || image.isEmpty()) {
-            throw new S3Exception(ErrorCode.EMPTY_FILE_EXCEPTION);
+            throw new S3Exception(ErrorStatus.EMPTY_FILE_EXCEPTION);
         }
 
         String originalFilename = image.getOriginalFilename();
         if (originalFilename == null || !originalFilename.contains(".")) {
-            throw new S3Exception(ErrorCode.NO_FILE_EXTENSION);
+            throw new S3Exception(ErrorStatus.NO_FILE_EXTENSION);
         }
 
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
@@ -90,14 +88,13 @@ public class S3ImageService {
             System.out.println("Uploading image to S3: " + s3FileName);
             PutObjectRequest putObjectRequest =
                     new PutObjectRequest(bucketName, s3FileName, byteArrayInputStream, metadata);
-                           // .withCannedAcl(CannedAccessControlList.PublicRead);
-            amazonS3.putObject(putObjectRequest); // S3에 이미지 업로드
+            amazonS3.putObject(putObjectRequest);
 
             System.out.println("S3 업로드 성공: " + s3FileName);
         } catch (Exception e) {
             System.err.println("S3 업로드 실패: " + e.getMessage());
             e.printStackTrace();
-            throw new S3Exception(ErrorCode.PUT_OBJECT_EXCEPTION);
+            throw new S3Exception(ErrorStatus.PUT_OBJECT_EXCEPTION);
         } finally {
             byteArrayInputStream.close();
             is.close();
@@ -107,22 +104,22 @@ public class S3ImageService {
     }
 
 
-    public void deleteImageFromS3(String imageAddress) {
-        String key = getKeyFromImageAddress(imageAddress);
+    public void deleteImageFromS3(String imageUrl) {
+        String key = getKeyFromImageAddress(imageUrl);
         try {
             amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));
         } catch (Exception e) {
-            throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_DELETE);
+            throw new S3Exception(ErrorStatus.IO_EXCEPTION_ON_IMAGE_DELETE);
         }
     }
 
-    private String getKeyFromImageAddress(String imageAddress) {
+    private String getKeyFromImageAddress(String imageUrl) {
         try {
-            URL url = new URL(imageAddress);
+            URL url = new URL(imageUrl);
             String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
             return decodingKey.substring(1);
         } catch (MalformedURLException | UnsupportedEncodingException e) {
-            throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_DELETE);
+            throw new S3Exception(ErrorStatus.IO_EXCEPTION_ON_IMAGE_DELETE);
         }
     }
 }

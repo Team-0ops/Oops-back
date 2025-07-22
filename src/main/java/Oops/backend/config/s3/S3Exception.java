@@ -1,13 +1,13 @@
-package capstone.mju.backend.global.s3;
+package Oops.backend.config.s3;
 
-import capstone.mju.backend.domain.common.error.ErrorCode;
+import Oops.backend.common.status.ErrorStatus;
 import lombok.Getter;
 
 @Getter
 public class S3Exception extends RuntimeException {
-    private final ErrorCode errorCode;
+    private final ErrorStatus errorCode;
 
-    public S3Exception(ErrorCode errorCode) {
+    public S3Exception(ErrorStatus errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
