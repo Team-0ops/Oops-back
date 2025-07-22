@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,6 +78,14 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      * 결과 DTO 변환 메서드
      */
     private PostResponse.PostPreviewListDto toPreviewListDto(Page<Post> posts, String listName){
+
+        if (posts == null) {
+            return PostResponse.PostPreviewListDto.builder()
+                    .name(listName)
+                    .posts(Collections.emptyList())
+                    .isLast(true) // null일 경우 더 이상 페이지 없음으로 처리
+                    .build();
+        }
 
         List<PostResponse.PostPreviewDto> previews = posts.getContent().stream()
                 .map(PostResponse.PostPreviewDto::from)
