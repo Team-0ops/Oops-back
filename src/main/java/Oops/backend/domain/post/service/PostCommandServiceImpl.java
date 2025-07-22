@@ -50,38 +50,46 @@ public class PostCommandServiceImpl implements PostCommandService{
     @Transactional
     public PostCreateResponse createPost(User user, PostCreateRequest request) {
 
-        // 1. 카테고리 조회
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
-
-        // 2. 랜덤 주제 조회
-        RandomTopic randomTopic = null;
-        if (request.getTopicId() != null) {
-            randomTopic = randomTopicRepository.findById(request.getTopicId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주제입니다."));
+        // categoryId도 없고 topicId도 없으면 예외
+        if (request.getCategoryId() == null && request.getTopicId() == null) {
+            throw new IllegalArgumentException("카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
         }
 
-        // 3. Post 생성 및 저장
+        // 선택적 category 조회
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
+        }
+
+        // 선택적 topic 조회
+        RandomTopic topic = null;
+        if (request.getTopicId() != null) {
+            topic = randomTopicRepository.findById(request.getTopicId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 랜덤 주제입니다."));
+        }
+
+        // Post 생성
         Post post = new Post();
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setSituation(request.getSituation());
         post.setCategory(category);
-        post.setTopic(randomTopic);
+        post.setTopic(topic);
         post.setUser(user);
         post.setImages(request.getImageUrls());
         post.setLikes(0);
         post.setWatching(0);
         post.setReportCnt(0);
         post.setComments(Collections.emptyList());
-        post.setPostGroup(null); // 현재 단독 작성으로 처리
+        post.setPostGroup(null);
 
-        Post savedPost = postRepository.save(post);
+        Post saved = postRepository.save(post);
 
-        // 4. 응답 반환
         return PostCreateResponse.builder()
-                .postId(savedPost.getId())
+                .postId(saved.getId())
                 .message("실패담 작성 완료")
                 .build();
     }
+
 }
