@@ -1,7 +1,6 @@
 package Oops.backend.domain.category.service;
 
 import Oops.backend.domain.category.dto.CategoryResponse;
-import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.user.entity.User;
 
 import java.util.List;

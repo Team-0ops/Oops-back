@@ -30,6 +30,8 @@ public enum ErrorStatus {
 
     // 사용자 관련 에러
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER404", "해당 사용자를 찾을 수 없습니다."),
+    POINT_NOT_FOUND(HttpStatus.NOT_FOUND, "USER404", "해당 사용자에게 포인트가 존재하지 않습니다. (point == null)"),
+    NOT_ENOUGH_POINT(HttpStatus.BAD_REQUEST, "USER400", "해당 사용자의 포인트는 150점 이하입니다."),
 
     // 랜덤 주제 관련 에러
     INVALID_TOPIC_ID(HttpStatus.BAD_REQUEST, "TOPIC400", "해당 랜덤 주제 ID는 존재하지 않습니다. 1 ~ 20 범위 내의 ID를 요청해주세요. "),
@@ -37,6 +39,9 @@ public enum ErrorStatus {
 
     // 게시물 관련 에러
     NO_POST(HttpStatus.NOT_FOUND, "POST404", "게시물이 존재하지 않습니다."),
+
+    // 행운부적 관련 에러
+    NO_LUCKY_DRAW(HttpStatus.INTERNAL_SERVER_ERROR, "LUCKYDRAW500", "행운부적이 존재하지 않습니다."),
 
     // 카테고리 관련 에러
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY404", "해당 카테고리를 찾을 수 없습니다."),
