@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AuthenticationConfig implements WebMvcConfigurer {
     private final AuthenticationInterceptor authenticationInterceptor;
+    private final AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver;
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {

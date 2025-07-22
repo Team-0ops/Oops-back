@@ -5,6 +5,8 @@ import Oops.backend.domain.luckyDraw.entity.LuckyDraw;
 import Oops.backend.domain.tag.entity.Tag;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,9 +32,8 @@ public class User extends BaseEntity {
     @Column
     private Integer report;
 
-    @OneToMany
-    @Column
-    private List<LuckyDraw> lastLuckyDraws;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserLastLuckyDraw> lastLuckyDraws;
 
     @OneToMany(cascade = CascadeType.ALL)
     @Column
