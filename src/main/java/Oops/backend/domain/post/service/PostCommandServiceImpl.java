@@ -51,9 +51,9 @@ public class PostCommandServiceImpl implements PostCommandService{
     public PostCreateResponse createPost(User user, PostCreateRequest request) {
 
         // categoryId도 없고 topicId도 없으면 예외
-        if (request.getCategoryId() == null && request.getTopicId() == null) {
-            throw new IllegalArgumentException("카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
-        }
+        //if (request.getCategoryId() == null && request.getTopicId() == null) {
+        //    throw new IllegalArgumentException("카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
+        //}
 
         // 선택적 category 조회
         Category category = null;
@@ -63,11 +63,11 @@ public class PostCommandServiceImpl implements PostCommandService{
         }
 
         // 선택적 topic 조회
-        RandomTopic topic = null;
-        if (request.getTopicId() != null) {
-            topic = randomTopicRepository.findById(request.getTopicId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 랜덤 주제입니다."));
-        }
+        //RandomTopic topic = null;
+        //if (request.getTopicId() != null) {
+        //    topic = randomTopicRepository.findById(request.getTopicId())
+        //            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 랜덤 주제입니다."));
+        //}
 
         // Post 생성
         Post post = new Post();
@@ -75,7 +75,7 @@ public class PostCommandServiceImpl implements PostCommandService{
         post.setContent(request.getContent());
         post.setSituation(request.getSituation());
         post.setCategory(category);
-        post.setTopic(topic);
+        //post.setTopic(topic);
         post.setUser(user);
         post.setImages(request.getImageUrls());
         post.setLikes(0);
