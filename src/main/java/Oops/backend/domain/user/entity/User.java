@@ -1,13 +1,13 @@
 package Oops.backend.domain.user.entity;
 
 import Oops.backend.domain.common.BaseEntity;
-import Oops.backend.domain.luckyDraw.entity.LuckyDraw;
-import Oops.backend.domain.tag.entity.Tag;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -33,11 +33,16 @@ public class User extends BaseEntity {
     private Integer report;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserLastLuckyDraw> lastLuckyDraws;
+    private List<UserLastLuckyDraw> lastLuckyDraws = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @Column
-    private List<Tag> tags;
+    private Set<UserTag> tags = new LinkedHashSet<>();
+
+    public void addUserTag(UserTag userTag) {
+        this.tags.add(userTag);
+        userTag.setUser(this);
+    }
 
 }
 
