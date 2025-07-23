@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Tag extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Builder

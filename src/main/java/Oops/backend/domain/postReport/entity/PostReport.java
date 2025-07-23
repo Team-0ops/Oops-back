@@ -8,9 +8,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostReport extends BaseEntity {
 
     private String reason;
@@ -22,4 +20,8 @@ public class PostReport extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post")
     private Post post;
+
+    @Column(nullable = false, length = 300)
+    private String content;
+
 }

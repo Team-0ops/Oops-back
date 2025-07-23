@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
-public class PostRestController {
+public class PostController {
 
     private final PostCommandService postCommandService;
 
@@ -21,6 +21,14 @@ public class PostRestController {
     public ResponseEntity<BaseResponse> postCheer(@PathVariable Long postId,
                                                   @AuthenticatedUser User user){
         postCommandService.cheerPost(postId, user);
+        return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<BaseResponse> deletePost(@PathVariable Long postId,
+                                                   @AuthenticatedUser User user){
+        postCommandService.deletePost(postId, user);
+
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 
