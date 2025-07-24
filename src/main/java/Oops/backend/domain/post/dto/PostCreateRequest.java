@@ -13,6 +13,7 @@ public class PostCreateRequest {
     private String content;
     private Situation situation; // OOPS, OVERCOMING, OVERCOME
     private Long categoryId;
-    private Long topicId; // optional
+    private Long topicId;
+    private Long previousPostId; // OOPS나 OVERCOMING 실패담의 ID
     private List<String> imageUrls;
 }
