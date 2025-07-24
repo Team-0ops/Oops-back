@@ -49,33 +49,32 @@ public class PostCommandServiceImpl implements PostCommandService{
     @Override
     @Transactional
     public PostCreateResponse createPost(User user, PostCreateRequest request) {
-
-        // categoryId도 없고 topicId도 없으면 예외
-        //if (request.getCategoryId() == null && request.getTopicId() == null) {
-        //    throw new IllegalArgumentException("카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
-        //}
-
-        // 선택적 category 조회
+        // 1. 카테고리 조회 (optional)
         Category category = null;
         if (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
         }
 
-        // 선택적 topic 조회
-        //RandomTopic topic = null;
-        //if (request.getTopicId() != null) {
-        //    topic = randomTopicRepository.findById(request.getTopicId())
-        //            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 랜덤 주제입니다."));
-        //}
+        // 2. 랜덤 주제 조회 (optional)
+        RandomTopic topic = null;
+        if (request.getTopicId() != null) {
+            topic = randomTopicRepository.findById(request.getTopicId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 랜덤 주제입니다."));
+        }
 
-        // Post 생성
+        // 3. 둘 다 null이면 예외
+        if (category == null && topic == null) {
+            throw new IllegalArgumentException("카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
+        }
+
+        // 4. Post 생성
         Post post = new Post();
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setSituation(request.getSituation());
         post.setCategory(category);
-        //post.setTopic(topic);
+        post.setTopic(topic);
         post.setUser(user);
         post.setImages(request.getImageUrls());
         post.setLikes(0);
@@ -91,5 +90,6 @@ public class PostCommandServiceImpl implements PostCommandService{
                 .message("실패담 작성 완료")
                 .build();
     }
+
 
 }
