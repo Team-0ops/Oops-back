@@ -96,15 +96,15 @@ public class PostCommandServiceImpl implements PostCommandService{
         // PostGroup 처리
         PostGroup postGroup = null;
         if (situation == Situation.OOPS) {
-            if (category == null) {
-                throw new IllegalArgumentException("OOPS 상황에서는 카테고리가 필수입니다.");
+            if (category == null && topic == null) {
+                throw new IllegalArgumentException("OOPS 상황에서는 categoryId 또는 topicId 중 하나는 필수입니다.");
             }
 
             postGroup = new PostGroup();
             postGroup.setCategory(category);
             postGroup = postGroupRepository.save(postGroup); // 저장 필수
+            post.setPostGroup(postGroup);
 
-            post.setPostGroup(postGroup); // 반드시 연결
         } else if (situation == Situation.OVERCOMING || situation == Situation.OVERCOME) {
             if (request.getPreviousPostId() == null) {
                 throw new IllegalArgumentException("이 상황에서는 이전 게시글 ID가 필요합니다.");
