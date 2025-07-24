@@ -6,5 +6,5 @@ spring:
     name: oops
 
   profiles:
-    active: rdb
-    include: dev
+    active: rds
+    include: dev, jwt

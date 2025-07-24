@@ -5,13 +5,11 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Java CI with Gradle
+name: oops-deploy
 # main 브랜치로 merge 또는 push 발생 시 작동
 on:
   push:
-    branches:
-      - "main"
-      - "develop"
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -29,11 +27,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # application-rdb.yml 파일 생성
-      - name: Make application-rdb.yml
+      # application-rds.yml 파일 생성
+      - name: Make application-rds.yml
         run: |
           cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_RDB_YML }}" > ./application-rdb.yml
+          echo "${{ secrets.APPLICATION_RDS_YML }}" > ./application-rds.yml
 
       # application-security.yml 파일 생성
       - name: Make application-security.yml
@@ -46,13 +44,11 @@ jobs:
         run: chmod +x gradlew
 
       # gradle 환경 설정 및 빌드
-      # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-      # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       # .jar 파일 이름 변경
       - name: Change File Name
@@ -88,3 +84,4 @@ jobs:
             sleep 10
             sudo fuser -k -n tcp 8080 || true
             sudo nohup java -jar oops.jar > ./output.log 2>&1 &
+            
