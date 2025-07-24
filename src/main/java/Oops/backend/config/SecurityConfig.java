@@ -21,7 +21,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/api/posts/**","/api/my-page/**", "/api/categories/**", "/api/feeds/**", "/api/lucky-draw").permitAll()
+                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/api/posts/**","/api/my-page/**", "/api/categories/**", "/api/feeds/**", "/api/lucky-draw","/api/failure-wiki/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(config -> config.disable())
