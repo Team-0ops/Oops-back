@@ -23,6 +23,4 @@ public class UserTag extends BaseEntity {
     @JoinColumn(name = "tag_id")
     private Tag tag;
 
-
-
 }

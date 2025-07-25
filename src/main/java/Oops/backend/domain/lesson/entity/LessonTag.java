@@ -19,3 +19,4 @@ public class LessonTag extends BaseEntity {
     private Tag tag;
 
 }
+
