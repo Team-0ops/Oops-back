@@ -56,7 +56,7 @@ public class S3ImageService {
         }
 
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif");
+        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "svg");
 
         if (!allowedExtensionList.contains(extension)) {
             throw new S3Exception(ErrorStatus.INVALID_FILE_EXTENSION);
