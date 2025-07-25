@@ -80,7 +80,7 @@ jobs:
           script_stop: true
           script: |
             cd /home/ubuntu
-            sudo pgrep java | xargs -r kill -15  
+            sudo pgrep java | xargs -r sudo kill -15  
             sleep 10
             sudo fuser -k -n tcp 8080 || true
             sudo nohup java -jar oops.jar > ./output.log 2>&1 &
