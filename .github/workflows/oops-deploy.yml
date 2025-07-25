@@ -1,0 +1,87 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: oops-deploy
+# main 브랜치로 merge 또는 push 발생 시 작동
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    # JDK 설치
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # application-rds.yml 파일 생성
+      - name: Make application-rds.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.APPLICATION_RDS_YML }}" > ./application-rds.yml
+
+      # application-security.yml 파일 생성
+      - name: Make application-security.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.APPLICATION_SECURITY_YML }}" > ./application-security.yml
+
+      # gradle2 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # gradle 환경 설정 및 빌드
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
+      - name: Build with Gradle Wrapper
+        run: ./gradlew build -x test
+
+      # .jar 파일 이름 변경
+      - name: Change File Name
+        run: mv ./build/libs/*SNAPSHOT.jar ./oops.jar
+
+      # 빌드 및 이름 변경된 .jar 파일 EC2로 전송하기
+      - name: Send File to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: oops.jar
+          target: /home/ubuntu
+
+  # 배포
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    # EC2 접속 및 oops.jar 파일 실행
+    steps:
+      - name: Connect EC2 with SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd /home/ubuntu
+            pgrep java | xargs -r kill -15  
+            sleep 10
+            sudo fuser -k -n tcp 8080 || true
+            sudo nohup java -jar oops.jar > ./output.log 2>&1 &
+            
