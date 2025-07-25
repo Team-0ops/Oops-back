@@ -3,6 +3,7 @@ package Oops.backend.domain.post.entity;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.comment.entity.Comment;
 import Oops.backend.domain.common.BaseEntity;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.postGroup.entity.PostGroup;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
@@ -24,9 +25,10 @@ public class Post extends BaseEntity {
     private String content;
 
     @Column
-    private String situation;
+    @Enumerated(EnumType.STRING)
+    private Situation situation;
 
-    @Column
+    @Column(nullable = false)
     private Integer likes;
 
     @Column
@@ -56,6 +58,13 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private PostGroup postGroup; // PostGroup이 있다면 ManyToOne 처리 가능
+
+    public void plusCheer(){
+        this.likes++;
+    }
+
+    public void minusCheer(){
+        this.likes--;
+    }
+
 }
-
-

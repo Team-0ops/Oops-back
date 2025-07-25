@@ -6,11 +6,11 @@ import Oops.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Lesson extends BaseEntity {
 
     @Column
@@ -24,4 +24,7 @@ public class Lesson extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
+
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    private List<LessonTag> tags;
 }
