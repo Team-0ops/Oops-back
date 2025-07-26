@@ -91,7 +91,10 @@ public class PostCommandServiceImpl implements PostCommandService{
         post.setLikes(0);
         post.setWatching(0);
         post.setReportCnt(0);
-        post.setComments(Collections.emptyList());
+        post.setWantedCommentTypes(
+                request.getWantedCommentTypes() == null
+                        ? Collections.emptyList()
+                        : request.getWantedCommentTypes());
 
         // PostGroup 처리
         PostGroup postGroup = null;
