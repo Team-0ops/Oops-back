@@ -40,10 +40,24 @@ public class RandomTopicServiceImpl implements RandomTopicService {
         RandomTopic lastTopic = randomTopicRepository.findById(lastTopicId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR));
 
+        RandomTopicResponse.TopicInfoDto lastTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
+                .informNum(1)
+                .topicId(lastTopic.getId())
+                .topicName(lastTopic.getName())
+                .topicIcon(lastTopic.getImage())
+                .build();
+
         Long currentTopicId = lastTopic.getNextTopicId();
 
         RandomTopic currentTopic = randomTopicRepository.findById(currentTopicId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR));
+
+        RandomTopicResponse.TopicInfoDto currentTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
+                .informNum(2)
+                .topicId(currentTopic.getId())
+                .topicName(currentTopic.getName())
+                .topicIcon(currentTopic.getImage())
+                .build();
 
         // 사용자가 저번주 주제에 대하여 인기글에 선정되었는지 여부
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
@@ -54,10 +68,8 @@ public class RandomTopicServiceImpl implements RandomTopicService {
 
         // 결과 반환
         return RandomTopicResponse.BannarsInfoDto.builder()
-                .lastTopicId(lastTopicId)
-                .lastTopicName(lastTopic.getName())
-                .currentTopicId(currentTopicId)
-                .currentTopicName(currentTopic.getName())
+                .lastTopicInfo(lastTopicInfoDto)
+                .currentTopicInfo(currentTopicInfoDto)
                 .isBestUser(isBestUser)
                 .build();
     }

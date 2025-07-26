@@ -38,4 +38,6 @@ public class User extends BaseEntity {
     @OneToMany(cascade = CascadeType.ALL)
     @Column
     private List<Tag> tags;
+
 }
+

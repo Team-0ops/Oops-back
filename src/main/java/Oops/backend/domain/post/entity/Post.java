@@ -76,5 +76,3 @@ public class Post extends BaseEntity {
     }
 
 }
-
-

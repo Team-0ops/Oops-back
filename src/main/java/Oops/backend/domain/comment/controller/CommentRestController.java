@@ -19,8 +19,8 @@ public class CommentRestController {
 
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<BaseResponse> leaveComment(@PathVariable Long postId,
-                                                    @AuthenticatedUser User user,
-                                                    @RequestBody CommentRequestDto.LeaveCommentDto request){
+                                                     @AuthenticatedUser User user,
+                                                     @RequestBody CommentRequestDto.LeaveCommentDto request){
 
         commentCommandService.leaveComment(postId, user, request);
 
