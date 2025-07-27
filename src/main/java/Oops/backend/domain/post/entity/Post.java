@@ -2,6 +2,7 @@ package Oops.backend.domain.post.entity;
 
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.comment.entity.Comment;
+import Oops.backend.domain.comment.model.CommentType;
 import Oops.backend.domain.common.BaseEntity;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.postGroup.entity.PostGroup;
@@ -58,6 +59,13 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private PostGroup postGroup; // PostGroup이 있다면 ManyToOne 처리 가능
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "post_comment_type", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "comment_type")
+    private List<CommentType> wantedCommentTypes;
+
 
     public void plusCheer(){
         this.likes++;
