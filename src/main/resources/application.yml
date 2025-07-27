@@ -1,15 +1,10 @@
 spring:
-  config:
-    import:
-  application:
-    name: oops
+    #config:
+    # import:
+    #  - "classpath:application-security.yml"
+    application:
+        name: oops
 
-  profiles:
-    active: local
-    include: rds, dev, jwt
-  #jpa
-  jpa:
-    show-sql: true
-    open-in-view: false
-    hibernate:
-       ddl-auto: update
+    profiles:
+        active: local
+        include: rds, dev, jwt

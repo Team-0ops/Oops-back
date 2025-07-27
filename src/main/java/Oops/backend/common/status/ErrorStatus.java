@@ -68,4 +68,3 @@ public enum ErrorStatus {
                 .orElse(this.getMessage());
     }
 }
-

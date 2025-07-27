@@ -17,4 +17,7 @@ public class RandomTopic extends BaseEntity {
 
     @Column(nullable = false)
     private Long nextTopicId;
+
+    @Column(nullable = false)
+    private String image;
 }
