@@ -1,7 +1,7 @@
 spring:
-  #config:
-   # import:
-    #  - "classpath:application-security.yml"
+  config:
+    import:
+      - "classpath:application-security.yml"
   application:
     name: oops
 
