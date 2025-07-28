@@ -1,10 +1,11 @@
 spring:
-    #config:
-    # import:
-    #  - "classpath:application-security.yml"
-    application:
-        name: oops
-
-    profiles:
-        active: local
-        include: rds, dev, jwt
+  config:
+    import:
+      - "classpath:application-security.yml"
+      
+  application:
+    name: oops
+    
+  profiles:
+    active: local
+    include: rds, dev, jwt
