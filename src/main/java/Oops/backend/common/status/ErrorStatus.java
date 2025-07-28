@@ -50,6 +50,14 @@ public enum ErrorStatus {
     INVALID_CATEGORY_ID(HttpStatus.BAD_REQUEST, "CATEGORY400", "해당 카테고리 ID는 존재하지 않습니다. 1 ~ 15 범위 내의 ID를 요청해주세요. "),
     ALREADY_FAVORITE_CATEGORY(HttpStatus.BAD_REQUEST, "CATEGORY400", "이미 즐겨찾기한 카테고리입니다."),
     NO_FAVORITE_CATEGORY(HttpStatus.BAD_REQUEST, "CATEGORY400", "즐겨찾기 되어있지 않은 카테고리입니다."),
+
+    // S3 관련 에러
+    EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "S3_400_1", "파일이 비어 있습니다."),
+    NO_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S3_400_2", "파일에 확장자가 없습니다."),
+    INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S3_400_3", "지원하지 않는 파일 확장자입니다. (jpg, jpeg, png, gif 만 허용)"),
+    IO_EXCEPTION_ON_IMAGE_UPLOAD(HttpStatus.INTERNAL_SERVER_ERROR, "S3_500_1", "이미지 업로드 중 IO 예외가 발생했습니다."),
+    IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S3_500_2", "이미지 삭제 중 예외가 발생했습니다."),
+    PUT_OBJECT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "S3_500_3", "S3에 파일 업로드 중 예외가 발생했습니다."),
     NO_BOOKMARKED(HttpStatus.BAD_REQUEST, "CATEGORY400", "해당 사용자가 즐겨찾기한 카테고리가 존재하지 않습니다.");
 
     private final HttpStatus status;
