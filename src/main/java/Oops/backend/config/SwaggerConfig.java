@@ -2,6 +2,8 @@ package Oops.backend.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,6 +30,14 @@ public class SwaggerConfig {
 
                         🔐 일부 API는 인증이 필요하며, JWT를 통해 보호됩니다.
                         """)
-                        .version("1.0.0"));
+                        .version("1.0.0"))
+                .addSecurityItem(new SecurityRequirement().addList("jwtAuth"))
+                .components(new io.swagger.v3.oas.models.Components()
+                        .addSecuritySchemes("jwtAuth",
+                                new SecurityScheme()
+                                        .name("jwtAuth")
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")));
     }
 }

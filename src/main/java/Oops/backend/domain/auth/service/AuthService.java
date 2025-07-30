@@ -27,7 +27,7 @@ public class AuthService {
     /*
     회원가입
      */
-    public void join(JoinDto joinDto, HttpServletResponse response) {
+    public void join(JoinDto joinDto) {
         // 이메일이 이미 존재하는지 확인
         this.isEmailExist(joinDto.getEmail());
         String encryptedPassword = this.passwordHashEncryption.encrypt(joinDto.getPassword());
@@ -55,7 +55,7 @@ public class AuthService {
     /*
     login
      */
-    public void login(LoginDto loginDto, HttpServletResponse response) {
+    public String login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
         User user = this.authRepository.findByEmail(loginDto.getEmail());
 
@@ -79,5 +79,7 @@ public class AuthService {
                 .path("/")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
+
+        return accessToken;
     }
 }

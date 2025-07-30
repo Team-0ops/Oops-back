@@ -24,16 +24,16 @@ public class AuthController {
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록")
     @PostMapping("/join")
-    public ResponseEntity<BaseResponse> join(@Valid @RequestBody JoinDto joinDto, HttpServletResponse response) {
-        this.authService.join(joinDto, response);
+    public ResponseEntity<BaseResponse> join(@Valid @RequestBody JoinDto joinDto) {
+        this.authService.join(joinDto);
         return BaseResponse.onSuccess(SuccessStatus._CREATED);
     }
 
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<BaseResponse> login(@RequestBody LoginDto loginDto, HttpServletResponse request) {
-        authService.login(loginDto, request);
-        return BaseResponse.onSuccess(SuccessStatus._OK);
+        String accessToken = authService.login(loginDto, request);
+        return BaseResponse.onSuccess(SuccessStatus._OK, accessToken);
     }
 
     @GetMapping("/getUserInfo")
