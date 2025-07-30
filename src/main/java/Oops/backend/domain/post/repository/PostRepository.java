@@ -3,6 +3,7 @@ package Oops.backend.domain.post.repository;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
+import Oops.backend.domain.postGroup.entity.PostGroup;
 import Oops.backend.domain.user.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -28,6 +30,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 베스트 실패담 5개 (좋아요 순)
     @Query("SELECT p FROM Post p WHERE p.situation IN :situations ORDER BY p.likes DESC")
     List<Post> findBestFailers(@Param("situations") List<Situation> situations, Pageable pageable);
+
+    // PostGroup에서 Post 찾기
+    Optional<Post> findPostByPostGroupAndSituation(PostGroup postGroup, Situation situation);
+
 }
 
 
