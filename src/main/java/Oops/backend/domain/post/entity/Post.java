@@ -50,7 +50,7 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "topic")
     private RandomTopic topic;
 
-    @OneToMany
+    @OneToMany(mappedBy = "post")
     private List<Comment> comments;
 
     @ElementCollection

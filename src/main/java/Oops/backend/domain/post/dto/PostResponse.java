@@ -1,5 +1,7 @@
 package Oops.backend.domain.post.dto;
 
+import Oops.backend.domain.comment.entity.Comment;
+import Oops.backend.domain.comment.model.CommentType;
 import Oops.backend.domain.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,5 +53,47 @@ public class PostResponse {
         String name;   // 베스트 or 즐겨찾기 or 카테고리
         List<PostPreviewDto> posts;
         boolean isLast;
+    }
+
+    /**
+     * 하나의 Post를 담는 DTO
+     */
+    @Builder
+    @Getter
+    @AllArgsConstructor
+    public static class PostViewDto {
+
+        Long writer;
+
+        Long postId;
+
+        String title;
+
+        String content;
+
+        Integer likes;
+
+        Integer watching;
+
+        List<String> images;
+
+        List<Comment> comments;
+
+        List<CommentType> wantedCommentTypes;
+
+        public static PostViewDto from(Post post){
+            return PostViewDto.builder()
+                    .postId(post.getId())
+                    .writer(post.getUser().getId())
+                    .title(post.getTitle())
+                    .content(post.getContent())
+                    .likes(post.getLikes())
+                    .watching(post.getWatching())
+                    .images(post.getImages())
+                    .comments(post.getComments())
+                    .wantedCommentTypes(post.getWantedCommentTypes())
+                    .build();
+        }
+
     }
 }
