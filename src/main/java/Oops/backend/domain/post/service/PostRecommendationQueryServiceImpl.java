@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +51,12 @@ public class PostRecommendationQueryServiceImpl implements PostRecommendationQue
                 .similarPosts(similarPosts)
                 .bestFailers(bestFailers)
                 .build();
+    }
+    @Override
+    public List<PostSummaryDto> getMyPostsBySituation(User user, Situation situation) {
+        List<Post> posts = postRepository.findByUserAndSituation(user, situation);
+        return posts.stream()
+                .map(PostSummaryDto::from)
+                .collect(Collectors.toList());
     }
 }
