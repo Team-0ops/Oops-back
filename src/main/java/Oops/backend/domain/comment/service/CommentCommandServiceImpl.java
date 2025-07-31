@@ -6,7 +6,6 @@ import Oops.backend.domain.comment.repository.CommentRepository;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.user.entity.User;
-import Oops.backend.domain.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +15,11 @@ public class CommentCommandServiceImpl implements CommentCommandService{
 
     private final CommentRepository commentRepository;
     private final PostQueryService postQueryService;
-    private final UserQueryService userQueryService;
 
     @Override
-    public void leaveComment(Long postId, Long userId, CommentRequestDto.leaveCommentDto request) {
+    public void leaveComment(Long postId, User user, CommentRequestDto.LeaveCommentDto request) {
 
         Post post = postQueryService.findPost(postId);
-
-        User user = userQueryService.findUser(userId);
 
         String content = request.getContent();
 

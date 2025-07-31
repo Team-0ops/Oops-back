@@ -20,7 +20,7 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/api/auth/login",
-                        "api/auth/join",
+                        "/api/auth/join",
                         "/hello",
                         "/health",
                         "/public/**",
@@ -31,8 +31,8 @@ public class AuthenticationConfig implements WebMvcConfigurer {
     }
 
 
-    @Override
-    public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> argumentResolvers) {
-        argumentResolvers.add(authenticatedUserArgumentResolver);
-    }
+//    @Override
+//    public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> argumentResolvers) {
+//        argumentResolvers.add(authenticatedUserArgumentResolver);
+//    }
 }

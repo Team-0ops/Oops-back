@@ -6,8 +6,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "user_and_category")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserAndCategory extends BaseEntity {
@@ -19,6 +21,5 @@ public class UserAndCategory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
 
 }
