@@ -3,9 +3,13 @@ package Oops.backend.domain.post.service;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.postGroup.entity.PostGroup;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,5 +24,11 @@ public class PostQueryServiceImpl implements PostQueryService{
                 .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "존재하지 않는 게시글입니다."));
 
         return post;
+    }
+
+    @Override
+    public Optional<Post> findPostFromPostGroupBySituation(PostGroup postGroup, Situation situation) {
+
+        return postRepository.findPostByPostGroupAndSituation(postGroup, situation);
     }
 }

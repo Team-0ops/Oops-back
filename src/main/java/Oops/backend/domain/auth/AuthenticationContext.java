@@ -1,10 +1,7 @@
 package Oops.backend.domain.auth;
 
 import Oops.backend.domain.user.entity.User;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 @Component
 public class AuthenticationContext {
