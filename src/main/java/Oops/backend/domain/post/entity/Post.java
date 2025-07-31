@@ -66,9 +66,11 @@ public class Post extends BaseEntity {
     @Column(name = "comment_type")
     private List<CommentType> wantedCommentTypes;
 
+    /*
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "previous_post_id")
     private Post previousPost;
+    */
 
     public void plusCheer(){
         this.likes++;
