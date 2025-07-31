@@ -27,4 +27,14 @@ public class CommentRestController {
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<BaseResponse> deleteComment(@PathVariable Long postId,
+                                                      @PathVariable Long commentId,
+                                                      @AuthenticatedUser User user){
+
+        commentCommandService.deleteComment(postId, commentId, user);
+
+        return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
 }

@@ -35,6 +35,14 @@ public class PostRestController {
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<BaseResponse> deletePost(@PathVariable Long postId,
+                                                   @AuthenticatedUser User user){
+        postCommandService.deletePost(postId, user);
+
+        return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
     //실패담 작성
     @PostMapping
     public ResponseEntity<BaseResponse> createPost(
