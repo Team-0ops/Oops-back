@@ -83,26 +83,26 @@ public class PostCommandServiceImpl implements PostCommandService{
         // 상황 필수
         Situation situation = request.getSituation();
         if (situation == null) {
-            throw new IllegalArgumentException("상황 정보가 누락되었습니다.");
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "상황 정보가 누락되었습니다.");
         }
 
         // 1. 카테고리 조회 (optional)
         Category category = null;
         if (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "존재하지 않는 카테고리입니다."));
         }
 
         // 2. 랜덤 주제 조회 (optional)
         RandomTopic topic = null;
         if (request.getTopicId() != null) {
             topic = randomTopicRepository.findById(request.getTopicId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 랜덤 주제입니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "존재하지 않는 랜덤 주제입니다."));
         }
 
         // 3. 둘 다 null이면 예외
         if (category == null && topic == null) {
-            throw new IllegalArgumentException("카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "카테고리 또는 랜덤 주제 중 하나는 반드시 선택해야 합니다.");
         }
 
         // 4. Post 생성
@@ -126,7 +126,7 @@ public class PostCommandServiceImpl implements PostCommandService{
         PostGroup postGroup = null;
         if (situation == Situation.OOPS) {
             if (category == null && topic == null) {
-                throw new IllegalArgumentException("OOPS 상황에서는 categoryId 또는 topicId 중 하나는 필수입니다.");
+                throw new GeneralException(ErrorStatus._BAD_REQUEST, "OOPS 상황에서는 categoryId 또는 topicId 중 하나는 필수입니다.");
             }
 
             postGroup = new PostGroup();
@@ -134,7 +134,7 @@ public class PostCommandServiceImpl implements PostCommandService{
             postGroup = postGroupRepository.save(postGroup); // 저장 필수
             post.setPostGroup(postGroup);
 
-        } else if (situation == Situation.OVERCOMING || situation == Situation.OVERCOME) {
+        }/* else if (situation == Situation.OVERCOMING || situation == Situation.OVERCOME) {
             if (request.getPreviousPostId() == null) {
                 throw new IllegalArgumentException("이 상황에서는 이전 게시글 ID가 필요합니다.");
             }
@@ -148,7 +148,7 @@ public class PostCommandServiceImpl implements PostCommandService{
             }
             post.setPostGroup(postGroup);
             post.setPreviousPost(previousPost);
-        }
+        }*/
 
 
 

@@ -15,7 +15,7 @@ public class PostCreateRequest {
     private Situation situation; // OOPS, OVERCOMING, OVERCOME
     private Long categoryId;
     private Long topicId;
-    private Long previousPostId; // OOPS나 OVERCOMING 실패담의 ID
+    // private Long previousPostId; // OOPS나 OVERCOMING 실패담의 ID
     private List<String> imageUrls;
     private List<CommentType> wantedCommentTypes;
 }

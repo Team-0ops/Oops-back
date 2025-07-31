@@ -29,12 +29,12 @@ public class RandomTopicController {
     private final RandomTopicService randomTopicService;
 
     @GetMapping("/banners")
-    @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. currentTopicId에는 이번주 랜덤 주제 (이제 저번주 주제가 될) 아이디를 넣어주세요. ")
-    public ResponseEntity<BaseResponse> getBannarInfo (Long currentTopicId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+    @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
+    public ResponseEntity<BaseResponse> getBannarInfo (@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-        log.info("Get /api/feeds/banners 호출");
 
-        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(currentTopicId, user);
+        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(user);
+
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 }

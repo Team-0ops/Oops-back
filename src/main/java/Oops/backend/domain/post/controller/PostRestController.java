@@ -4,12 +4,10 @@ package Oops.backend.domain.post.controller;
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
-import Oops.backend.domain.post.dto.PostCreateRequest;
-import Oops.backend.domain.post.dto.PostCreateResponse;
-import Oops.backend.domain.post.dto.PostRecommendationResponse;
-import Oops.backend.domain.post.dto.PostSummaryDto;
+import Oops.backend.domain.post.dto.*;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.service.PostCommandService;
+import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.post.service.PostRecommendationQueryService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +30,7 @@ public class PostRestController {
 
     private final PostCommandService postCommandService;
     private final PostRecommendationQueryService postRecommendationQueryService;
+    private final PostQueryService postQueryService;
 
     @Operation(summary = "응원하기 API")
     @PostMapping("/{postId}/cheers")
@@ -69,6 +68,15 @@ public class PostRestController {
         return BaseResponse.onSuccess(SuccessStatus._CREATED, response);
     }
 
+    // [추가] 내가 작성한 전체 실패담 조회 API
+    @GetMapping("/my")
+    public ResponseEntity<BaseResponse> getMyPosts(@AuthenticatedUser User user) {
+        List<PostDetailSummaryDto> response = postQueryService.getMyPosts(user);
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
+    }
+
+    
+/*
     // 상황에 따라 연결 가능한 이전 글 목록 조회
     @Operation(summary = "연경 가능한 이전 글 목록 조회")
     @GetMapping("/previous")
@@ -91,6 +99,7 @@ public class PostRestController {
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
+*/
 
     //실패담 추천
     // PostRestController.java
