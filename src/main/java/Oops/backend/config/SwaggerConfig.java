@@ -29,6 +29,7 @@ public class SwaggerConfig {
                         - 태그, 스크랩, 포인트 시스템 등
 
                         🔐 일부 API는 인증이 필요하며, JWT를 통해 보호됩니다.
+                       
                         """)
                         .version("1.0.0"))
                 .addSecurityItem(new SecurityRequirement().addList("jwtAuth"))
