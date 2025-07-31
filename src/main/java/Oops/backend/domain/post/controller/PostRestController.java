@@ -10,14 +10,19 @@ import Oops.backend.domain.post.service.PostCommandService;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.post.service.PostRecommendationQueryService;
 import Oops.backend.domain.user.entity.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
 
+@Tag(name = "실패담 관련 API")
+@Slf4j
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -27,22 +32,42 @@ public class PostRestController {
     private final PostRecommendationQueryService postRecommendationQueryService;
     private final PostQueryService postQueryService;
 
+    @Operation(summary = "응원하기 API")
     @PostMapping("/{postId}/cheers")
     public ResponseEntity<BaseResponse> postCheer(@PathVariable Long postId,
                                                   @AuthenticatedUser User user){
+
+        log.info("Post /api/posts/{postId}/cheers 호출, User = {}", user.getUserName());
+
         postCommandService.cheerPost(postId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 
+    @Operation(summary = "실패담 삭제 API")
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<BaseResponse> deletePost(@PathVariable Long postId,
+                                                   @AuthenticatedUser User user){
+
+        log.info("Delete /api/posts/{postId} 호출, User = {}", user.getUserName());
+
+        postCommandService.deletePost(postId, user);
+
+        return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
     //실패담 작성
+    @Operation(summary = "실패담 작성 API")
     @PostMapping
     public ResponseEntity<BaseResponse> createPost(
             @AuthenticatedUser User user,
             @RequestBody @Valid PostCreateRequest request) {
 
+        log.info("Post /api/posts 호출, User = {}", user.getUserName());
+
         PostCreateResponse response = postCommandService.createPost(user, request);
         return BaseResponse.onSuccess(SuccessStatus._CREATED, response);
     }
+
     // [추가] 내가 작성한 전체 실패담 조회 API
     @GetMapping("/my")
     public ResponseEntity<BaseResponse> getMyPosts(@AuthenticatedUser User user) {
@@ -50,12 +75,16 @@ public class PostRestController {
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
-    /*
+    
+/*
     // 상황에 따라 연결 가능한 이전 글 목록 조회
+    @Operation(summary = "연경 가능한 이전 글 목록 조회")
     @GetMapping("/previous")
     public ResponseEntity<BaseResponse> getPreviousPostsForSituation(
             @AuthenticatedUser User user,
             @RequestParam("situation") Situation situation) {
+
+        log.info("Get /api/posts/previous 호출, User = {}", user.getUserName());
 
         List<PostSummaryDto> result;
 
@@ -74,11 +103,13 @@ public class PostRestController {
 
     //실패담 추천
     // PostRestController.java
-
+    @Operation(summary = "실패담 추천 조회")
     @GetMapping("/{postId}/recommendations")
     public ResponseEntity<BaseResponse> recommendPosts(
             @AuthenticatedUser User user,
             @PathVariable Long postId) {
+
+        log.info("Get /api/posts/{postId}/recommendations 호출, User = {}", user.getUserName());
 
         PostRecommendationResponse response = postRecommendationQueryService.recommend(user, postId);
         return BaseResponse.onSuccess(SuccessStatus._OK, response);

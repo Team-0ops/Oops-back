@@ -10,6 +10,8 @@ import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.util.List;
 
 @Entity
@@ -19,23 +21,26 @@ import java.util.List;
 @AllArgsConstructor
 public class Post extends BaseEntity {
 
-    @Column
+    @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(nullable = false)
     private String content;
 
     @Column
     @Enumerated(EnumType.STRING)
     private Situation situation;
 
+    @ColumnDefault("0")
     @Column(nullable = false)
     private Integer likes;
 
     @Column
+    @ColumnDefault("0")
     private Integer watching;
 
     @Column
+    @ColumnDefault("0")
     private Integer reportCnt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,7 +55,7 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "topic")
     private RandomTopic topic;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
     @ElementCollection
@@ -81,3 +86,5 @@ public class Post extends BaseEntity {
     }
 
 }
+
+
