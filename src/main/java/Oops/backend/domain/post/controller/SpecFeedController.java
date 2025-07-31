@@ -11,7 +11,9 @@ import Oops.backend.domain.post.service.SpecFeedService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "피드 조회 API")
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feeds")
@@ -37,6 +41,9 @@ public class SpecFeedController {
                                                             @RequestParam(defaultValue = "0") int page,
                                                         @Parameter(description = "페이지당 게시글 수")
                                                             @RequestParam(defaultValue = "10") int limit) {
+
+        log.info("Get /api/feeds/best/all 호출");
+
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit);
 
@@ -58,6 +65,9 @@ public class SpecFeedController {
                                                           @Parameter(description = "페이지당 게시글 수")
                                                         @RequestParam(defaultValue = "10") int limit,
                                                           @Parameter(hidden = true) @AuthenticatedUser User user) {
+
+        log.info("Get /api/feeds/bookmarked/all 호출");
+
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -79,6 +89,9 @@ public class SpecFeedController {
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @Parameter(description = "페이지당 게시글 수")
                                                               @RequestParam(defaultValue = "10") int limit) {
+
+        log.info("Get /api/feeds/categories/{categoryId}/all 호출");
+
         if(categoryId<1 || categoryId>15){
             throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
         }
@@ -104,6 +117,9 @@ public class SpecFeedController {
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @Parameter(description = "페이지당 게시글 수")
                                                           @RequestParam(defaultValue = "10") int limit) {
+
+        log.info("Get /api/feeds/randomTopic/{topicId}/current/all 호출");
+
         if(topicId < 1 || topicId > 20){
             throw new GeneralException(ErrorStatus.INVALID_TOPIC_ID);
         }
@@ -129,6 +145,9 @@ public class SpecFeedController {
                                                             @RequestParam(defaultValue = "0") int page,
                                                             @Parameter(description = "페이지당 게시글 수")
                                                             @RequestParam(defaultValue = "10") int limit) {
+
+        log.info("Get /api/feeds/randomTopic/{topicId}/last/all 호출");
+
         if(topicId < 1 || topicId > 20){
             throw new GeneralException(ErrorStatus.INVALID_TOPIC_ID);
         }

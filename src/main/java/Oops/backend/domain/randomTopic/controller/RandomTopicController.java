@@ -11,12 +11,16 @@ import Oops.backend.domain.randomTopic.dto.RandomTopicResponse;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "상단 배너 표시 API")
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feeds")
@@ -27,6 +31,8 @@ public class RandomTopicController {
     @GetMapping("/banners")
     @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. currentTopicId에는 이번주 랜덤 주제 (이제 저번주 주제가 될) 아이디를 넣어주세요. ")
     public ResponseEntity<BaseResponse> getBannarInfo (Long currentTopicId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+
+        log.info("Get /api/feeds/banners 호출");
 
         RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(currentTopicId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);

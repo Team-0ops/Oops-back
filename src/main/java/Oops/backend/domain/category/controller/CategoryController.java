@@ -10,12 +10,16 @@ import Oops.backend.domain.category.service.CategoryService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "카테고리 관련 API")
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/categories")
@@ -29,6 +33,8 @@ public class CategoryController {
     @Operation(summary = "전체 카테고리 조회 API",description = "전체 15개의 카테고리를 조회하는 api이며, 카테고리 이름과 즐겨찾기 여부를 반환합니다.")
     public ResponseEntity<BaseResponse> getCategoryList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
+        log.info("Get /api/categories 호출, User = {}", user.getUserName());
+
         List<CategoryResponse.CategoryResponseDto> result = categoryService.getCategories(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
@@ -39,6 +45,9 @@ public class CategoryController {
     @GetMapping("/search")
     @Operation(summary = "카테고리 검색 API",description = "카테고리를 이름으로 검색하는 API로 즐겨찾기 여부까지 반환됩니다.")
     public ResponseEntity<BaseResponse> searchCategoriesByName(@RequestParam("name") String searchName, @Parameter(hidden = true) @AuthenticatedUser User user) {
+
+        log.info("Get /api/categories/search 호출, User = {}", user.getUserName());
+
         // 검색어가 비어 있지 않은지 확인
         if (searchName == null || searchName.isEmpty()) {
             throw new GeneralException(ErrorStatus.INVALID_SEARCH_KEYWORD);
@@ -55,6 +64,8 @@ public class CategoryController {
     @Operation(summary = "카테고리 즐겨찾기 설정 API",description = "선택된 카테고리를 즐겨찾기로 설정합니다.")
     public ResponseEntity<BaseResponse> bookmarked (@PathVariable Long categoryId, @Parameter(hidden = true) @AuthenticatedUser User user) {
 
+        log.info("Post /api/{categoryId}/bookmark 호출, User = {}", user.getUserName());
+
         categoryService.addFavoriteCategory(categoryId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
@@ -65,6 +76,8 @@ public class CategoryController {
     @DeleteMapping("/{categoryId}/unbookmark")
     @Operation(summary = "카테고리 즐겨찾기 해제 API",description = "선택된 카테고리를 즐겨찾기 해제합니다.")
     public ResponseEntity<BaseResponse> unbookmarked (@PathVariable Long categoryId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+
+        log.info("Delete /api/{categoryId}/unbookmark 호출, User = {}", user.getUserName());
 
         categoryService.deleteFavoriteCategory(categoryId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
