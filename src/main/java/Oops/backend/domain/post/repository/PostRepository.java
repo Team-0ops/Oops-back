@@ -34,6 +34,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // PostGroup에서 Post 찾기
     Optional<Post> findPostByPostGroupAndSituation(PostGroup postGroup, Situation situation);
 
+    //situation
+    List<Post> findByUserAndSituation(User user, Situation situation);
 }
 
 

@@ -7,6 +7,8 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.post.dto.PostCreateRequest;
 import Oops.backend.domain.post.dto.PostCreateResponse;
 import Oops.backend.domain.post.dto.PostRecommendationResponse;
+import Oops.backend.domain.post.dto.PostSummaryDto;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.service.PostCommandService;
 import Oops.backend.domain.post.service.PostRecommendationQueryService;
 import Oops.backend.domain.user.entity.User;
@@ -14,6 +16,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -38,6 +43,25 @@ public class PostRestController {
 
         PostCreateResponse response = postCommandService.createPost(user, request);
         return BaseResponse.onSuccess(SuccessStatus._CREATED, response);
+    }
+    // 상황에 따라 연결 가능한 이전 글 목록 조회
+    @GetMapping("/previous")
+    public ResponseEntity<BaseResponse> getPreviousPostsForSituation(
+            @AuthenticatedUser User user,
+            @RequestParam("situation") Situation situation) {
+
+        List<PostSummaryDto> result;
+
+        if (situation == Situation.OVERCOMING) {
+            result = postRecommendationQueryService.getMyPostsBySituation(user, Situation.OOPS);
+        } else if (situation == Situation.OVERCOME) {
+            result = postRecommendationQueryService.getMyPostsBySituation(user, Situation.OVERCOMING);
+        } else {
+            // OOPS 상황에서는 이전 글이 필요 없으므로 204 반환
+            return BaseResponse.onSuccess(SuccessStatus._OK, Collections.emptyList());
+        }
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     //실패담 추천
