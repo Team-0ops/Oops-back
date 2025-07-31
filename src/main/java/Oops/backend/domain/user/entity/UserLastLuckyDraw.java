@@ -1,5 +1,6 @@
 package Oops.backend.domain.user.entity;
 
+import Oops.backend.domain.common.BaseEntity;
 import Oops.backend.domain.luckyDraw.entity.LuckyDraw;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,11 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserLastLuckyDraw {
-
-    @Id
-    @GeneratedValue
-    private Long id;
+public class UserLastLuckyDraw extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -147,6 +147,7 @@ public class PostCommandServiceImpl implements PostCommandService{
                 throw new IllegalArgumentException("이전 게시글에 PostGroup이 존재하지 않습니다.");
             }
             post.setPostGroup(postGroup);
+            post.setPreviousPost(previousPost);
         }
 
 

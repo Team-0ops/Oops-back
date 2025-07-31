@@ -11,7 +11,7 @@ import lombok.Getter;
 public class PostSummaryDto {
     private Long postId;
     private String title;
-    private String situation; // OOPS, OVERCOMING, COMPLETE
+    private String situation; // OOPS, OVERCOMING, OVERCOME
 
     public static PostSummaryDto from(Post post) {
         return PostSummaryDto.builder()
