@@ -1,10 +1,10 @@
 package Oops.backend.domain.auth.controller;
-import Oops.backend.domain.auth.AuthenticatedUser;
-import Oops.backend.domain.auth.dto.request.JoinDto;
-import Oops.backend.domain.auth.dto.request.LoginRequest;
-import Oops.backend.domain.auth.service.AuthService;
+
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
+import Oops.backend.domain.auth.AuthenticatedUser;
+import Oops.backend.domain.auth.dto.request.JoinDto;
+import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,9 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +32,7 @@ public class AuthController {
     public ResponseEntity<BaseResponse> join(
             @Valid @RequestBody JoinDto joinDto,
             HttpServletResponse response) {
-        this.authService.join(joinDto, response);
+        this.authService.join(joinDto);
         return BaseResponse.onSuccess(SuccessStatus._CREATED);
     }
 
@@ -45,10 +43,11 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "로그인 요청 정보",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = LoginRequest.class)))
+                    content = @Content(schema = @Schema(implementation = LoginDto.class)))
             @RequestBody LoginDto loginDto,
             HttpServletResponse request) {
         authService.login(loginDto, request);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
+
 }

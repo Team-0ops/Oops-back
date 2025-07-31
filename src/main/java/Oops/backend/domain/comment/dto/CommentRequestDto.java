@@ -8,7 +8,7 @@ public class CommentRequestDto {
 
     @Getter
     @Builder
-    public static class leaveCommentDto{
+    public static class LeaveCommentDto {
 
         @NotNull
         String content;
