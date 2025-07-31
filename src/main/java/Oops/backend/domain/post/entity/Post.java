@@ -70,7 +70,6 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "previous_post_id")
     private Post previousPost;
 
-
     public void plusCheer(){
         this.likes++;
     }

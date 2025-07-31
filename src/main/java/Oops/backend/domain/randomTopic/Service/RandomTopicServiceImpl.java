@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,35 +27,30 @@ public class RandomTopicServiceImpl implements RandomTopicService {
 
     @Override
     @Transactional(readOnly = true)
-    public RandomTopicResponse.BannarsInfoDto getBannarInfo(Long lastTopicId, User user){
-        // 요청 유효성 검증
-        if (lastTopicId == null) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST);
-        }else if (lastTopicId < 1 || lastTopicId > 20) {
-            throw new GeneralException(ErrorStatus.INVALID_TOPIC_ID);
-        }
+    public RandomTopicResponse.BannarsInfoDto getBannarInfo(User user){
 
-        // 지난주, 이번주 랜덤 주제 조회
-        RandomTopic lastTopic = randomTopicRepository.findById(lastTopicId)
+        // 이번주 랜덤 주제 조회
+        RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
                 .orElseThrow(() -> new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR));
 
-        RandomTopicResponse.TopicInfoDto lastTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
-                .informNum(1)
-                .topicId(lastTopic.getId())
-                .topicName(lastTopic.getName())
-                .topicIcon(lastTopic.getImage())
-                .build();
-
-        Long currentTopicId = lastTopic.getNextTopicId();
-
-        RandomTopic currentTopic = randomTopicRepository.findById(currentTopicId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR));
-
+        // 이번주 주제 dto 변환
         RandomTopicResponse.TopicInfoDto currentTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
                 .informNum(2)
                 .topicId(currentTopic.getId())
                 .topicName(currentTopic.getName())
                 .topicIcon(currentTopic.getImage())
+                .build();
+
+        // 저번주 랜덤 주제 조회
+        RandomTopic lastTopic = currentTopic.getLastRandomTopic();
+        Long lastTopicId = lastTopic.getId();
+
+        // 저번주 주제 dto 변환
+        RandomTopicResponse.TopicInfoDto lastTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
+                .informNum(1)
+                .topicId(lastTopic.getId())
+                .topicName(lastTopic.getName())
+                .topicIcon(lastTopic.getImage())
                 .build();
 
         // 사용자가 저번주 주제에 대하여 인기글에 선정되었는지 여부
