@@ -6,7 +6,8 @@ import Oops.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -26,5 +27,30 @@ public class Lesson extends BaseEntity {
     private Post post;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
-    private List<LessonTag> tags;
+    private Set<LessonTag> tags;
+
+    public void addLessonTag(LessonTag lessonTag) {
+        this.tags.add(lessonTag);
+        lessonTag.setLesson(this);
+    }
+
+    @Builder
+    private Lesson(String title, String content, User user, Post post){
+        this.title = title;
+        this.content = content;
+        this.user = user;
+        this.post = post;
+        this.tags = new LinkedHashSet<>();
+
+    }
+
+    public static Lesson of(String title, String content, User user, Post post){
+
+        return Lesson.builder()
+                .title(title)
+                .content(content)
+                .user(user)
+                .post(post)
+                .build();
+    }
 }
