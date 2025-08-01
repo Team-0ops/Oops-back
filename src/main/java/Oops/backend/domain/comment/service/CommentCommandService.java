@@ -8,4 +8,6 @@ public interface CommentCommandService {
 
     Comment leaveComment(Long postId, User user, CommentRequestDto.LeaveCommentDto request);
     void deleteComment(Long postId, Long commentId, User user);
+    void cheerComment(Long commentId, User user);
+
 }

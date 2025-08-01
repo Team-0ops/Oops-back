@@ -18,6 +18,7 @@ public class CommentCommandServiceImpl implements CommentCommandService{
 
     private final CommentRepository commentRepository;
     private final PostQueryService postQueryService;
+    private final CommentLikeService commentLikeService;
 
     @Override
     public Comment leaveComment(Long postId, User user, CommentRequestDto.LeaveCommentDto request) {
@@ -28,6 +29,16 @@ public class CommentCommandServiceImpl implements CommentCommandService{
 
         Comment newComment = Comment.of(post, user, content);
 
+        //대댓글이라면
+        if (request.getParentId() != null){
+
+            Comment parentComment = commentRepository.findById(request.getParentId())
+                    .orElseThrow(()-> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
+
+            parentComment.addReplyComment(newComment);
+
+        }
+
         return commentRepository.save(newComment);
     }
 
@@ -36,7 +47,7 @@ public class CommentCommandServiceImpl implements CommentCommandService{
     public void deleteComment(Long postId, Long commentId, User user) {
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
 
         Post post = postQueryService.findPost(postId);
 
@@ -46,5 +57,23 @@ public class CommentCommandServiceImpl implements CommentCommandService{
         }
 
         commentRepository.delete(comment);
+    }
+
+    @Override
+    @Transactional
+    public void cheerComment(Long commentId, User user) {
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
+
+        if(commentLikeService.findCommentLike(comment, user).isEmpty()){
+            comment.plusCheer();
+            commentLikeService.createCommentLike(comment, user);
+        }
+        else{
+            comment.minusCheer();
+            commentLikeService.deleteCommentLike(comment, user);
+        }
+
     }
 }

@@ -43,7 +43,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     public void cheerPost(Long postId, User user) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
 
         if (!postLikeQueryService.findPostLike(user, post)){
             post.plusCheer();
@@ -60,20 +60,24 @@ public class PostCommandServiceImpl implements PostCommandService{
     public void deletePost(Long postId, User user) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
 
         log.info("post.getUser().equals(user)={}", post.getUser().equals(user));
 
         // TODO : 검증 로직
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
         if ((post.getUser().getId()) != user.getId()){
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "게시글을 삭제할 권한이 없습니다.");
+            throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
         }
 
         //게시글에 대한 모든 Lesson도 제거
         lessonCommandService.deleteAllLessonsOfPost(post);
 
         postRepository.delete(post);
+
+        // TODO : 극복 중이 존재할 때 웁스 중 삭제할 수 있는지
+
+        // TODO : 게시글 삭제 후 PostGroup이 null이면 PostGroup도 삭제하기
     }
 
     //실패담 작성
