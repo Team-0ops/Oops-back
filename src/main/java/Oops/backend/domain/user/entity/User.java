@@ -3,6 +3,7 @@ package Oops.backend.domain.user.entity;
 import Oops.backend.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -27,9 +28,11 @@ public class User extends BaseEntity {
     private String password;
 
     @Column
-    private Integer point = 0;
+    @ColumnDefault("0")
+    private Integer point;
 
     @Column
+    @ColumnDefault("0")
     private Integer report;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
