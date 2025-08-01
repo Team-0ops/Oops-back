@@ -18,6 +18,7 @@ import Oops.backend.domain.postGroup.repository.PostGroupRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
+import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     private final CategoryRepository categoryRepository;
     private final RandomTopicRepository randomTopicRepository;
     private final PostGroupRepository postGroupRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -84,6 +86,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     @Override
     @Transactional
     public PostCreateResponse createPost(User user, PostCreateRequest request) {
+
         // 상황 필수
         Situation situation = request.getSituation();
         if (situation == null) {
@@ -154,13 +157,14 @@ public class PostCommandServiceImpl implements PostCommandService{
             post.setPostGroup(group);
         }
 
-
+        user.addPoint(10);
+        userRepository.save(user);
 
         Post saved = postRepository.save(post);
 
         return PostCreateResponse.builder()
                 .postId(saved.getId())
-                .message("실패담 작성 완료")
+                .message("실패담 작성 완료! 10포인트가 적립되었습니다.")
                 .build();
     }
 
