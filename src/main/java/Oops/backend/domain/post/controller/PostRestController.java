@@ -56,7 +56,7 @@ public class PostRestController {
     }
 
     //실패담 작성
-    @Operation(summary = "실패담 작성 API")
+    @Operation(summary = "실패담 작성", description = "새로운 실패담을 작성합니다. 상황(OOPS, OVERCOMING, OVERCOME)")
     @PostMapping
     public ResponseEntity<BaseResponse> createPost(
             @AuthenticatedUser User user,
@@ -69,6 +69,7 @@ public class PostRestController {
     }
 
     // [추가] 내가 작성한 전체 실패담 조회 API
+    @Operation(summary = "내가 작성한 실패담 조회", description = "로그인한 사용자가 작성한 모든 실패담을 조회합니다.")
     @GetMapping("/my")
     public ResponseEntity<BaseResponse> getMyPosts(@AuthenticatedUser User user) {
         List<PostDetailSummaryDto> response = postQueryService.getMyPosts(user);
@@ -103,7 +104,7 @@ public class PostRestController {
 
     //실패담 추천
     // PostRestController.java
-    @Operation(summary = "실패담 추천 조회")
+    @Operation(summary = "실패담 추천 조회", description = "특정 실패담과 같은 카테고리의 실패담과 베스트 실패담을 추천해줍니다.")
     @GetMapping("/{postId}/recommendations")
     public ResponseEntity<BaseResponse> recommendPosts(
             @AuthenticatedUser User user,

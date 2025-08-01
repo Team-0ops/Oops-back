@@ -8,6 +8,7 @@ import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
 import Oops.backend.domain.mypage.service.MyPageCommandService;
 import Oops.backend.domain.mypage.service.MyPageQueryService;
 import Oops.backend.domain.user.entity.User;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class MyPageController {
     private final MyPageCommandService myPageCommandService;
 
 
-    // 내가 쓴 실패담 조회
+    @Operation(summary = "내가 쓴 실패담 조회", description = "내가 작성한 실패담 목록을 조회합니다. 선택적으로 카테고리 ID로 필터링할 수 있습니다.")
     @GetMapping("/posts")
     public ResponseEntity<BaseResponse> getMyPosts(@AuthenticatedUser User user,
                                                    @RequestParam(required = false) Long categoryId) {
@@ -31,7 +32,7 @@ public class MyPageController {
                 myPageQueryService.getMyPosts(user, categoryId));
     }
 
-    // 내가 쓴 교훈 조회
+    @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 태그로 필터링할 수 있습니다.")
     @GetMapping("/lessons")
     public ResponseEntity<BaseResponse> getMyLessons(@AuthenticatedUser User user,
                                                      @RequestParam(required = false) String tag) {
@@ -40,6 +41,7 @@ public class MyPageController {
     }
 
     //내 정보 조회
+    @Operation(summary = "내 프로필 조회", description = "내 이메일, 닉네임, 포인트 등의 프로필 정보를 조회합니다.")
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getMyProfile(
             @AuthenticatedUser User user) {
@@ -48,7 +50,7 @@ public class MyPageController {
     }
 
 
-    //내 정보 수정
+    @Operation(summary = "내 프로필 수정", description = "닉네임 등 내 프로필 정보를 수정합니다.")
     @PatchMapping("/profile")
     public ResponseEntity<BaseResponse> updateMyProfile(
             @AuthenticatedUser User user,
