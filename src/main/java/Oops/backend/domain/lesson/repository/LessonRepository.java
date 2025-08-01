@@ -1,5 +1,6 @@
 package Oops.backend.domain.lesson.repository;
 
+import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.lesson.entity.Lesson;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.user.entity.User;
@@ -26,4 +27,6 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Optional<Lesson> findByUserAndPost(User user, Post post);
 
     void deleteAllByPost(Post post);
+
+    //List<Lesson> findByUserAndCategory(User user, Category category);
 }

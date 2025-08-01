@@ -37,6 +37,7 @@ public class AuthService {
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
+                .point(0)
                 .build();
 
         authRepository.save(user);

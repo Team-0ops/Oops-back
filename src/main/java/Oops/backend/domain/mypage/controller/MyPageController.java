@@ -32,6 +32,15 @@ public class MyPageController {
                 myPageQueryService.getMyPosts(user, categoryId));
     }
 
+    /*
+    @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 카테고리로 필터링할 수 있습니다.")
+    @GetMapping("/lessons")
+    public ResponseEntity<BaseResponse> getMyLessons(@AuthenticatedUser User user,
+                                                     @RequestParam(required = false) Long categoryId) {
+        return BaseResponse.onSuccess(SuccessStatus._OK,
+                myPageQueryService.getMyLessons(user, categoryId));
+    }
+    */
     @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 태그로 필터링할 수 있습니다.")
     @GetMapping("/lessons")
     public ResponseEntity<BaseResponse> getMyLessons(@AuthenticatedUser User user,
@@ -41,12 +50,11 @@ public class MyPageController {
     }
 
     //내 정보 조회
-    @Operation(summary = "내 프로필 조회", description = "내 이메일, 닉네임, 포인트 등의 프로필 정보를 조회합니다.")
+    @Operation(summary = "내 프로필 조회", description = "내 이메일, 닉네임, 포인트, 신고 수 등의 프로필 정보를 조회합니다.")
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getMyProfile(
             @AuthenticatedUser User user) {
-        System.out.println("controller" + user);
-        return BaseResponse.onSuccess(SuccessStatus._OK, MyProfileResponseDto.from(user));
+        return BaseResponse.onSuccess(SuccessStatus._OK, myPageQueryService.getMyProfile(user));
     }
 
 
@@ -58,4 +66,14 @@ public class MyPageController {
         myPageCommandService.updateProfile(user, requestDto);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
+
+    @Operation(summary = "다른 사람의 프로필 조회", description = "userId를 기반으로 다른 사용자의 닉네임, 게시글등의 프로필 정보를 조회합니다.")
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<BaseResponse> getOtherUserProfile(@PathVariable Long userId) {
+        return BaseResponse.onSuccess(
+                SuccessStatus._OK,
+                myPageQueryService.getOtherUserProfile(userId)
+        );
+    }
+
 }
