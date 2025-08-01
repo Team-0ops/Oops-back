@@ -10,6 +10,8 @@ public class CommentRequestDto {
     @Builder
     public static class LeaveCommentDto {
 
+        Long parentId;
+
         @NotNull
         String content;
 

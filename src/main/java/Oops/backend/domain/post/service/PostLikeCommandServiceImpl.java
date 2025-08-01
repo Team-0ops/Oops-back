@@ -7,6 +7,8 @@ import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class PostLikeCommandServiceImpl implements PostLikeCommandService{
@@ -24,8 +26,8 @@ public class PostLikeCommandServiceImpl implements PostLikeCommandService{
     @Override
     public void deletePostLike(Post post, User user) {
 
-        PostLike postLike = postLikeRepository.findByPostAndUser(post, user);
+        Optional<PostLike> postLike = postLikeRepository.findByPostAndUser(post, user);
 
-        postLikeRepository.delete(postLike);
+        postLike.ifPresent(postLikeRepository::delete);
     }
 }

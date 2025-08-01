@@ -40,7 +40,11 @@ public enum ErrorStatus {
     // 게시물 관련 에러
     NO_POST(HttpStatus.NOT_FOUND, "POST404", "게시물이 존재하지 않습니다."),
     INVALID_POST_CONTEXT(HttpStatus.BAD_REQUEST, "POST400", "추천 기준이 되는 category나 topic이 없습니다."),
+    UNAUTHORIZED_FOR_POST(HttpStatus.UNAUTHORIZED, "POST401", "게시글 삭제 권한이 없습니다."),
 
+    // 댓글 관련 에러
+    COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMENT400", "존재하지 않는 댓글입니다."),
+    UNAUTHORIZED_FOR_COMMENT(HttpStatus.UNAUTHORIZED, "COMMENT401", "댓글 삭제 권한이 없습니다."),
 
     // 행운부적 관련 에러
     NO_LUCKY_DRAW(HttpStatus.INTERNAL_SERVER_ERROR, "LUCKYDRAW500", "행운부적이 존재하지 않습니다."),
