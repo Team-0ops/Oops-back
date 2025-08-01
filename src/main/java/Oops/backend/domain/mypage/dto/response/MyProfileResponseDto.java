@@ -14,13 +14,18 @@ public class MyProfileResponseDto {
     private String profileImageUrl;
     private int point;
 
-    public static MyProfileResponseDto from(@AuthenticatedUser User user) {
+    private long commentReportCount;
+    private long postReportCount;
+
+    public static MyProfileResponseDto from(@AuthenticatedUser User user, long commentReportCount, long postReportCount) {
         System.out.println("Dto" + user);
         return MyProfileResponseDto.builder()
                 .userName(user.getUserName())
                 .email(user.getEmail())
                 //.profileImageUrl(user.getProfileImageUrl())
                 .point(user.getPoint() != null ? user.getPoint() : 0) // ✅ null 방어
+                .commentReportCount(commentReportCount)
+                .postReportCount(postReportCount)
                 .build();
     }
 }
