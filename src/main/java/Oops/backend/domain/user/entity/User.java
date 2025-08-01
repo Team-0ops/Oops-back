@@ -27,7 +27,7 @@ public class User extends BaseEntity {
     private String password;
 
     @Column
-    private Integer point;
+    private Integer point = 0;
 
     @Column
     private Integer report;
@@ -42,6 +42,11 @@ public class User extends BaseEntity {
     public void addUserTag(UserTag userTag) {
         this.tags.add(userTag);
         userTag.setUser(this);
+    }
+
+    public void addPoint(int amount) {
+        if (this.point == null) this.point = 0;
+        this.point += amount;
     }
 
 }
