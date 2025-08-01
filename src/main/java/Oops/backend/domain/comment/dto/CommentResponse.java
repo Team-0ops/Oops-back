@@ -47,6 +47,7 @@ public class CommentResponse {
         return CommentResponse.builder()
                 .commentId(comment.getId())
                 .userId(comment.getUser().getId())
+                .content(comment.getContent())
 //                .imageUrl(comment.getUser().getImageUrl())
                 .likes(comment.getLikes())
                 .createdAt(comment.getCreatedAt())
