@@ -134,22 +134,21 @@ public class PostCommandServiceImpl implements PostCommandService{
             postGroup = postGroupRepository.save(postGroup); // 저장 필수
             post.setPostGroup(postGroup);
 
-        }/* else if (situation == Situation.OVERCOMING || situation == Situation.OVERCOME) {
+        }else if (situation == Situation.OVERCOMING || situation == Situation.OVERCOME) {
             if (request.getPreviousPostId() == null) {
-                throw new IllegalArgumentException("이 상황에서는 이전 게시글 ID가 필요합니다.");
+                throw new GeneralException(ErrorStatus._BAD_REQUEST, "이 상황에서는 이전 게시글 ID가 필요합니다.");
             }
 
             Post previousPost = postRepository.findById(request.getPreviousPostId())
-                    .orElseThrow(() -> new IllegalArgumentException("이전 게시글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "이전 게시글을 찾을 수 없습니다."));
 
-            postGroup = previousPost.getPostGroup();
-            if (postGroup == null) {
-                throw new IllegalArgumentException("이전 게시글에 PostGroup이 존재하지 않습니다.");
+            PostGroup group = previousPost.getPostGroup();
+            if (group == null) {
+                throw new GeneralException(ErrorStatus._NOT_FOUND, "이전 게시글에 PostGroup이 없습니다.");
             }
-            post.setPostGroup(postGroup);
-            post.setPreviousPost(previousPost);
-        }*/
 
+            post.setPostGroup(group);
+        }
 
 
 
