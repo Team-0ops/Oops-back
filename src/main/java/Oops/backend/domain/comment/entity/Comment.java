@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.yaml.snakeyaml.comments.CommentType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,6 +33,14 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    @Setter
+    private Comment parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<Comment> replyComments;
+
     @Builder
     private Comment(Post post, User user, String content){
 
@@ -37,10 +48,11 @@ public class Comment extends BaseEntity {
         this.likes = 0;
         this.user = user;
         this.content = content;
+        this.replyComments = new ArrayList<>();
 
     }
 
-
+    // 정적 팩토리 메소드
     public static Comment of(Post post, User user, String content){
 
         return Comment.builder()
@@ -49,6 +61,20 @@ public class Comment extends BaseEntity {
                 .content(content)
                 .build();
 
+    }
+
+    // 연관 관계 주입 메소드
+    public void addReplyComment(Comment comment){
+        this.replyComments.add(comment);
+        comment.setParent(this);
+    }
+
+    public void plusCheer(){
+        this.likes++;
+    }
+
+    public void minusCheer(){
+        this.likes--;
     }
 
 }
