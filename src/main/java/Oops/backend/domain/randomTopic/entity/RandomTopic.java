@@ -3,7 +3,6 @@ package Oops.backend.domain.randomTopic.entity;
 import Oops.backend.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -27,5 +26,5 @@ public class RandomTopic extends BaseEntity {
     private String image;
 
     @Column(nullable = false)
-    private Integer isCurrent;
+    private Integer isCurrent = 0;
 }

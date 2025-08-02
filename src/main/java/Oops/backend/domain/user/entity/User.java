@@ -30,11 +30,17 @@ public class User extends BaseEntity {
     @Column
     private Integer report;
 
+    @Column
+    @Builder.Default
+    private Boolean isSelected = false;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<UserLastLuckyDraw> lastLuckyDraws = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @Column
+    @Builder.Default
     private List<UserTag> tags = new ArrayList<>();
 
 }
