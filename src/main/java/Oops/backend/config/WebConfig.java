@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:5173",
-                        "http://15.164.217.202:8080/swagger-ui/index.html#/"
+                        "http://15.164.217.202:8080"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                 .allowedHeaders("*")
