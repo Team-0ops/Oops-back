@@ -37,6 +37,7 @@ public class AuthService {
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
+                .point(0)
                 .build();
 
         authRepository.save(user);
@@ -74,7 +75,7 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encodeJwtBearerToken(accessToken))
                 .maxAge(Duration.ofMillis(1800000))
                 .httpOnly(true)
-                .sameSite("LAX")
+                .sameSite("None")
                 .secure(false)
                 .path("/")
                 .build();
