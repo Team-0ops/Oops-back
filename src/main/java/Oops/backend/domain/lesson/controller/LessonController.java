@@ -29,7 +29,7 @@ public class LessonController {
     @Operation(summary = "교훈 작성 API")
     @PostMapping
     public ResponseEntity<BaseResponse> createLesson(@AuthenticatedUser User user,
-                                                    Long postId,
+                                                    @PathVariable Long postId,
                                                     @Valid @RequestBody CreateLessonRequest request){
 
         log.info("Post /api/posts/lessons 호출, User = {}", user.getUserName());
@@ -42,7 +42,7 @@ public class LessonController {
     @Operation(summary = "교훈 조회 API")
     @GetMapping
     public ResponseEntity<BaseResponse> getLesson(@AuthenticatedUser User user,
-                                                  Long postId){
+                                                  @PathVariable Long postId){
 
         log.info("Get /api/posts/lessons 호출, User = {}", user.getUserName());
 
