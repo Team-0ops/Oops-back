@@ -72,7 +72,7 @@ public class AuthService {
         log.info("AccessToken: " + accessToken);
         log.info("UserName: "+ user.getUserName());
         ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encodeJwtBearerToken(accessToken))
-                .maxAge(Duration.ofMillis(60000))
+                .maxAge(Duration.ofMillis(1800000))
                 .httpOnly(true)
                 .sameSite("LAX")
                 .secure(false)
