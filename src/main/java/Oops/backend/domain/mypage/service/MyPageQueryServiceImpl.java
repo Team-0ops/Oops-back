@@ -1,14 +1,22 @@
 package Oops.backend.domain.mypage.service;
 
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
+import Oops.backend.domain.commentReport.repository.CommentReportRepository;
+import Oops.backend.domain.lesson.entity.Lesson;
 import Oops.backend.domain.lesson.repository.LessonRepository;
 import Oops.backend.domain.mypage.dto.response.MyLessonResponseDto;
 import Oops.backend.domain.mypage.dto.response.MyPostResponseDto;
+import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
+import Oops.backend.domain.mypage.dto.response.OtherProfileResponseDto;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.postReport.repository.PostReportRepository;
 import Oops.backend.domain.user.entity.User;
+import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +30,9 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
     private final PostRepository postRepository;
     private final LessonRepository lessonRepository;
     private final CategoryRepository categoryRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final PostReportRepository postReportRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -40,7 +51,6 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 .map(MyPostResponseDto::from)
                 .toList();
     }
-
     @Override
     @Transactional(readOnly = true)
     public List<MyLessonResponseDto> getMyLessons(User user, String tag) {
@@ -55,4 +65,44 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 .map(MyLessonResponseDto::from)
                 .toList();
     }
+    /*
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyLessonResponseDto> getMyLessons(User user, Long categoryId) {
+        List<Lesson> lessons;
+
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.CATEGORY_NOT_FOUND));
+            lessons = lessonRepository.findByUserAndCategory(user, category);
+        } else {
+            lessons = lessonRepository.findByUser(user);
+        }
+
+        return lessons.stream()
+                .map(MyLessonResponseDto::from)
+                .toList();
+    }
+    */
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyProfileResponseDto getMyProfile(User user) {
+        long commentReportCount = commentReportRepository.countByReportUser(user);
+        long postReportCount = postReportRepository.countByUser(user);
+
+        return MyProfileResponseDto.from(user, commentReportCount, postReportCount);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OtherProfileResponseDto getOtherUserProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
+        List<Post> posts = postRepository.findByUser(user); // 사용자 게시글 가져오기
+
+        return OtherProfileResponseDto.from(user, posts);
+    }
+
 }

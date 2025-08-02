@@ -8,7 +8,9 @@ import Oops.backend.domain.post.service.HomeFeedService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "메인 화면 관련 API")
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feeds")
@@ -33,6 +37,8 @@ public class HomeFeedController {
     @Operation(summary = "홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개와 즐겨찾기한 실패담 10개만 우선 조회합니다.")
     public ResponseEntity<BaseResponse> getFirstPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
+        log.info("Get /api/feeds/home/first 호출, User = {}", user.getUserName());
+
         List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostList(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
@@ -43,6 +49,9 @@ public class HomeFeedController {
     @GetMapping("/home/later")
     @Operation(summary = "홈화면 이후 로딩 API",description ="카테고리별 최신글 하나씩 조회합니다.")
     public ResponseEntity<BaseResponse> getLaterPostList() {
+
+        log.info("Get /api/feeds/home/later");
+
         PostResponse.PostPreviewListDto result = feedService.getLaterPostList();
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
@@ -55,6 +64,8 @@ public class HomeFeedController {
     public ResponseEntity<BaseResponse> getAllPostsByKeyword(@RequestParam String keyword,
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "10") int limit) {
+
+        log.info("Get /api/feeds/search 호출");
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
         PostResponse.PostPreviewListDto result = feedService.searchPosts(keyword, pageable);
