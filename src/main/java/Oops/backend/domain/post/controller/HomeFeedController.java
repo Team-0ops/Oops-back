@@ -3,6 +3,7 @@ package Oops.backend.domain.post.controller;
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
+import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.service.HomeFeedService;
 import Oops.backend.domain.user.entity.User;
@@ -27,13 +28,24 @@ public class HomeFeedController {
     private final HomeFeedService feedService;
 
     /**
-     * 홈화면 첫 로딩
+     * 홈화면 첫 로딩 - 로그인 O
      */
-    @GetMapping("/home/first")
-    @Operation(summary = "홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개와 즐겨찾기한 실패담 10개만 우선 조회합니다.")
+    @GetMapping("/home/first-auth")
+    @Operation(summary = "로그인한 경우 홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개와 즐겨찾기한 실패담 10개만 우선 조회합니다.")
     public ResponseEntity<BaseResponse> getFirstPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
         List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostList(user);
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
+    }
+
+    /**
+     * 홈화면 첫 로딩 - 로그인 X
+     */
+    @GetMapping("/home/first-guest")
+    @Operation(summary = "로그인하지 않은 경우 홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개를 조회합니다. 즐찾 리스트는 null ")
+    public ResponseEntity<BaseResponse> getFirstPostList() {
+
+        List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostListForGuest();
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
