@@ -69,6 +69,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus status) {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setContentType("application/json;charset=UTF-8");
+
         try {
             response.getWriter().write(String.format("{\"error\": \"%s\"}", message));
             response.getWriter().flush();
