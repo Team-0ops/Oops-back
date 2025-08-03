@@ -47,9 +47,9 @@ public class AuthController {
                     required = true,
                     content = @Content(schema = @Schema(implementation = LoginDto.class)))
             @RequestBody LoginDto loginDto,
-            HttpServletResponse request) {
-        authService.login(loginDto, request);
-        return BaseResponse.onSuccess(SuccessStatus._OK);
+            HttpServletResponse response) {
+        String accessToken = authService.login(loginDto, response);
+        return BaseResponse.onSuccess(SuccessStatus._OK, accessToken);
     }
 
 }
