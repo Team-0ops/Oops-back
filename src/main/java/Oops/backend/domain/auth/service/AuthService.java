@@ -11,6 +11,7 @@ import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import Oops.backend.domain.auth.repository.AuthRepository;
@@ -80,6 +81,7 @@ public class AuthService {
                 .path("/")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         return accessToken;
     }
