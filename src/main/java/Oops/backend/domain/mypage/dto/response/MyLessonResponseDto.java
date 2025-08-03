@@ -12,9 +12,11 @@ public class MyLessonResponseDto {
     private Long lessonId;
     private String title;
     private String content;
+    //private String categoryName;
     private List<String> tags;
 
     public static MyLessonResponseDto from(Lesson lesson) {
+
         List<String> tagNames = lesson.getTags().stream()
                 .map(lessonTag -> lessonTag.getTag().getName())
                 .toList();
@@ -23,6 +25,7 @@ public class MyLessonResponseDto {
                 .lessonId(lesson.getId())
                 .title(lesson.getTitle())
                 .content(lesson.getContent())
+                //.categoryName(lesson.getCategory().getName())
                 .tags(tagNames)
                 .build();
     }

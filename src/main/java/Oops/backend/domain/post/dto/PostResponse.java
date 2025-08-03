@@ -1,6 +1,6 @@
 package Oops.backend.domain.post.dto;
 
-import Oops.backend.domain.comment.entity.Comment;
+import Oops.backend.domain.comment.dto.CommentResponse;
 import Oops.backend.domain.comment.model.CommentType;
 import Oops.backend.domain.post.entity.Post;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostResponse {
@@ -63,7 +64,11 @@ public class PostResponse {
     @AllArgsConstructor
     public static class PostViewDto {
 
-        Long writer;
+        Long userId;
+
+        String nickname;
+
+//        String profileImage;
 
         Long postId;
 
@@ -77,21 +82,30 @@ public class PostResponse {
 
         List<String> images;
 
-        List<Comment> comments;
+        List<CommentResponse> comments;
 
         List<CommentType> wantedCommentTypes;
 
+        LocalDateTime created_at;
+
         public static PostViewDto from(Post post){
+
+            List<CommentResponse> comments = post.getComments().stream()
+                    .map(CommentResponse::from)
+                    .toList();
+
             return PostViewDto.builder()
                     .postId(post.getId())
-                    .writer(post.getUser().getId())
+                    .userId(post.getUser().getId())
+                    .nickname(post.getUser().getUserName())
                     .title(post.getTitle())
                     .content(post.getContent())
                     .likes(post.getLikes())
                     .watching(post.getWatching())
                     .images(post.getImages())
-                    .comments(post.getComments())
+                    .comments(comments)
                     .wantedCommentTypes(post.getWantedCommentTypes())
+                    .created_at(post.getCreatedAt())
                     .build();
         }
 
