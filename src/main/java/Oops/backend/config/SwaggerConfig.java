@@ -32,9 +32,9 @@ public class SwaggerConfig {
                         .version("1.0.0"))
                 .addSecurityItem(new SecurityRequirement().addList("jwtAuth"))
                 .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes("jwtAuth",
+                        .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()
-                                        .name("jwtAuth")
+                                        .name("BearerAuth")
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")));
