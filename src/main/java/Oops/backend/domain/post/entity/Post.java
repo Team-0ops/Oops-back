@@ -22,7 +22,8 @@ public class Post extends BaseEntity {
     @Column
     private String title;
 
-    @Column
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column
