@@ -3,6 +3,7 @@ package Oops.backend.domain.auth.controller;
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
+import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.domain.user.dto.request.LoginDto;
@@ -50,6 +51,12 @@ public class AuthController {
             HttpServletResponse response) {
         String accessToken = authService.login(loginDto, response);
         return BaseResponse.onSuccess(SuccessStatus._OK, accessToken);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto dto, @AuthenticatedUser User user) {
+        authService.changePassword(user, dto.getOldPassword(), dto.getNewPassword());
+        return BaseResponse.onSuccess(SuccessStatus._OK, "비밀번호가 성공적으로 변경되었습니다.");
     }
 
 }
