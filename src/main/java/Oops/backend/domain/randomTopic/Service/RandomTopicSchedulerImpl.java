@@ -13,14 +13,16 @@ public class RandomTopicSchedulerImpl {
     private final RandomTopicRepository randomTopicRepository;
 
     @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00시
+    //@Scheduled(cron = "0 * * * * *") // 디버깅용 - 매 분 0초에 실행
     @Transactional
     public void updateWeeklyTopic() {
-        // 1. 모든 주제 초기화
-        randomTopicRepository.resetAllCurrent();
 
-        // 2. 현재 isCurrent == 1인 주제 찾기
+        // 1. 현재 isCurrent == 1인 주제 찾기
         RandomTopic current = randomTopicRepository.findCurrentTopic()
                 .orElseThrow(() -> new IllegalStateException("현재 주제가 설정되어 있지 않습니다."));
+
+        // 2. 모든 주제 초기화
+        randomTopicRepository.resetAllCurrent();
 
         // 3. 다음 주제 선택
         RandomTopic next = current.getNextRandomTopic();
