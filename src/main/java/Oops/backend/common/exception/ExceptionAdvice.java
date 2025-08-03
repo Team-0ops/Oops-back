@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,6 +17,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Slf4j
 @RestControllerAdvice
 public class ExceptionAdvice {
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<BaseResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.warn("JSON 파싱 실패: {}", e.getMessage());
+        return BaseResponse.onFailure(ErrorStatus._BAD_REQUEST, "요청 JSON이 잘못되었습니다. enum 값 또는 데이터 타입을 확인해주세요.");
+    }
+
     @ExceptionHandler
     public ResponseEntity<BaseResponse> validation(ConstraintViolationException e) {
         String errorMessage = e.getConstraintViolations().stream()

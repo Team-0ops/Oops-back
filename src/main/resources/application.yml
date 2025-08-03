@@ -1,13 +1,7 @@
 spring:
+      
   application:
     name: oops
-
+    
   profiles:
-    active: local
-    include: dev
-  #jpa
-  jpa:
-    show-sql: true
-    open-in-view: false
-    hibernate:
-       ddl-auto: update
+    include: security, rds, local, dev, s3
