@@ -29,6 +29,7 @@ import java.util.List;
 public class PostRestController {
 
     private final PostCommandService postCommandService;
+
     private final PostRecommendationQueryService postRecommendationQueryService;
     private final PostQueryService postQueryService;
 
