@@ -185,15 +185,14 @@ public class SwaggerConfig {
 ---
 
 ## 🔐 인증 처리 설정 (Spring Security + JWT)
-- 로그인 시 JWT 발급, 이후 요청 시 Authorization: Bearer {token} 헤더 사용
+-직접 구현한 쿠키 기반 JWT 인증 처리
 
-- 인증 필터에서 토큰 검증 및 사용자 인증 처리
-```md
-// 로그인 예시
-@PostMapping("/login")
-public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-    String token = jwtUtil.generateToken(1L); // 예시
-    return ResponseEntity.ok(token);
+-주요 구성:
+   - JwtEncoder, JwtTokenProvider: JWT 생성 및 디코딩
+   - AuthenticationInterceptor: 요청 전 쿠키에서 토큰 추출 및 사용자 인증
+   - AuthenticationContext: ThreadLocal 기반 인증 유저 저장소
+   - @AuthenticatedUser: 인증된 사용자 주입용 커스텀 어노테이션
+   - AuthenticatedUserArgumentResolver: 컨트롤러에 인증 유저 바인딩
 }
 ```
 
