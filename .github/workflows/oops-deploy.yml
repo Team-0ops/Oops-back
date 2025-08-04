@@ -70,6 +70,13 @@ jobs:
           source: oops.jar
           target: /home/ubuntu
 
+      # application-openai.yml 파일 생성
+      - name: Make application-openai.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.OPENAI_API_KEY }}" > ./application-openai.yml
+
+
   # 배포
   deploy:
     needs: build
@@ -89,5 +96,6 @@ jobs:
             sudo pgrep java | xargs -r sudo kill -15  
             sleep 10
             sudo fuser -k -n tcp 8080 || true
+            
             sudo nohup java -jar oops.jar > ./output.log 2>&1 &
             

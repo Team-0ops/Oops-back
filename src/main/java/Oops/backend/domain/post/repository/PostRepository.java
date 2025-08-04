@@ -36,5 +36,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     //situation
     List<Post> findByUserAndSituation(User user, Situation situation);
+
+    //실패위키
+    @Query("SELECT p FROM Post p " +
+            "WHERE p.situation IN ('OVERCOMING', 'OVERCOME') " +
+            "AND p.content LIKE %:keyword%")
+    List<Post> findOvercomingOrOvercomePostsByKeyword(@Param("keyword") String keyword);
+
+
+
 }
 
