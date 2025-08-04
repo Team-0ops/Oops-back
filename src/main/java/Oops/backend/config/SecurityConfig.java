@@ -29,7 +29,6 @@ public class SecurityConfig {
                                 "/api/lucky-draw", "/api/**")
                         .permitAll()
 
-
                         .anyRequest().authenticated()
                 )
                 .formLogin(config -> config.disable())

@@ -54,7 +54,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             log.error("인증 실패: {}", e.getMessage());
 
             sendErrorResponse(response, e.getMessage(), HttpStatus.UNAUTHORIZED);
-            throw new GeneralException(ErrorStatus._UNAUTHORIZED, e.getMessage());
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED, "인증에 실패했습니다.");
         } catch (IllegalArgumentException e) {
             log.error("사용자 ID 변환 실패: {}", e.getMessage());
             sendErrorResponse(response, "유효하지 않은 사용자 정보입니다.", HttpStatus.BAD_REQUEST);
@@ -69,8 +69,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private void sendErrorResponse(HttpServletResponse response, String message, HttpStatus status) {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setContentType("application/json;charset=UTF-8");
-
         try {
             response.getWriter().write(String.format("{\"error\": \"%s\"}", message));
             response.getWriter().flush();
