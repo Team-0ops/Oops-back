@@ -57,5 +57,8 @@ public class User extends BaseEntity {
         this.point += amount;
     }
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
 }
 
