@@ -30,10 +30,8 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                         "/swagger-resources/**"
                 );
     }
-
-/*
     @Override
     public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(authenticatedUserArgumentResolver);
-    }*/
+    }
 }
