@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 
 
 @Tag(name = "로그인 및 회원가입 API")
@@ -50,6 +51,12 @@ public class AuthController {
             HttpServletResponse response) {
         String accessToken = authService.login(loginDto, response);
         return BaseResponse.onSuccess(SuccessStatus._OK, accessToken);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto dto, @AuthenticatedUser User user) {
+        authService.changePassword(user, dto.getOldPassword(), dto.getNewPassword());
+        return BaseResponse.onSuccess(SuccessStatus._OK, "비밀번호가 성공적으로 변경되었습니다.");
     }
 
 }
