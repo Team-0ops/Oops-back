@@ -12,10 +12,12 @@ public class AuthenticationExtractor {
 
     public static String extractTokenFromRequest(final HttpServletRequest request) {
         if (request.getCookies() == null) {
+            System.out.println("쿠키가 없습니다.");
             throw new GeneralException(ErrorStatus.INVALID_TOKEN, "쿠키가 존재하지 않습니다.");
         }
 
         return Arrays.stream(request.getCookies())
+                .peek(cookie -> System.out.println("➡ 쿠키 확인: " + cookie.getName() + " = " + cookie.getValue()))
                 .filter(cookie -> TOKEN_COOKIE_NAME.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .filter(value -> value != null && !value.isEmpty())
@@ -24,10 +26,15 @@ public class AuthenticationExtractor {
                     try {
                         return JwtEncoder.decodeJwtBearerToken(token);
                     } catch (Exception e) {
+                        System.out.println("토큰 디코딩 실패: " + e.getMessage());
                         throw new GeneralException(ErrorStatus.INVALID_TOKEN, "토큰 디코딩에 실패했습니다.");
                     }
                 })
-                .orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_TOKEN, "로그인 여부를 확인해주세요."));
+                .orElseThrow(() -> {
+                    System.out.println("AccessToken 쿠키 없음 또는 값 없음");
+                    return new GeneralException(ErrorStatus.INVALID_TOKEN, "로그인 여부를 확인해주세요.");
+                });
     }
+
 }
 
