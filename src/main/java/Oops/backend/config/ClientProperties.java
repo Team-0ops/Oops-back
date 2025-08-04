@@ -1,4 +1,4 @@
-package capstone.mju.backend.global.config;
+package Oops.backend.config;
 
 import lombok.Getter;
 import lombok.Setter;
