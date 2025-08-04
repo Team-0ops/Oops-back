@@ -10,7 +10,14 @@ import Oops.backend.domain.post.service.PostCommandService;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.post.service.PostRecommendationQueryService;
 import Oops.backend.domain.user.entity.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,28 +66,46 @@ public class PostRestController {
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 
-/*    //실패담 작성
-    @Operation(summary = "실패담 작성", description = "새로운 실패담을 작성합니다. 상황(OOPS, OVERCOMING, OVERCOME)")
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+   //실패담 작성
+    @Operation(
+            summary = "실패담 작성",
+            description = """
+        Multipart/form-data 형식으로 data(JSON)와 images(이미지 파일)를 전송합니다.
+        
+        **작성 예시(data)**:
+        ```json
+        {
+          "title": "string",
+          "content": "string",
+          "situation": "OOPS",
+          "categoryId": 1,
+          "topicId": null,
+          "wantedCommentTypes": [
+            "ADVICE"
+          ]
+        }
+        ```
+        """
+    )
+    @PostMapping(value = "/api/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse> createPost(
             @AuthenticatedUser User user,
-            @RequestPart(value = "post") @Valid CreatePostRequest postDto,
-            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
+            @Parameter(
+                    description = "실패담 데이터(JSON 문자열)",
+                    required = true
+            )
+            @RequestPart("data") String dataJson,
+            @Parameter(description = "첨부 이미지 파일", required = false)
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) throws JsonProcessingException {
 
-        log.info("Post /api/posts 호출, User = {}", user.getUserName());
-
-        PostCreateResponse response = postCommandService.createPost(user, request, imageFiles);
-        return BaseResponse.onSuccess(SuccessStatus._CREATED, response);
-    }*/
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BaseResponse> createPost(
-            @AuthenticatedUser User user,
-            @ModelAttribute PostCreateRequest request,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        PostCreateRequest request = new ObjectMapper().readValue(dataJson, PostCreateRequest.class);
 
         PostCreateResponse response = postCommandService.createPost(user, request, images);
-        return BaseResponse.onSuccess(SuccessStatus._CREATED,response);
+        return BaseResponse.onSuccess(SuccessStatus._CREATED, response);
     }
+
+
 
     // [추가] 내가 작성한 전체 실패담 조회 API
     @Operation(summary = "내가 작성한 실패담 조회", description = "로그인한 사용자가 작성한 모든 실패담을 조회합니다.")
