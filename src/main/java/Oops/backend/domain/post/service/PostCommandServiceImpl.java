@@ -13,6 +13,7 @@ import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
 import Oops.backend.domain.postGroup.entity.PostGroup;
+import Oops.backend.config.s3.S3ImageService;
 
 import Oops.backend.domain.postGroup.repository.PostGroupRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
@@ -23,8 +24,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +43,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     private final RandomTopicRepository randomTopicRepository;
     private final PostGroupRepository postGroupRepository;
     private final UserRepository userRepository;
+    private final S3ImageService s3ImageService;
 
     @Override
     @Transactional
@@ -85,7 +90,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     //실패담 작성
     @Override
     @Transactional
-    public PostCreateResponse createPost(User user, PostCreateRequest request) {
+    public PostCreateResponse createPost(User user, PostCreateRequest request,List<MultipartFile> imageFiles) {
 
         // 상황 필수
         Situation situation = request.getSituation();
@@ -120,7 +125,17 @@ public class PostCommandServiceImpl implements PostCommandService{
         post.setCategory(category);
         post.setTopic(topic);
         post.setUser(user);
-        post.setImages(request.getImageUrls());
+        //post.setImages(request.getImageUrls());
+
+        List<String> uploadedImageUrls = new ArrayList<>();
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            uploadedImageUrls = imageFiles.stream()
+                    .map(s3ImageService::upload)
+                    .toList();
+        }
+        post.setImages(uploadedImageUrls);
+
         post.setLikes(0);
         post.setWatching(0);
         post.setReportCnt(0);
@@ -165,6 +180,7 @@ public class PostCommandServiceImpl implements PostCommandService{
         return PostCreateResponse.builder()
                 .postId(saved.getId())
                 .message("실패담 작성 완료! 10포인트가 적립되었습니다.")
+                .imageUrls(uploadedImageUrls)
                 .build();
     }
 
