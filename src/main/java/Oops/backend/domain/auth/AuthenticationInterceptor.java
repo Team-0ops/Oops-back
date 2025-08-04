@@ -29,6 +29,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
         try {
             String accessToken = AuthenticationExtractor.extractTokenFromRequest(request);
+            log.info("추출된 AccessToken: {}", accessToken);
 
             // JWT 페이로드 추출
             String payload = jwtTokenProvider.getPayload(accessToken);
@@ -54,6 +55,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             log.error("인증 실패: {}", e.getMessage());
 
             sendErrorResponse(response, e.getMessage(), HttpStatus.UNAUTHORIZED);
+
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "인증에 실패했습니다.");
         } catch (IllegalArgumentException e) {
             log.error("사용자 ID 변환 실패: {}", e.getMessage());
