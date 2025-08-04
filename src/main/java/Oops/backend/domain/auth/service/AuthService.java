@@ -89,15 +89,15 @@ public class AuthService {
 
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
-
-        // 기존 비밀번호가 맞는지 확인
+        log.info(String.valueOf(user.getId()));
         if (!passwordHashEncryption.matches(oldPassword, user.getPassword())) {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "기존 비밀번호가 일치하지 않습니다.");
         }
 
-        // 새 비밀번호 암호화 후 저장
         String encryptedPassword = passwordHashEncryption.encrypt(newPassword);
         user.setPassword(encryptedPassword);
         authRepository.save(user);
     }
+
+
 }
