@@ -19,6 +19,7 @@ public class CorsConfig {
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
         CorsConfiguration config = new CorsConfiguration();
+
         clientProperties.getHost().forEach(config::addAllowedOrigin);
 
         config.setAllowCredentials(true);
@@ -33,4 +34,5 @@ public class CorsConfig {
         bean.setOrder(0);
         return bean;
     }
+
 }
