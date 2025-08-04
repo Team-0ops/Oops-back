@@ -106,10 +106,9 @@ public class SpecFeedController {
     /**
      * 이번주 랜덤 주제 피드
      */
-    @GetMapping("/randomTopic/{topicId}/current/all")
+    @GetMapping("/randomTopic/current/all")
     @Operation(summary = "이번주 랜덤주제 피드 API",description = "이번주 랜덤주제의 글 중 요청 situation인 게시글을 최신순으로 조회합니다.")
-    public ResponseEntity<BaseResponse> getThisWeekPostList(@PathVariable Long topicId,
-                                                          @Parameter(
+    public ResponseEntity<BaseResponse> getThisWeekPostList(@Parameter(
                                                                   description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
                                                           )
                                                           @RequestParam("situation") Situation situation,
@@ -117,16 +116,10 @@ public class SpecFeedController {
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @Parameter(description = "페이지당 게시글 수")
                                                           @RequestParam(defaultValue = "10") int limit) {
-
-        log.info("Get /api/feeds/randomTopic/{topicId}/current/all 호출");
-
-        if(topicId < 1 || topicId > 20){
-            throw new GeneralException(ErrorStatus.INVALID_TOPIC_ID);
-        }
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        PostResponse.PostPreviewListDto result = specFeedService.getThisWeekPostList(situation, cutoff, pageable, topicId);
+        PostResponse.PostPreviewListDto result = specFeedService.getThisWeekPostList(situation, cutoff, pageable);
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
@@ -134,10 +127,9 @@ public class SpecFeedController {
     /**
      * 저번주 랜덤 주제 피드
      */
-    @GetMapping("/randomTopic/{topicId}/last/all")
+    @GetMapping("/randomTopic/last/all")
     @Operation(summary = "저번주 랜덤주제 피드 API",description = "저번주 랜덤주제 top3 글과 요청 situation인 게시글을 최신순으로 조회합니다.")
-    public ResponseEntity<BaseResponse> getLastWeekPostList(@PathVariable Long topicId,
-                                                            @Parameter(
+    public ResponseEntity<BaseResponse> getLastWeekPostList(@Parameter(
                                                                     description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
                                                             )
                                                             @RequestParam("situation") Situation situation,
@@ -146,15 +138,10 @@ public class SpecFeedController {
                                                             @Parameter(description = "페이지당 게시글 수")
                                                             @RequestParam(defaultValue = "10") int limit) {
 
-        log.info("Get /api/feeds/randomTopic/{topicId}/last/all 호출");
-
-        if(topicId < 1 || topicId > 20){
-            throw new GeneralException(ErrorStatus.INVALID_TOPIC_ID);
-        }
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        List<PostResponse.PostPreviewListDto> result = specFeedService.getLastWeekPostList(situation, cutoff, pageable, topicId);
+        List<PostResponse.PostPreviewListDto> result = specFeedService.getLastWeekPostList(situation, cutoff, pageable);
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
