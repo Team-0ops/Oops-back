@@ -8,12 +8,16 @@ import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
 import Oops.backend.domain.mypage.service.MyPageCommandService;
 import Oops.backend.domain.mypage.service.MyPageQueryService;
 import Oops.backend.domain.user.entity.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/my-page")
@@ -58,14 +62,31 @@ public class MyPageController {
     }
 
 
-    @Operation(summary = "내 프로필 수정", description = "닉네임 등 내 프로필 정보를 수정합니다.")
-    @PatchMapping("/profile")
+    @Operation(
+            summary = "내 프로필 수정",
+            description = """
+    닉네임과 프로필 이미지를 수정합니다.
+    - `data`: 닉네임 JSON 문자열
+    - `profileImage`: 이미지 파일 (선택)
+
+    **예시(JSON)**:
+    ```json
+    { "userName": "새닉네임" }
+    ```
+    """
+    )
+    @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse> updateMyProfile(
             @AuthenticatedUser User user,
-            @Valid @RequestBody UpdateProfileRequestDto requestDto) {
-        myPageCommandService.updateProfile(user, requestDto);
+            @RequestPart("data") String data,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) throws JsonProcessingException {
+        UpdateProfileRequestDto dto = new ObjectMapper().readValue(data, UpdateProfileRequestDto.class);
+        myPageCommandService.updateMyProfile(user, dto, profileImage);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
+
+
 
     @Operation(summary = "다른 사람의 프로필 조회", description = "userId를 기반으로 다른 사용자의 닉네임, 게시글등의 프로필 정보를 조회합니다.")
     @GetMapping("/profile/{userId}")

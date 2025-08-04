@@ -22,7 +22,7 @@ public class MyProfileResponseDto {
         return MyProfileResponseDto.builder()
                 .userName(user.getUserName())
                 .email(user.getEmail())
-                //.profileImageUrl(user.getProfileImageUrl())
+                .profileImageUrl(user.getProfileImageUrl())
                 .point(user.getPoint() != null ? user.getPoint() : 0) // ✅ null 방어
                 .commentReportCount(commentReportCount)
                 .postReportCount(postReportCount)
