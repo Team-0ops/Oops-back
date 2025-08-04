@@ -6,10 +6,38 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class AuthenticationExtractor {
     private static final String TOKEN_COOKIE_NAME = "AccessToken";
+    public static String extractTokenFromRequest(final HttpServletRequest request) {
+        // 1. 쿠키 우선
+        if (request.getCookies() != null) {
+            Optional<String> tokenOpt = Arrays.stream(request.getCookies())
+                    .filter(cookie -> "AccessToken".equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .filter(value -> value != null && !value.isEmpty())
+                    .findFirst();
 
+            if (tokenOpt.isPresent()) {
+                try {
+                    return JwtEncoder.decodeJwtBearerToken(tokenOpt.get());
+                } catch (Exception e) {
+                    throw new GeneralException(ErrorStatus.INVALID_TOKEN, "토큰 디코딩에 실패했습니다.");
+                }
+            }
+        }
+
+        // 2. Authorization 헤더 확인
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7); // "Bearer " 제거
+        }
+
+        throw new GeneralException(ErrorStatus.INVALID_TOKEN, "AccessToken을 찾을 수 없습니다.");
+    }
+
+/*
     public static String extractTokenFromRequest(final HttpServletRequest request) {
         if (request.getCookies() == null) {
             System.out.println("쿠키가 없습니다.");
@@ -34,7 +62,7 @@ public class AuthenticationExtractor {
                     System.out.println("AccessToken 쿠키 없음 또는 값 없음");
                     return new GeneralException(ErrorStatus.INVALID_TOKEN, "로그인 여부를 확인해주세요.");
                 });
-    }
+    }*/
 
 }
 

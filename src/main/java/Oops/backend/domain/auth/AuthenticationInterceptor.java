@@ -78,8 +78,4 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             log.error("오류 응답 전송 실패: {}", e.getMessage());
         }
     }
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        authenticationContext.clear();
-    }
 }
