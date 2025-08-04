@@ -26,7 +26,7 @@ public class PostQueryServiceImpl implements PostQueryService{
     public Post findPost(Long postId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
 
         return post;
     }
