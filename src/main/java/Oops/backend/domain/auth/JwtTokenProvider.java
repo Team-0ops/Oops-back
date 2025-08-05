@@ -1,5 +1,7 @@
 package Oops.backend.domain.auth;
 
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -47,7 +49,7 @@ public class JwtTokenProvider {
                     .getSubject();
 
         } catch (JwtException e) {
-            throw new RuntimeException();
+            throw new GeneralException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 JWT입니다.");
         }
     }
 }
