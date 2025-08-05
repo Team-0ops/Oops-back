@@ -36,6 +36,7 @@ public enum ErrorStatus {
     // 랜덤 주제 관련 에러
     INVALID_TOPIC_ID(HttpStatus.BAD_REQUEST, "TOPIC400", "해당 랜덤 주제 ID는 존재하지 않습니다. 1 ~ 20 범위 내의 ID를 요청해주세요. "),
     TOPIC_NOT_FOUND(HttpStatus.NOT_FOUND, "TOPIC404", "해당 ID의 랜덤 주제가 존재하지 않습니다. "),
+    NO_CURRENT_TOPIC(HttpStatus.NOT_FOUND, "TOPIC404", "이번주 랜덤 주제가 존재하지 않습니다."),
 
     // 게시물 관련 에러
     NO_POST(HttpStatus.NOT_FOUND, "POST404", "게시물이 존재하지 않습니다."),

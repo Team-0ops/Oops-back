@@ -9,6 +9,7 @@ import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.SpecFeedRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -84,11 +85,17 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional
-    public PostResponse.PostPreviewListDto getThisWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long  topicId){
-        String topicName = randomTopicRepository.findNameById(topicId)
+    public PostResponse.PostPreviewListDto getThisWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable){
+
+        RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_CURRENT_TOPIC));
+
+        Long currentTopicId = currentTopic.getId();
+
+        String topicName = randomTopicRepository.findNameById(currentTopicId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.TOPIC_NOT_FOUND));
 
-        Page<Post> posts = specFeedRepository.findByTopicIdAndSituationAndCreatedAtBefore(topicId, situation, cutoff, pageable);
+        Page<Post> posts = specFeedRepository.findByTopicIdAndSituationAndCreatedAtBefore(currentTopicId, situation, cutoff, pageable);
 
         return toPreviewListDto(posts, topicName);
     }
@@ -98,14 +105,24 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional
-    public List<PostResponse.PostPreviewListDto> getLastWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long  topicId){
+    public List<PostResponse.PostPreviewListDto> getLastWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable){
+
+        // 이번주 랜덤 주제 조회
+        RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_CURRENT_TOPIC));
+
+        // 저번주 랜덤 주제 아이디 조회
+        Long lastTopicId = currentTopic.getLastRandomTopic().getId();
+
+        // 결과 저장할 리스트
         List<PostResponse.PostPreviewListDto> result = new ArrayList<>();
 
-        String topicName = randomTopicRepository.findNameById(topicId)
+        // 저번주 랜덤 주제 이름
+        String topicName = randomTopicRepository.findNameById(lastTopicId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.TOPIC_NOT_FOUND));
 
         // top 3 실패담 조회
-        Page<Post> bestPosts = specFeedRepository.findTop3BestPostsByTopic(topicId, cutoff, PageRequest.of(0, 3));
+        Page<Post> bestPosts = specFeedRepository.findTop3BestPostsByTopic(lastTopicId, cutoff, PageRequest.of(0, 3));
         if (bestPosts.isEmpty()){
             throw new GeneralException(ErrorStatus.NO_POST, "TOP 3 실패담이 없습니다.");
         }
@@ -119,7 +136,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
 
         // 나머지 게시글 조회 (top 3 제외)
         Page<Post> posts = specFeedRepository.findFilteredPostsExcludingIds(
-                topicId, situation, cutoff, bestPostIds, pageable);
+                lastTopicId, situation, cutoff, bestPostIds, pageable);
 
         // posts가 없으면 예외
         if (posts.isEmpty()) {
