@@ -10,11 +10,19 @@ import java.util.Optional;
 
 public class AuthenticationExtractor {
     private static final String TOKEN_COOKIE_NAME = "AccessToken";
+
+
     public static String extractTokenFromRequest(final HttpServletRequest request) {
-        // 1. 쿠키 우선
+        // 1. Authorization 헤더 우선
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7); // "Bearer " 제거
+        }
+
+        // 2. 쿠키 확인
         if (request.getCookies() != null) {
             Optional<String> tokenOpt = Arrays.stream(request.getCookies())
-                    .filter(cookie -> "AccessToken".equals(cookie.getName()))
+                    .filter(cookie -> TOKEN_COOKIE_NAME.equals(cookie.getName()))
                     .map(Cookie::getValue)
                     .filter(value -> value != null && !value.isEmpty())
                     .findFirst();
@@ -28,14 +36,9 @@ public class AuthenticationExtractor {
             }
         }
 
-        // 2. Authorization 헤더 확인
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7); // "Bearer " 제거
-        }
-
         throw new GeneralException(ErrorStatus.INVALID_TOKEN, "AccessToken을 찾을 수 없습니다.");
     }
+}
 
 /*
     public static String extractTokenFromRequest(final HttpServletRequest request) {
@@ -64,5 +67,4 @@ public class AuthenticationExtractor {
                 });
     }*/
 
-}
 
