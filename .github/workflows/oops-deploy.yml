@@ -45,6 +45,12 @@ jobs:
           cd ./src/main/resources
           echo "${{ secrets.APPLICATION_S3_YML }}" > ./application-s3.yml
 
+      # application-openai.yml 파일 생성
+      - name: Make application-openai.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.OPENAI_API_KEY }}" > ./application-openai.yml
+
       # gradle2 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -69,13 +75,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: oops.jar
           target: /home/ubuntu
-
-      # application-openai.yml 파일 생성
-      - name: Make application-openai.yml
-        run: |
-          cd ./src/main/resources
-          echo "${{ secrets.OPENAI_API_KEY }}" > ./application-openai.yml
-
 
   # 배포
   deploy:
