@@ -9,6 +9,7 @@ import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,13 +68,18 @@ public class CommentCommandServiceImpl implements CommentCommandService{
                 .orElseThrow(() -> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
 
         if(commentLikeService.findCommentLike(comment, user).isEmpty()){
-            comment.plusCheer();
+            commentRepository.plusCommentLikes(commentId);
             commentLikeService.createCommentLike(comment, user);
         }
         else{
-            comment.minusCheer();
-            commentLikeService.deleteCommentLike(comment, user);
+            try {
+                commentRepository.minusCommentLikes(commentId);
+                commentLikeService.deleteCommentLike(comment, user);
+            } catch(DataIntegrityViolationException e){
+                throw new GeneralException(ErrorStatus.ALREADY_LIKED_COMMENT);
+            }
         }
 
     }
+
 }

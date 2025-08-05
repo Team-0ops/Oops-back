@@ -8,6 +8,7 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
+
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,15 +90,16 @@ public class AuthService {
 
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
-
-        // 기존 비밀번호가 맞는지 확인
+        User user1 = authRepository.findByEmail(user.getEmail());
+        log.info(user1.getUserName());
         if (!passwordHashEncryption.matches(oldPassword, user.getPassword())) {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "기존 비밀번호가 일치하지 않습니다.");
         }
 
-        // 새 비밀번호 암호화 후 저장
         String encryptedPassword = passwordHashEncryption.encrypt(newPassword);
         user.setPassword(encryptedPassword);
         authRepository.save(user);
     }
+
+
 }

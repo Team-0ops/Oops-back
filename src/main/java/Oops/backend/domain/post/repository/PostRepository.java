@@ -7,6 +7,7 @@ import Oops.backend.domain.postGroup.entity.PostGroup;
 import Oops.backend.domain.user.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -44,6 +45,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findOvercomingOrOvercomePostsByKeyword(@Param("keyword") String keyword);
 
 
+    @Modifying
+    @Query("UPDATE Post p SET p.likes = p.likes+1 WHERE p.id = :postId")
+    void plusPostLikes(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.likes = p.likes-1 WHERE p.id = :postId")
+    void minusPostLikes(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("update Post p set p.watching = p.watching+1 where p.id = :postId")
+    void plusPostWatching(@Param("postId") Long postId);
+
 
 }
+
 

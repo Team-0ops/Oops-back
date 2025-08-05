@@ -31,7 +31,7 @@ public class SwaggerConfig {
                         🔐 일부 API는 인증이 필요하며, JWT를 통해 보호됩니다.
                         """)
                         .version("1.0.0"))
-                .addSecurityItem(new SecurityRequirement().addList("jwtAuth"))
+                .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()

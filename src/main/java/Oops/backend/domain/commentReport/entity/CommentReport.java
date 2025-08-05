@@ -8,9 +8,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommentReport extends BaseEntity{
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -21,6 +19,22 @@ public class CommentReport extends BaseEntity{
     @JoinColumn(name = "target")
     private Comment comment;
 
-    @Column
-    private String reason;
+    @Column(nullable = false, length = 300)
+    private String content;
+
+    @Builder
+    private CommentReport(User reportUser, Comment comment, String content){
+        this.reportUser = reportUser;
+        this.comment = comment;
+        this.content = content;
+    }
+
+    public static CommentReport of(User reportUser, Comment comment, String content){
+        return CommentReport.builder()
+                .reportUser(reportUser)
+                .comment(comment)
+                .content(content)
+                .build();
+    }
+
 }
