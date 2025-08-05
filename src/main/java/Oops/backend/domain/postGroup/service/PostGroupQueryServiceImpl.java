@@ -9,6 +9,7 @@ import Oops.backend.domain.category.service.CategoryService;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
+import Oops.backend.domain.post.service.PostCommandService;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.postGroup.dto.GetPostGroupResponse;
 import Oops.backend.domain.postGroup.entity.PostGroup;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostGroupQueryServiceImpl implements PostGroupQueryService {
 
     private final PostQueryService postQueryService;
+    private final PostCommandService postCommandService;
 
     @Override
     @Transactional
@@ -39,6 +41,9 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
         // 카테고리 DTO 생성
         CategoryResponse.CategoryResponseDto categoryResponseDto
                 = CategoryResponse.CategoryResponseDto.from(postGroup.getCategory());
+
+        // 조회한 게시글 조회수 +1
+        postCommandService.watchPost(postId);
 
         // 3개의 게시글 DTO 초기화
         PostResponse.PostViewDto postViewDtoFailure = null;

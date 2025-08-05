@@ -50,7 +50,7 @@ public class PostRestController {
 
         log.info("Post /api/posts/{postId}/cheers 호출, User = {}", user.getUserName());
 
-        postCommandService.cheerPost(postId, user);
+        postCommandService.likePost(postId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 

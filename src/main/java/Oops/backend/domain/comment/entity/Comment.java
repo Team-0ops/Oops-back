@@ -69,12 +69,4 @@ public class Comment extends BaseEntity {
         comment.setParent(this);
     }
 
-    public void plusCheer(){
-        this.likes++;
-    }
-
-    public void minusCheer(){
-        this.likes--;
-    }
-
 }

@@ -78,13 +78,5 @@ public class Post extends BaseEntity {
     private Post previousPost;
     */
 
-    public void plusCheer(){
-        this.likes++;
-    }
-
-    public void minusCheer(){
-        this.likes--;
-    }
-
 }
 
