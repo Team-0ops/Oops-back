@@ -4,4 +4,4 @@ spring:
     name: oops
     
   profiles:
-    include: security, rds, local, dev, s3
+    include: security, rds, local, dev, s3, openai

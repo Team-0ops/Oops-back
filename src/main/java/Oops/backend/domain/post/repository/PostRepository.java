@@ -38,6 +38,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     //situation
     List<Post> findByUserAndSituation(User user, Situation situation);
 
+    //실패위키
+    @Query("SELECT p FROM Post p " +
+            "WHERE p.situation IN ('OVERCOMING', 'OVERCOME') " +
+            "AND p.content LIKE %:keyword%")
+    List<Post> findOvercomingOrOvercomePostsByKeyword(@Param("keyword") String keyword);
+
+
     @Modifying
     @Query("UPDATE Post p SET p.likes = p.likes+1 WHERE p.id = :postId")
     void plusPostLikes(@Param("postId") Long postId);
@@ -49,6 +56,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query("update Post p set p.watching = p.watching+1 where p.id = :postId")
     void plusPostWatching(@Param("postId") Long postId);
+
 
 }
 
