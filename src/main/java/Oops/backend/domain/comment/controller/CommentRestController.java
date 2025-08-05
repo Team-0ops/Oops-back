@@ -5,6 +5,7 @@ import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.comment.dto.CommentRequestDto;
 import Oops.backend.domain.comment.service.CommentCommandService;
+import Oops.backend.domain.comment.service.CommentQueryService;
 import Oops.backend.domain.user.entity.User;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class CommentRestController {
 
     private final CommentCommandService commentCommandService;
+    private final CommentQueryService commentQueryService;
 
     @Operation(summary = "댓글 달기")
     @PostMapping("/posts/{postId}/comments")
@@ -54,11 +56,20 @@ public class CommentRestController {
     public ResponseEntity<BaseResponse> cheerComment(@PathVariable Long commentId,
                                                      @AuthenticatedUser User user){
 
-        log.info("Post /api//comments/{commentId}/cheers 호출, User = {}", user.getUserName());
+        log.info("Post /api/comments/{commentId}/cheers 호출, User = {}", user.getUserName());
 
         commentCommandService.cheerComment(commentId, user);
 
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
+
+    @Operation(summary = "게시글에 대한 댓글 조회")
+    @GetMapping("/post/{postId}/comments")
+    public ResponseEntity<BaseResponse> getCommentsOfPost(@PathVariable Long postId,
+                                                          @AuthenticatedUser User user){
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, commentQueryService.findCommentsOfPost(postId, user));
+    }
+
 
 }

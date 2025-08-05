@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface PostCommandService {
 
-    void cheerPost(Long postId, User user);
+    void likePost(Long postId, User user);
     void deletePost(Long postId, User user);
+    void watchPost(Long postId);
 
     //PostCreateResponse createPost(User user, PostCreateRequest request);
     PostCreateResponse createPost(User user, PostCreateRequest request ,List<MultipartFile> imageFiles);

@@ -3,7 +3,6 @@ package Oops.backend.domain.post.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
-import Oops.backend.domain.lesson.repository.LessonRepository;
 import Oops.backend.domain.lesson.service.LessonCommandService;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
@@ -22,6 +21,7 @@ import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,18 +47,23 @@ public class PostCommandServiceImpl implements PostCommandService{
 
     @Override
     @Transactional
-    public void cheerPost(Long postId, User user) {
+    public void likePost(Long postId, User user) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
 
         if (!postLikeQueryService.findPostLike(user, post)){
-            post.plusCheer();
+            postRepository.plusPostLikes(postId);
             postLikeCommandService.createPostLike(post, user);
         }
         else{
-            post.minusCheer();
-            postLikeCommandService.deletePostLike(post, user);
+            try {
+                postRepository.minusPostLikes(postId);
+                postLikeCommandService.deletePostLike(post, user);
+            } catch(DataIntegrityViolationException e){
+                throw new GeneralException(ErrorStatus.ALREADY_LIKED_POST);
+            }
+
         }
     }
 
@@ -85,6 +90,11 @@ public class PostCommandServiceImpl implements PostCommandService{
         // TODO : 극복 중이 존재할 때 웁스 중 삭제할 수 있는지
 
         // TODO : 게시글 삭제 후 PostGroup이 null이면 PostGroup도 삭제하기
+    }
+
+    @Override
+    public void watchPost(Long postId) {
+        postRepository.plusPostWatching(postId);
     }
 
     //실패담 작성
@@ -183,6 +193,7 @@ public class PostCommandServiceImpl implements PostCommandService{
                 .imageUrls(uploadedImageUrls)
                 .build();
     }
+
 
 
 }
