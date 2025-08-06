@@ -1,30 +1,67 @@
 # Oops-back
 
+---
+## 🔧 프로젝트 설정
+
+- **프로젝트명**: 실패를 공유하는 새로운 SNS, Oops!
+- **Spring Boot 버전**: 3.4.4
+- **Java 버전**: 17
+- **주요 기술 스택**:
+  - Java 17
+  - Spring Boot 3
+  - JWT + 쿠키 기반 인증
+  - MySQL (RDS 연동)
+  - AWS S3 (이미지 업로드)
+  - Swagger (API 문서화)
+- **배포 환경**:
+  - AWS EC2 (백엔드 서버)
+  - AWS RDS (MySQL)
+  - GitHub Actions (CI/CD)
+
+---
+
+## 👥 팀원 소개
+
+| <center>김다영<br/>[@kdyann](https://github.com/kdyann)</center> | <center>백가현<br/>[@GahBaek](https://github.com/GahBaek)</center> | <center>홍진기<br/>[@llokr1](https://github.com/llokr1)</center> | <center>김혜린<br/>[@dodaaaaam](https://github.com/dodaaaaam)</center> |
+| :-------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | :----------------------------------------------------------------: |
+| <img src="https://avatars.githubusercontent.com/u/143780983?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/127074448?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/191385250?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/199376763?v=4" width="150px"/> |
+
+---
+
 ### 📁 프로젝트 구조
 ```
-  Oops-backend/ 
+  Oops-backend/
+  ├── .github/
+  │       └──ISSUE_TEMPLATE/
+  │       └──workflows/
+  │             └──oops-deploy.yml
+  │       └──pull_request_template.md
   ├── src/ 
   │ └── main/ 
   │     ├── java/
   │     │    └── Oops/
   │     │        └── backend/
-  │     │            ├── auth/
   │     │            ├── common/
-  │     │            ├── config/
-  │     │            ├── domain/ 
+  │     │            ├── config/  
+  │     │            ├── domain/
+  │     │            │     └── auth/
+  │     │            │           └── controller/
+  │     │            │           └── dto/
+  │     │            │           └── entity/
+  │     │            │           └── repository/
+  │     │            │           └── service/
   │     │            └── ... 
   │     └── resources/ 
   │         ├── application.yml 
   │         ├── application-dev.yml 
-  │         ├── application-local.yml 
+  │         ├── application-local.yml
+  │         ├── application-security.yml 
+  │         ├── application-s3.yml
+  │         ├── application-openai.yml  
 ```
 
 ---
-## 🔧 프로젝트 설정
 
-- **프로젝트명**: Oops
-- **Spring Boot 버전**: 3.5.3
-- **Java 버전**: 17
 
 ## 📁 Branch Strategy
 
@@ -195,10 +232,4 @@ public class SwaggerConfig {
 - `AuthenticatedUserArgumentResolver`: 컨트롤러에 인증 유저 바인딩
 
 ---
-
-## 👥 팀원 소개
-
-| <center>김다영<br/>[@kdyann](https://github.com/kdyann)</center> | <center>백가현<br/>[@GahBaek](https://github.com/GahBaek)</center> | <center>홍진기<br/>[@llokr1](https://github.com/llokr1)</center> | <center>김혜린<br/>[@dodaaaaam](https://github.com/dodaaaaam)</center> |
-| :-------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | :----------------------------------------------------------------: |
-| <img src="https://avatars.githubusercontent.com/u/143780983?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/127074448?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/191385250?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/199376763?v=4" width="150px"/> |
 
