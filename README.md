@@ -193,3 +193,12 @@ public class SwaggerConfig {
 - `AuthenticationContext`: ThreadLocal 기반 인증 유저 저장소
 - `@AuthenticatedUser`: 인증된 사용자 주입용 커스텀 어노테이션
 - `AuthenticatedUserArgumentResolver`: 컨트롤러에 인증 유저 바인딩
+
+---
+
+## 👥 팀원 소개
+
+| <center>김다영<br/>[@kdyann](https://github.com/kdyann)</center> | <center>백가현<br/>[@GahBaek](https://github.com/GahBaek)</center> | <center>홍진기<br/>[@llokr1](https://github.com/llokr1)</center> | <center>김혜린<br/>[@dodaaaaam](https://github.com/dodaaaaam)</center> |
+| :-------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | :----------------------------------------------------------------: |
+| <img src="https://avatars.githubusercontent.com/u/143780983?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/127074448?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/191385250?v=4" width="150px"/> | <img src="https://avatars.githubusercontent.com/u/199376763?v=4" width="150px"/> |
+
