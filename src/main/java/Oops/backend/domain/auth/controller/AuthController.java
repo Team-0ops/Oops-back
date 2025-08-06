@@ -59,4 +59,10 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "비밀번호가 성공적으로 변경되었습니다.");
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticatedUser User user, HttpServletResponse response) {
+        authService.logout(response);
+        return BaseResponse.onSuccess(SuccessStatus._OK, "로그아웃 성공");
+    }
+
 }

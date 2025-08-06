@@ -103,4 +103,15 @@ public class AuthService {
     }
 
 
+    public void logout(HttpServletResponse response) {
+        ResponseCookie expiredCookie = ResponseCookie.from("AccessToken", "")
+                .maxAge(0)
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(false)
+                .path("/")
+                .build();
+
+        response.addHeader("Set-Cookie", expiredCookie.toString());
+    }
 }
