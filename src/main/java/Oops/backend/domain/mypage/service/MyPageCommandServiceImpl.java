@@ -24,7 +24,7 @@ public class MyPageCommandServiceImpl implements MyPageCommandService {
 
         // 이미지 업로드 처리
         if (profileImage != null && !profileImage.isEmpty()) {
-            String imageUrl = s3ImageService.upload(profileImage);
+            String imageUrl = s3ImageService.upload(profileImage, "user_profile", user.getId().toString());
             user.setProfileImageUrl(imageUrl);
         }
 

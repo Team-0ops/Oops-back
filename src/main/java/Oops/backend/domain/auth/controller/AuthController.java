@@ -49,8 +49,8 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = LoginDto.class)))
             @RequestBody LoginDto loginDto,
             HttpServletResponse response) {
-        String accessToken = authService.login(loginDto, response);
-        return BaseResponse.onSuccess(SuccessStatus._OK, accessToken);
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, authService.login(loginDto, response));
     }
 
     @PostMapping("/reset-password")
