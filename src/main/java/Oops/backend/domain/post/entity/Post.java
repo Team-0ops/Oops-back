@@ -60,6 +60,7 @@ public class Post extends BaseEntity {
     private List<Comment> comments;
 
     @ElementCollection
+    @Column(name = "images", length = 500)
     private List<String> images;
 
     @ManyToOne(fetch = FetchType.LAZY)

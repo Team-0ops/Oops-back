@@ -68,7 +68,7 @@ public class PostResponse {
 
         String nickname;
 
-//        String profileImage;
+        String profileImage;
 
         Long postId;
 
@@ -88,7 +88,9 @@ public class PostResponse {
 
         LocalDateTime created_at;
 
-        public static PostViewDto from(Post post){
+        Boolean liked;
+
+        public static PostViewDto of(Post post, List<String> images, String profileImage, Boolean liked){
 
             List<CommentResponse> comments = post.getComments().stream()
                     .map(CommentResponse::from)
@@ -98,14 +100,17 @@ public class PostResponse {
                     .postId(post.getId())
                     .userId(post.getUser().getId())
                     .nickname(post.getUser().getUserName())
+                    .profileImage(profileImage)
                     .title(post.getTitle())
                     .content(post.getContent())
                     .likes(post.getLikes())
                     .watching(post.getWatching())
                     .images(post.getImages())
                     .comments(comments)
+                    .images(images)
                     .wantedCommentTypes(post.getWantedCommentTypes())
                     .created_at(post.getCreatedAt())
+                    .liked(liked)
                     .build();
         }
 
