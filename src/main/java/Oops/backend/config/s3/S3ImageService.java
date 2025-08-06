@@ -1,8 +1,10 @@
 package Oops.backend.config.s3;
 
 import Oops.backend.common.status.ErrorStatus;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
@@ -18,10 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,17 +32,17 @@ public class S3ImageService {
     @Value("${cloud.aws.s3.bucketName}")
     private String bucketName;
 
-    public String upload(MultipartFile image) {
+    public String upload(MultipartFile image, String keyPrefix, String fileName) {
         if (image.isEmpty() || Objects.isNull(image.getOriginalFilename())) {
             throw new S3Exception(ErrorStatus.EMPTY_FILE_EXCEPTION);
         }
-        return this.uploadImage(image);
+        return this.uploadImage(image, keyPrefix, fileName);
     }
 
-    private String uploadImage(MultipartFile image) {
+    private String uploadImage(MultipartFile image, String keyPrefix, String fileName) {
         this.validateImageFileExtension(image.getOriginalFilename());
         try {
-            return this.uploadImageToS3(image);
+            return this.uploadImageToS3(image, keyPrefix, fileName);
         } catch (IOException e) {
             throw new S3Exception(ErrorStatus.IO_EXCEPTION_ON_IMAGE_UPLOAD);
         }
@@ -63,7 +62,7 @@ public class S3ImageService {
         }
     }
 
-    private String uploadImageToS3(MultipartFile image) throws IOException {
+    private String uploadImageToS3(MultipartFile image, String keyPrefix, String fileName) throws IOException {
         if (image == null || image.isEmpty()) {
             throw new S3Exception(ErrorStatus.EMPTY_FILE_EXCEPTION);
         }
@@ -74,7 +73,8 @@ public class S3ImageService {
         }
 
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
-        String s3FileName = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename; // 유니크 파일명
+        String s3FileName = UUID.randomUUID().toString().substring(0, 10) + "_" + fileName + "." + extension; // 유니크 파일명
+        String keyName = keyPrefix + "/" + s3FileName;
 
         InputStream is = image.getInputStream();
         byte[] bytes = IOUtils.toByteArray(is);
@@ -87,7 +87,7 @@ public class S3ImageService {
         try {
             System.out.println("Uploading image to S3: " + s3FileName);
             PutObjectRequest putObjectRequest =
-                    new PutObjectRequest(bucketName, s3FileName, byteArrayInputStream, metadata);
+                    new PutObjectRequest(bucketName, keyName, byteArrayInputStream, metadata);
             amazonS3.putObject(putObjectRequest);
 
             System.out.println("S3 업로드 성공: " + s3FileName);
@@ -121,5 +121,22 @@ public class S3ImageService {
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new S3Exception(ErrorStatus.IO_EXCEPTION_ON_IMAGE_DELETE);
         }
+    }
+
+    /**
+     * S3에서 파일을 가져오는 메소드 ("S3의 사진 URL"을 사용자에게 제공하는 방식)
+     * @param key 가져올 사진 파일 값 (DB에 저장된 image 파일 이름)
+     * @return S3에 존재하는 이미지에 접근할 수 있는 URL
+     */
+    public String getPreSignedUrl(String key){
+
+        //유효 시간 5분
+        Date expiration = new Date(System.currentTimeMillis()+ 1000 * 60 * 5);
+
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName, key)
+                                                                    .withMethod(HttpMethod.GET)
+                                                                    .withExpiration(expiration);
+
+        return amazonS3.generatePresignedUrl(request).toString();
     }
 }

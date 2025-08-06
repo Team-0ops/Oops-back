@@ -6,6 +6,7 @@ import Oops.backend.domain.auth.PasswordHashEncryption;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 
@@ -59,7 +60,7 @@ public class AuthService {
     /*
     login
      */
-    public String login(LoginDto loginDto, HttpServletResponse response) {
+    public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
         User user = this.authRepository.findByEmail(loginDto.getEmail());
 
@@ -85,7 +86,7 @@ public class AuthService {
         response.addHeader("Set-Cookie", cookie.toString());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        return accessToken;
+        return LoginResponse.of(user, accessToken);
     }
 
     @Transactional

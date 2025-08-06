@@ -137,15 +137,6 @@ public class PostCommandServiceImpl implements PostCommandService{
         post.setUser(user);
         //post.setImages(request.getImageUrls());
 
-        List<String> uploadedImageUrls = new ArrayList<>();
-
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            uploadedImageUrls = imageFiles.stream()
-                    .map(s3ImageService::upload)
-                    .toList();
-        }
-        post.setImages(uploadedImageUrls);
-
         post.setLikes(0);
         post.setWatching(0);
         post.setReportCnt(0);
@@ -186,6 +177,16 @@ public class PostCommandServiceImpl implements PostCommandService{
         userRepository.save(user);
 
         Post saved = postRepository.save(post);
+
+        //postId 값으로 파일 이름을 설정하기 위해 Post 저장 후 이미지 저장
+        List<String> uploadedImageUrls = new ArrayList<>();
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            uploadedImageUrls = imageFiles.stream()
+                    .map((imageFile) -> s3ImageService.upload(imageFile, "posts", saved.getId().toString()))
+                    .toList();
+        }
+        post.setImages(uploadedImageUrls);
 
         return PostCreateResponse.builder()
                 .postId(saved.getId())
