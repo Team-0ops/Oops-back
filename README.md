@@ -185,11 +185,11 @@ public class SwaggerConfig {
 ---
 
 ## 🔐 인증 처리 설정 (Spring Security + JWT)
--직접 구현한 쿠키 기반 JWT 인증 처리
+직접 구현한 **쿠키 기반 JWT 인증 처리**
 
--주요 구성:
-   - JwtEncoder, JwtTokenProvider: JWT 생성 및 디코딩
-   - AuthenticationInterceptor: 요청 전 쿠키에서 토큰 추출 및 사용자 인증
-   - AuthenticationContext: ThreadLocal 기반 인증 유저 저장소
-   - @AuthenticatedUser: 인증된 사용자 주입용 커스텀 어노테이션
-   - AuthenticatedUserArgumentResolver: 컨트롤러에 인증 유저 바인딩
+**주요 구성**
+- `JwtEncoder`, `JwtTokenProvider`: JWT 생성 및 디코딩
+- `AuthenticationInterceptor`: 요청 전 쿠키에서 토큰 추출 및 사용자 인증
+- `AuthenticationContext`: ThreadLocal 기반 인증 유저 저장소
+- `@AuthenticatedUser`: 인증된 사용자 주입용 커스텀 어노테이션
+- `AuthenticatedUserArgumentResolver`: 컨트롤러에 인증 유저 바인딩
