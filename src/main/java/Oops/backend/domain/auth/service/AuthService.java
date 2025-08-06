@@ -69,7 +69,7 @@ public class AuthService {
         }
 
         if (!passwordHashEncryption.matches(loginDto.getPassword(), user.getPassword())) {
-            throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
         }
 
         String payload = user.getId().toString();
