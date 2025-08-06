@@ -62,7 +62,7 @@ public class FailWikiServiceImpl implements FailWikiService {
             summaryEntity = FailWikiSummary.builder()
                     .keyword(keyword)
                     .summary(summary)
-                    .aiTip(null) // 30개 이상일 때는 aiTip 저장 안 함
+                    // 30개 이상일 때는 aiTip 저장 안 함
                     .postCount(posts.size())
 
                     .build();
@@ -78,7 +78,7 @@ public class FailWikiServiceImpl implements FailWikiService {
 
             summaryEntity = FailWikiSummary.builder()
                     .keyword(keyword)
-                    .summary(null) // 30개 미만일 시 summary 저장 안 함
+                     // 30개 미만일 시 summary 저장 안 함
                     .aiTip(aiTip)
                     .postCount(posts.size())
                     .build();
