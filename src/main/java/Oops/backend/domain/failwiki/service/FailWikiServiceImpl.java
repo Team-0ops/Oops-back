@@ -3,11 +3,14 @@ package Oops.backend.domain.failwiki.service;
 import Oops.backend.domain.failwiki.dto.FailWikiSummaryResponse;
 import Oops.backend.domain.failwiki.entity.FailWikiSummary;
 import Oops.backend.domain.failwiki.repository.FailWikiSummaryRepository;
+import Oops.backend.domain.post.dto.PostSummaryDto;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Comparator;
 import java.util.List;
@@ -29,8 +32,16 @@ public class FailWikiServiceImpl implements FailWikiService {
                         .summary(s.getSummary())
                         .aiTip(s.getAiTip())
                         .postCount(s.getPostCount())
+                        .bestFailers(getBestFailers())
                         .build())
                 .orElseGet(() -> generateAndSaveSummary(keyword));
+    }
+    private List<PostSummaryDto> getBestFailers() {
+        List<Situation> bestSituations = List.of(Situation.OOPS, Situation.OVERCOMING, Situation.OVERCOME);
+        return postRepository.findBestFailers(bestSituations, PageRequest.of(0, 6))
+                .stream()
+                .map(PostSummaryDto::from)
+                .toList();
     }
 
     private FailWikiSummaryResponse generateAndSaveSummary(String keyword) {
@@ -53,6 +64,7 @@ public class FailWikiServiceImpl implements FailWikiService {
                     .summary(summary)
                     .aiTip(null) // 30개 이상일 때는 aiTip 저장 안 함
                     .postCount(posts.size())
+
                     .build();
 
         } else {
@@ -80,12 +92,14 @@ public class FailWikiServiceImpl implements FailWikiService {
                     .keyword(keyword)
                     .summary(summary)
                     .postCount(posts.size())
+                    .bestFailers(getBestFailers())
                     .build();
         } else { //30개 미만일시
             return FailWikiSummaryResponse.builder()
                     .keyword(keyword)
                     .aiTip(aiTip)
                     .postCount(posts.size())
+                    .bestFailers(getBestFailers())
                     .build();
         }
     }
