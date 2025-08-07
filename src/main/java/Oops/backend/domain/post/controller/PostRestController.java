@@ -87,7 +87,7 @@ public class PostRestController {
         ```
         """
     )
-    @PostMapping(value = "/api/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse> createPost(
             @AuthenticatedUser User user,
             @Parameter(
