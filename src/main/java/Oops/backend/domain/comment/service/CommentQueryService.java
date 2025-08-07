@@ -19,6 +19,7 @@ public class CommentQueryService {
 
     private final CommentRepository commentRepository;
     private final PostQueryService postQueryService;
+    private final CommentLikeService commentLikeService;
 
     public Comment findComment(Long commentId){
 
@@ -32,11 +33,11 @@ public class CommentQueryService {
 
         Post post = postQueryService.findPost(postId);
 
-        List<CommentResponse> Comments = post.getComments().stream()
-                .map(CommentResponse::from)
+        List<CommentResponse> comments = post.getComments().stream()
+                .map((comment) -> CommentResponse.of(comment, commentLikeService.existsCommentLike(comment, user)))
                 .toList();
 
-        return Comments;
+        return comments;
     }
 
 
