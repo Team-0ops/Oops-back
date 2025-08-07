@@ -100,7 +100,7 @@ public class S3ImageService {
             is.close();
         }
 
-        return amazonS3.getUrl(bucketName, s3FileName).toString();
+        return keyName;
     }
 
 
