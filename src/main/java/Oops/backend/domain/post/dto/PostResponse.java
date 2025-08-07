@@ -90,11 +90,11 @@ public class PostResponse {
 
         Boolean liked;
 
-        public static PostViewDto of(Post post, List<String> images, String profileImage, Boolean liked){
-
-            List<CommentResponse> comments = post.getComments().stream()
-                    .map(CommentResponse::from)
-                    .toList();
+        public static PostViewDto of(Post post,
+                                     List<String> images,
+                                     String profileImage,
+                                     Boolean liked,
+                                     List<CommentResponse> comments){
 
             return PostViewDto.builder()
                     .postId(post.getId())

@@ -20,6 +20,11 @@ public class CommentLikeService {
         return commentLikeRepository.findCommentLikeByCommentAndUser(comment, user);
     }
 
+    public boolean existsCommentLike(Comment comment, User user){
+
+        return commentLikeRepository.existsCommentLikeByCommentAndUser(comment, user);
+    }
+
     public void createCommentLike(Comment comment, User user){
 
         CommentLike newCommentLike = CommentLike.of(user, comment);
