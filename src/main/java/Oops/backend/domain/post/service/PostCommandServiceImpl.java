@@ -15,6 +15,8 @@ import Oops.backend.domain.postGroup.entity.PostGroup;
 import Oops.backend.config.s3.S3ImageService;
 
 import Oops.backend.domain.postGroup.repository.PostGroupRepository;
+import Oops.backend.domain.postGroup.service.PostGroupCommandService;
+import Oops.backend.domain.postGroup.service.PostGroupQueryService;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
@@ -38,6 +40,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     private final PostRepository postRepository;
     private final PostLikeQueryService postLikeQueryService;
     private final PostLikeCommandService postLikeCommandService;
+    private final PostGroupCommandService postGroupCommandService;
     private final LessonCommandService lessonCommandService;
     private final CategoryRepository categoryRepository;
     private final RandomTopicRepository randomTopicRepository;
@@ -76,7 +79,6 @@ public class PostCommandServiceImpl implements PostCommandService{
 
         log.info("post.getUser().equals(user)={}", post.getUser().equals(user));
 
-        // TODO : 검증 로직
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
         if ((post.getUser().getId()) != user.getId()){
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
@@ -85,11 +87,14 @@ public class PostCommandServiceImpl implements PostCommandService{
         //게시글에 대한 모든 Lesson도 제거
         lessonCommandService.deleteAllLessonsOfPost(post);
 
+        PostGroup postGroup = post.getPostGroup();
+
         postRepository.delete(post);
 
-        // TODO : 극복 중이 존재할 때 웁스 중 삭제할 수 있는지
-
         // TODO : 게시글 삭제 후 PostGroup이 null이면 PostGroup도 삭제하기
+        if (postGroup.getPosts().isEmpty()){
+            postGroupCommandService.deletePostGroup(postGroup);
+        }
     }
 
     @Override
