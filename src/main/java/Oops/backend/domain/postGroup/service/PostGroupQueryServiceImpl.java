@@ -5,6 +5,8 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.category.dto.CategoryResponse;
+import Oops.backend.domain.comment.dto.CommentResponse;
+import Oops.backend.domain.comment.service.CommentLikeService;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
@@ -28,6 +30,7 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
     private final PostCommandService postCommandService;
     private final S3ImageService s3ImageService;
     private final PostLikeQueryService postLikeQueryService;
+    private final CommentLikeService commentLikeService;
 
     @Override
     @Transactional
@@ -100,6 +103,10 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
                 .map(s3ImageService::getPreSignedUrl)
                 .toList();
 
-        return PostResponse.PostViewDto.of(post, images, profileImage, liked);
+        List<CommentResponse> comments = post.getComments().stream()
+                .map((comment) -> CommentResponse.of(comment, commentLikeService.existsCommentLike(comment, user)))
+                .toList();
+
+        return PostResponse.PostViewDto.of(post, images, profileImage, liked, comments);
     }
 }

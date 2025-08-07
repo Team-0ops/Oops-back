@@ -7,6 +7,8 @@ import lombok.Getter;
 @Getter
 public class LoginResponse {
 
+    Long userId;
+
     String nickname;
 
     String email;
@@ -16,7 +18,8 @@ public class LoginResponse {
     String profileImage;
 
     @Builder
-    private LoginResponse(String nickname, String email, String accessToken, String profileImage){
+    private LoginResponse(Long userId, String nickname, String email, String accessToken, String profileImage){
+        this.userId = userId;
         this.nickname = nickname;
         this.email = email;
         this.accessToken = accessToken;
@@ -26,6 +29,7 @@ public class LoginResponse {
     public static LoginResponse of(User user, String accessToken){
 
         return LoginResponse.builder()
+                .userId(user.getId())
                 .nickname(user.getUserName())
                 .email(user.getEmail())
                 .accessToken(accessToken)
