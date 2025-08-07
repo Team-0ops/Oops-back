@@ -13,11 +13,13 @@ import Oops.backend.domain.mypage.dto.response.MyPostResponseDto;
 import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
 import Oops.backend.domain.mypage.dto.response.OtherProfileResponseDto;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
 import Oops.backend.domain.postReport.repository.PostReportRepository;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -102,7 +104,11 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
 
         List<Post> posts = postRepository.findByUser(user); // 사용자 게시글 가져오기
 
-        return OtherProfileResponseDto.from(user, posts);
+        // 베스트 실패자 게시글 6개 조회
+        List<Situation> bestSituations = List.of(Situation.OOPS, Situation.OVERCOMING, Situation.OVERCOME);
+        List<Post> bestFailers = postRepository.findBestFailers(bestSituations, PageRequest.of(0, 6));
+
+        return OtherProfileResponseDto.from(user, posts, bestFailers);
     }
 
 }
