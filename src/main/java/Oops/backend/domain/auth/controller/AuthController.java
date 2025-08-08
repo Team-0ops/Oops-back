@@ -113,7 +113,7 @@ public class AuthController {
         authService.setCookie(response, tokenResponseDto.getAccessToken());
         authService.setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto.getRefreshToken());
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto);
     }
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
