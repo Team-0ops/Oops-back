@@ -4,8 +4,6 @@
 ## 🔧 프로젝트 설정
 
 - **프로젝트명**: 실패를 공유하는 새로운 SNS, Oops!
-- **Spring Boot 버전**: 3.4.4
-- **Java 버전**: 17
 - **주요 기술 스택**:
   - Java 17
   - Spring Boot 3
@@ -203,7 +201,7 @@ public ResponseEntity<BaseResponse> handleValidation(MethodArgumentNotValidExcep
 ## 📘 Swagger 설정 
 - Swagger(OpenAPI 3.0) 설정을 통해 API 명세를 확인할 수 있습니다.
 
-- 접속 주소: http://localhost:8080/swagger-ui/index.html
+- 접속 주소: http://15.164.217.202:8080/swagger-ui/index.html
 
 ```md
 @Configuration
