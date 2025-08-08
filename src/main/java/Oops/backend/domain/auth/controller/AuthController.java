@@ -1,9 +1,14 @@
 package Oops.backend.domain.auth.controller;
 
+import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.response.BaseResponse;
+import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
+import Oops.backend.domain.auth.JwtEncoder;
 import Oops.backend.domain.auth.dto.request.JoinDto;
+import Oops.backend.domain.auth.dto.response.LoginResponse;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
@@ -13,9 +18,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.GeneratedReferenceTypeDelegate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
@@ -28,6 +36,7 @@ import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtEncoder jwtEncoder;
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @ApiResponse(responseCode = "201", description = "회원가입 성공", content = @Content(schema = @Schema(implementation = BaseResponse.class)))
@@ -54,8 +63,9 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = LoginDto.class)))
             @RequestBody LoginDto loginDto,
             HttpServletResponse response) {
+        LoginResponse tokenResponseDto = authService.login(loginDto, response);
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, authService.login(loginDto, response));
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto);
     }
 
     @Operation(
@@ -84,4 +94,37 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "로그아웃 성공");
     }
 
+    // refreshToken
+    @Operation(
+            summary = "AccessToken 갱신",
+            description = "RefreshToken을 사용하여 새로운 AccessToken을 발급합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "AccessToken 갱신 성공"),
+            @ApiResponse(responseCode = "400", description = "RefreshToken 불일치 또는 인증 실패")
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<BaseResponse> refreshToken(
+            HttpServletResponse response, HttpServletRequest request) {
+
+        String refreshToken = getRefreshTokenFromCookie(request);
+        TokenResponseDto tokenResponseDto;
+        tokenResponseDto = authService.refreshAccessToken(refreshToken);
+        authService.setCookie(response, JwtEncoder.encode(tokenResponseDto.getAccessToken()));
+        authService.setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto.getRefreshToken());
+    }
+
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("RefreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 파싱 오류");
+    }
 }
