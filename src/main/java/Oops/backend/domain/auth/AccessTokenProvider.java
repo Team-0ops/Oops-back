@@ -4,7 +4,6 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
-public class JwtTokenProvider {
+public class AccessTokenProvider {
     private final SecretKey key;
     private final long validityInMilliseconds;
 
 
-    public JwtTokenProvider(@Value("${security.jwt.token.secret-key}") final String secretKey
+    public AccessTokenProvider(@Value("${security.jwt.token.secret-key}") final String secretKey
             , @Value("${security.jwt.token.expire-length}") final long validityInMilliseconds) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         this.validityInMilliseconds = validityInMilliseconds;
@@ -48,22 +47,6 @@ public class JwtTokenProvider {
 
         } catch (JwtException e) {
             throw new GeneralException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 JWT입니다.");
-        }
-    }
-
-    public boolean isTokenExpired(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            return claims.getExpiration().before(new Date());
-        } catch (ExpiredJwtException e) {
-            return true;
-        } catch (JwtException e) {
-            throw new GeneralException(ErrorStatus.INVALID_TOKEN, e.getMessage());
         }
     }
 }
