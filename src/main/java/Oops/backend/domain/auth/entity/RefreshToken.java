@@ -1,14 +1,12 @@
-package com.example.mutsideout_mju.entity;
+package Oops.backend.domain.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,14 +15,13 @@ import java.util.UUID;
 @Entity
 @Table(name = "refresh_token")
 public class RefreshToken {
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
     @Column(updatable = false, unique = true, nullable = false)
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
-    private UUID userId;
+    private Long userId;
 
     @Column(nullable = false)
     private String token;
@@ -32,7 +29,7 @@ public class RefreshToken {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public RefreshToken(UUID id, String refreshTokenValue) {
+    public RefreshToken(long id, String refreshTokenValue) {
         this.userId = id;
         this.token = refreshTokenValue;
     }
@@ -42,11 +39,11 @@ public class RefreshToken {
         createdAt = LocalDateTime.now();
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 }
