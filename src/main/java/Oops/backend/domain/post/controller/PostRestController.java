@@ -56,7 +56,7 @@ public class PostRestController {
 
     @Operation(summary = "실패담 삭제 API")
     @DeleteMapping("/{postId}")
-    public ResponseEntity<BaseResponse> deletePost(@PathVariable Long postId,
+    public ResponseEntity<BaseResponse> deletePost(@PathVariable("postId") Long postId,
                                                    @AuthenticatedUser User user){
 
         log.info("Delete /api/posts/{postId} 호출, User = {}", user.getUserName());

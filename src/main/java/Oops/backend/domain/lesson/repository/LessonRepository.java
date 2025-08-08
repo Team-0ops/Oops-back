@@ -28,5 +28,5 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
     void deleteAllByPost(Post post);
 
-    //List<Lesson> findByUserAndCategory(User user, Category category);
+    List<Lesson> findLessonsByPost(Post post);
 }
