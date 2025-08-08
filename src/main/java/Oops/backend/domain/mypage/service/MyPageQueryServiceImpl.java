@@ -37,7 +37,6 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public List<MyPostResponseDto> getMyPosts(User user, Long categoryId) {
         List<Post> posts;
 
@@ -54,7 +53,6 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 .toList();
     }
     @Override
-    @Transactional(readOnly = true)
     public List<MyLessonResponseDto> getMyLessons(User user, String tag) {
         if (tag != null) {
             return lessonRepository.findByUserAndTagName(user, tag)
@@ -67,28 +65,8 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 .map(MyLessonResponseDto::from)
                 .toList();
     }
-    /*
-    @Override
-    @Transactional(readOnly = true)
-    public List<MyLessonResponseDto> getMyLessons(User user, Long categoryId) {
-        List<Lesson> lessons;
-
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.CATEGORY_NOT_FOUND));
-            lessons = lessonRepository.findByUserAndCategory(user, category);
-        } else {
-            lessons = lessonRepository.findByUser(user);
-        }
-
-        return lessons.stream()
-                .map(MyLessonResponseDto::from)
-                .toList();
-    }
-    */
 
     @Override
-    @Transactional(readOnly = true)
     public MyProfileResponseDto getMyProfile(User user) {
         long commentReportCount = commentReportRepository.countByReportUser(user);
         long postReportCount = postReportRepository.countByUser(user);
@@ -97,7 +75,6 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public OtherProfileResponseDto getOtherUserProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
