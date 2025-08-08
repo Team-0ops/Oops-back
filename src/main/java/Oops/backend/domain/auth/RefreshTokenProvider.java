@@ -1,13 +1,13 @@
-package com.example.mutsideout_mju.authentication;
+package Oops.backend.domain.auth;
 
-import javax.crypto.SecretKey;
-
-import com.example.mutsideout_mju.exception.UnauthorizedException;
-import com.example.mutsideout_mju.exception.errorCode.ErrorCode;
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
@@ -19,7 +19,7 @@ public class RefreshTokenProvider {
     private final long validityInMilliseconds; // 유효 시간
 
     public RefreshTokenProvider(@Value("${security.jwt.token.secret-refresh-key}") final String secretKey,
-                            @Value("${security.jwt.token.expire-length}") final long validityInMilliseconds) {
+                                @Value("${security.jwt.token.expire-length}") final long validityInMilliseconds) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         this.validityInMilliseconds = validityInMilliseconds;
     }
@@ -48,7 +48,7 @@ public class RefreshTokenProvider {
         } catch (ExpiredJwtException e) {
             return true;
         } catch (JwtException e) {
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN, e.getMessage());
+            throw new GeneralException(ErrorStatus.INVALID_TOKEN, e.getMessage());
         }
     }
 }
