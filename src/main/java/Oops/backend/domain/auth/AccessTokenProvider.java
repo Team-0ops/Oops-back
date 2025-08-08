@@ -2,9 +2,7 @@ package Oops.backend.domain.auth;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +48,22 @@ public class JwtTokenProvider {
 
         } catch (JwtException e) {
             throw new GeneralException(ErrorStatus.INVALID_TOKEN, "유효하지 않은 JWT입니다.");
+        }
+    }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        } catch (JwtException e) {
+            throw new GeneralException(ErrorStatus.INVALID_TOKEN, e.getMessage());
         }
     }
 }
