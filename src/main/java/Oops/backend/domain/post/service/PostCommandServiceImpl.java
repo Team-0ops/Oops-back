@@ -3,9 +3,11 @@ package Oops.backend.domain.post.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.domain.lesson.entity.Lesson;
 import Oops.backend.domain.lesson.service.LessonCommandService;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
+import Oops.backend.domain.lesson.service.LessonQueryService;
 import Oops.backend.domain.post.dto.PostCreateRequest;
 import Oops.backend.domain.post.dto.PostCreateResponse;
 import Oops.backend.domain.post.entity.Post;
@@ -41,7 +43,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     private final PostLikeQueryService postLikeQueryService;
     private final PostLikeCommandService postLikeCommandService;
     private final PostGroupCommandService postGroupCommandService;
-    private final LessonCommandService lessonCommandService;
+    private final LessonQueryService lessonQueryService;
     private final CategoryRepository categoryRepository;
     private final RandomTopicRepository randomTopicRepository;
     private final PostGroupRepository postGroupRepository;
@@ -83,20 +85,27 @@ public class PostCommandServiceImpl implements PostCommandService{
         log.info("post.getUser().equals(user)={}", post.getUser().equals(user1));
 
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
-        if ((post.getUser().getId()) != user1.getId()){
+        if (post.getUser() != user1 ){
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
         }
 
-        //게시글에 대한 모든 Lesson도 제거
-        lessonCommandService.deleteAllLessonsOfPost(post);
-
         PostGroup postGroup = post.getPostGroup();
+
+        // PostGroup과의 연관 관계 제거
+        List<Post> postsOfPostGroup = postGroup.getPosts();
+        postsOfPostGroup.remove(post);
+        post.setPostGroup(null);
+
+        // Lesson과의 연관 관계 제거
+        List<Lesson> lessons = lessonQueryService.findLessonsByPost(post);
+        lessons.forEach((lesson) -> lesson.setPost(null));
+
+        if (postsOfPostGroup.isEmpty()){
+            postGroupCommandService.deletePostGroup(postGroup);
+        }
 
         postRepository.delete(post);
 
-        if (postGroup.getPosts().isEmpty()){
-            postGroupCommandService.deletePostGroup(postGroup);
-        }
     }
 
     @Override

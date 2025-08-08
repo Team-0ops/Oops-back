@@ -27,7 +27,7 @@ public class CommentRestController {
 
     @Operation(summary = "댓글 달기")
     @PostMapping("/posts/{postId}/comments")
-    public ResponseEntity<BaseResponse> leaveComment(@PathVariable Long postId,
+    public ResponseEntity<BaseResponse> leaveComment(@PathVariable("postId") Long postId,
                                                      @AuthenticatedUser User user,
                                                      @Valid @RequestBody CommentRequestDto.LeaveCommentDto request){
 
@@ -39,9 +39,9 @@ public class CommentRestController {
     }
 
     @Operation(summary = "댓글 삭제하기")
-    @DeleteMapping("/{postId}/comments/{commentId}")
-    public ResponseEntity<BaseResponse> deleteComment(@PathVariable Long postId,
-                                                      @PathVariable Long commentId,
+    @DeleteMapping("posts/{postId}/comments/{commentId}")
+    public ResponseEntity<BaseResponse> deleteComment(@PathVariable("postId") Long postId,
+                                                      @PathVariable("commentId") Long commentId,
                                                       @AuthenticatedUser User user){
 
         log.info("Delete /api/{postId}/comments/{commentId} 호출, User = {}", user.getUserName());
