@@ -22,12 +22,6 @@ public class JwtEncoder {
         }
         throw new IllegalArgumentException("Invalid JWT token");
     }
-
-
-    public static String encodeJwtBearerToken(final String accessToken) {
-        return URLEncoder.encode("Bearer " + accessToken, StandardCharsets.UTF_8);
-    }
-
     public static String encode(String token) {
         String cookieValue = TOKEN_TYPE + token;
         return URLEncoder.encode(cookieValue, StandardCharsets.UTF_8).replaceAll("\\+", "%20");

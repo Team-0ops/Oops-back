@@ -80,6 +80,7 @@ public class AuthService {
         TokenResponseDto tokenResponseDto = this.createToken(user);
         setCookie(response, tokenResponseDto.getAccessToken());
         setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
+
         response.addHeader("AccessToken", tokenResponseDto.getAccessToken().toString());
         response.addHeader("RefreshToken", tokenResponseDto.getRefreshToken().toString());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -92,7 +93,7 @@ public class AuthService {
 
     // login
     public void setCookie(HttpServletResponse response, String accessToken) {
-        ResponseCookie cookie = ResponseCookie.from("AccessToken", accessToken)
+        ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encode(accessToken))
                 .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
                 .sameSite("None")

@@ -110,7 +110,7 @@ public class AuthController {
         String refreshToken = getRefreshTokenFromCookie(request);
         TokenResponseDto tokenResponseDto;
         tokenResponseDto = authService.refreshAccessToken(refreshToken);
-        authService.setCookie(response, JwtEncoder.encode(tokenResponseDto.getAccessToken()));
+        authService.setCookie(response, tokenResponseDto.getAccessToken());
         authService.setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
 
         return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto.getRefreshToken());
