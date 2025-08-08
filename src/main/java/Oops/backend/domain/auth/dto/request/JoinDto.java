@@ -2,11 +2,14 @@ package Oops.backend.domain.auth.dto.request;
 
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -24,4 +27,9 @@ public class JoinDto {
     @Schema(description = "사용자 비밀번호", example = "1234abcd!")
     @NotBlank(message = "비밀번호기 비어있습니다.")
     private String password;
+
+
+    @Schema(description = "사용자 약관 동의 목록")
+    @NotNull(message = "약관 동의 정보가 필요합니다.")
+    private List<AgreeToTermDto> termsAgreement;
 }
