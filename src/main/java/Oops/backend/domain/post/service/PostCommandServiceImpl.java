@@ -74,13 +74,16 @@ public class PostCommandServiceImpl implements PostCommandService{
     @Transactional
     public void deletePost(Long postId, User user) {
 
+        User user1 = userRepository.findById(user.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
 
-        log.info("post.getUser().equals(user)={}", post.getUser().equals(user));
+        log.info("post.getUser().equals(user)={}", post.getUser().equals(user1));
 
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
-        if ((post.getUser().getId()) != user.getId()){
+        if ((post.getUser().getId()) != user1.getId()){
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
         }
 
@@ -91,7 +94,6 @@ public class PostCommandServiceImpl implements PostCommandService{
 
         postRepository.delete(post);
 
-        // TODO : 게시글 삭제 후 PostGroup이 null이면 PostGroup도 삭제하기
         if (postGroup.getPosts().isEmpty()){
             postGroupCommandService.deletePostGroup(postGroup);
         }
