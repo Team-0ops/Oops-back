@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,5 +46,10 @@ public class LessonQueryServiceImpl implements LessonQueryService{
                 .collect(Collectors.toSet());
 
         return GetLessonResponse.of(content, title, tagNames);
+    }
+
+    @Override
+    public List<Lesson> findLessonsByPost(Post post) {
+        return lessonRepository.findLessonsByPost(post);
     }
 }
