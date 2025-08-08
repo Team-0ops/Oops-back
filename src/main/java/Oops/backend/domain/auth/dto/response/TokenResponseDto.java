@@ -1,6 +1,5 @@
-package com.example.mutsideout_mju.dto.response.token;
+package Oops.backend.domain.auth.dto.response;
 
-import com.example.mutsideout_mju.entity.RefreshToken;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
