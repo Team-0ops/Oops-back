@@ -104,8 +104,7 @@ public class S3ImageService {
     }
 
 
-    public void deleteImageFromS3(String imageUrl) {
-        String key = getKeyFromImageAddress(imageUrl);
+    public void deleteImageFromS3(String key) {
         try {
             amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));
         } catch (Exception e) {

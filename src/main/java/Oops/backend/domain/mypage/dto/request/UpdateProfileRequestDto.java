@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateProfileRequestDto {
 
-    @NotBlank(message = "닉네임은 공백일 수 없습니다.")
     private String userName;
+
+    //DTO에 유저 이름 들어왔는지 판단
+    public boolean hasUserName() {
+        return userName != null && !userName.isBlank();
+    }
 }

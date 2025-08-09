@@ -66,7 +66,7 @@ public class MyPageController {
             summary = "내 프로필 수정",
             description = """
     닉네임과 프로필 이미지를 수정합니다.
-    - `data`: 닉네임 JSON 문자열
+    - `data`: 닉네임 JSON 문자열 (안 바꿀거면 null로 쓰면 됨!)
     - `profileImage`: 이미지 파일 (선택)
 
     **예시(JSON)**:
@@ -78,10 +78,14 @@ public class MyPageController {
     @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse> updateMyProfile(
             @AuthenticatedUser User user,
-            @RequestPart("data") String data,
+            @RequestPart(value = "data") String data,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) throws JsonProcessingException {
-        UpdateProfileRequestDto dto = new ObjectMapper().readValue(data, UpdateProfileRequestDto.class);
+        UpdateProfileRequestDto dto = null;
+        if (data != null && !data.isBlank()) {
+            dto = new ObjectMapper().readValue(data, UpdateProfileRequestDto.class);
+        }
+
         myPageCommandService.updateMyProfile(user, dto, profileImage);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
