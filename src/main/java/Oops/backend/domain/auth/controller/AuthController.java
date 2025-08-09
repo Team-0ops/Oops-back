@@ -29,6 +29,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 
+import java.util.Arrays;
+
 
 @Tag(name = "로그인 및 회원가입 API")
 @RestController
@@ -120,14 +122,20 @@ public class AuthController {
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        log.info("AuthController: " + request.getCookies());
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("RefreshToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 파싱 오류");
+        log.info("AuthController cookies: " + Arrays.toString(cookies));
+        if (cookies == null) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "쿠키 없음");
+
+        String raw = Arrays.stream(cookies)
+                .filter(c -> "RefreshToken".equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 없음"));
+
+        String v = raw.trim();
+        if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length()-1);
+        if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim();
+        if (v.isEmpty()) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 비어있음");
+        return v;
     }
+
 }
