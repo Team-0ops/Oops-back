@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.weaver.GeneratedReferenceTypeDelegate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,7 @@ import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -118,6 +120,7 @@ public class AuthController {
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+        log.info("AuthController: " + request.getCookies());
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("RefreshToken".equals(cookie.getName())) {
