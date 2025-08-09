@@ -17,6 +17,15 @@ public class Terms extends BaseEntity {
     @Column
     private String content;
 
-    @Column
-    private String required;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RequiredType required;
+
+    public RequiredType getRequired() {
+        return required;
+    }
+
+    public void setRequired(RequiredType required) {
+        this.required = required;
+    }
 }

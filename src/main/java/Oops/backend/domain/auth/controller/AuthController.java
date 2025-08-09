@@ -14,6 +14,7 @@ import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,6 +26,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.weaver.GeneratedReferenceTypeDelegate;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
@@ -42,12 +44,72 @@ public class AuthController {
     private final AuthService authService;
     private final JwtEncoder jwtEncoder;
 
-    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
-    @ApiResponse(responseCode = "201", description = "회원가입 성공", content = @Content(schema = @Schema(implementation = BaseResponse.class)))
+    @Operation(
+            summary = "회원가입",
+            description = "새로운 사용자를 등록합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "회원가입 성공",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(
+                                    name = "success",
+                                    value = "{\n" +
+                                            "  \"isSuccess\": true,\n" +
+                                            "  \"code\": \"COMMON201\",\n" +
+                                            "  \"message\": \"SUCCESS!\"\n" +
+                                            "}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "필수 약관 미동의 등으로 실패",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(
+                                    name = "required_terms_not_agreed",
+                                    value = "{\n" +
+                                            "  \"isSuccess\": false,\n" +
+                                            "  \"code\": \"COMMON400\",\n" +
+                                            "  \"message\": \"필수 약관 미동의: [1]\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+    })
     @PostMapping("/join")
     public ResponseEntity<BaseResponse> join(
-            @Valid @RequestBody JoinDto joinDto,
-            HttpServletResponse response) {
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "회원가입 요청 바디",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = JoinDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "join_request_example",
+                                            value = "{\n" +
+                                                    "  \"email\": \"test1@example.com\",\n" +
+                                                    "  \"userName\": \"홍길동\",\n" +
+                                                    "  \"password\": \"1234abcd!\",\n" +
+                                                    "  \"termsAgreement\": [\n" +
+                                                    "    { \"termId\": 1, \"agreed\": true },\n" +
+                                                    "    { \"termId\": 2, \"agreed\": true },\n" +
+                                                    "    { \"termId\": 3, \"agreed\": true }\n" +
+                                                    "  ]\n" +
+                                                    "}"
+                                    )
+                            }
+                    )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody  JoinDto joinDto,
+            HttpServletResponse response
+    ) {
         this.authService.join(joinDto);
         return BaseResponse.onSuccess(SuccessStatus._CREATED);
     }
