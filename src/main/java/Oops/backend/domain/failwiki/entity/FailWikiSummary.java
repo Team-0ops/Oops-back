@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,4 +26,23 @@ public class FailWikiSummary extends BaseEntity {
 
     @Column(nullable = false)
     private Integer postCount; // 요약 당시 게시글 개수
+
+    private LocalDateTime sourceMaxUpdatedAt;
+
+    public FailWikiSummary updateForSummary(int postCount, String summary, LocalDateTime sourceMaxUpdatedAt) {
+        this.postCount = postCount;
+        this.summary = summary;
+        this.aiTip = null;
+        this.sourceMaxUpdatedAt = sourceMaxUpdatedAt;
+        return this;
+    }
+
+    public FailWikiSummary updateForAiTip(int postCount, String aiTip, LocalDateTime sourceMaxUpdatedAt) {
+        this.postCount = postCount;
+        this.aiTip = aiTip;
+        this.summary = null;
+        this.sourceMaxUpdatedAt = sourceMaxUpdatedAt;
+        return this;
+    }
+
 }
