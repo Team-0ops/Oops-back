@@ -21,6 +21,7 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/api/auth/login",
                         "/api/auth/join",
+                        "/api/auth/refresh",
                         "/api/feeds/home/first-guest",
                         "/hello",
                         "/health",

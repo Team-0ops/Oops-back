@@ -19,7 +19,7 @@ import java.io.IOException;
 @Slf4j
 @AllArgsConstructor
 public class AuthenticationInterceptor implements HandlerInterceptor {
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AccessTokenProvider accessTokenProvider;
     private final AuthenticationContext authenticationContext;
     private final AuthRepository userRepository;
 
@@ -32,7 +32,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             log.info("추출된 AccessToken: {}", accessToken);
 
             // JWT 페이로드 추출
-            String payload = jwtTokenProvider.getPayload(accessToken);
+            String payload = accessTokenProvider.getPayload(accessToken);
             log.info("JWT 페이로드 추출 성공: {}", payload);
 
             // 사용자 ID 변환
