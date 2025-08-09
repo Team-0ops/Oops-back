@@ -4,39 +4,50 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Optional;
 
+@Slf4j
 public class AuthenticationExtractor {
     private static final String TOKEN_COOKIE_NAME = "AccessToken";
 
 
     public static String extractTokenFromRequest(final HttpServletRequest request) {
         // 1. Authorization 헤더 우선
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7); // "Bearer " 제거
-        }
-
-        // 2. 쿠키 확인
         if (request.getCookies() != null) {
-            Optional<String> tokenOpt = Arrays.stream(request.getCookies())
-                    .filter(cookie -> TOKEN_COOKIE_NAME.equals(cookie.getName()))
-                    .map(Cookie::getValue)
-                    .filter(value -> value != null && !value.isEmpty())
-                    .findFirst();
-
-            if (tokenOpt.isPresent()) {
-                try {
-                    return JwtEncoder.decodeJwtBearerToken(tokenOpt.get());
-                } catch (Exception e) {
-                    throw new GeneralException(ErrorStatus.INVALID_TOKEN, "토큰 디코딩에 실패했습니다.");
+            for (Cookie cookie : request.getCookies()) {
+                if ("AccessToken".equals(cookie.getName())) {
+                    try {
+                        String decoded = JwtEncoder.decode(cookie.getValue());
+                        log.info("AccessToken 쿠키에서 디코딩 성공: {}", decoded);
+                        return decoded;
+                    } catch (Exception e) {
+                        log.error("AccessToken 쿠키 디코딩 실패: {}", e.getMessage());
+                        return null;
+                    }
                 }
             }
         }
 
-        throw new GeneralException(ErrorStatus.INVALID_TOKEN, "AccessToken을 찾을 수 없습니다.");
+        // 2. Authorization 헤더에서 찾기
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String decoded = JwtEncoder.decodeJwtBearerToken(authHeader);
+                log.info("Authorization 헤더에서 디코딩 성공: {}", decoded);
+                return decoded;
+            } catch (Exception e) {
+                log.error("Authorization 헤더 디코딩 실패: {}", e.getMessage());
+                return null;
+            }
+        }
+
+        log.warn("AccessToken을 쿠키나 헤더에서 찾을 수 없습니다.");
+        return "AccessToken 을 찾을 수 없습니다.";
+
+
     }
 }
 

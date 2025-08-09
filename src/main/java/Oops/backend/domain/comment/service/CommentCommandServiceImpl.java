@@ -8,6 +8,7 @@ import Oops.backend.domain.comment.repository.CommentRepository;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.user.entity.User;
+import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class CommentCommandServiceImpl implements CommentCommandService{
     private final CommentRepository commentRepository;
     private final PostQueryService postQueryService;
     private final CommentLikeService commentLikeService;
+    private final UserRepository userRepository;
 
     @Override
     public Comment leaveComment(Long postId, User user, CommentRequestDto.LeaveCommentDto request) {
@@ -47,13 +49,16 @@ public class CommentCommandServiceImpl implements CommentCommandService{
     @Transactional
     public void deleteComment(Long postId, Long commentId, User user) {
 
+        User user1 = userRepository.findById(user.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
 
         Post post = postQueryService.findPost(postId);
 
         // 게시글 작성한 사용자가 아니거나 댓글을 단 사용자가 아닐 경우 오류
-        if (post.getUser().equals(user) || comment.getUser().equals(user)){
+        if (!post.getUser().equals(user1) || !comment.getUser().equals(user1)){
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "댓글 삭제 권한이 없습니다.");
         }
 
