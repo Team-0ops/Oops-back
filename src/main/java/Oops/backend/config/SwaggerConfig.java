@@ -1,5 +1,6 @@
 package Oops.backend.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -32,12 +33,19 @@ public class SwaggerConfig {
                         """)
                         .version("1.0.0"))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
-                .components(new io.swagger.v3.oas.models.Components()
+                .components(new Components()
                         .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()
-                                        .name("BearerAuth")
+                                        .name("Authorization")
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
-                                        .bearerFormat("JWT")));
+                                        .bearerFormat("JWT"))
+                        // RefreshToken (쿠키)
+                        .addSecuritySchemes("RefreshTokenCookie",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.COOKIE)
+                                        .name("RefreshToken"))
+                );
     }
 }
