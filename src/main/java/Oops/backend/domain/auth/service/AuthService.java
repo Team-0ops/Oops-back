@@ -147,10 +147,17 @@ public class AuthService {
     }
 
     public TokenResponseDto refreshAccessToken(String refreshToken) {
-        RefreshToken storedRefreshToken = findExistingRefreshToken(refreshToken);
-        validateRefreshToken(storedRefreshToken);
-        User user = findExistingUserByRefreshToken(storedRefreshToken);
-        return createToken(user);
+        RefreshToken stored = findExistingRefreshToken(refreshToken);
+
+        // 만료 검사
+        validateRefreshToken(stored);
+
+        User user = findExistingUserByRefreshToken(stored);
+
+        String payload = String.valueOf(user.getId());
+        String newAccess = accessTokenProvider.createToken(payload);
+
+        return new TokenResponseDto(newAccess, stored.getToken());
     }
 
     private TokenResponseDto createToken(User user) {
