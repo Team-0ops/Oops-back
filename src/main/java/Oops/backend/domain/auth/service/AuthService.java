@@ -101,7 +101,7 @@ public class AuthService {
                 .path("/")
                 .build();
 
-        response.addHeader("set-cookie", cookie.toString());
+        response.addHeader("Set-Cookie", cookie.toString());
     }
     // refresh
     public void setCookieForRefreshToken(HttpServletResponse response, String refreshToken) {
@@ -113,7 +113,7 @@ public class AuthService {
                 .secure(false)
                 .build();
 
-        response.addHeader("set-cookie", cookie_refresh.toString());
+        response.addHeader("Set-Cookie", cookie_refresh.toString());
     }
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
