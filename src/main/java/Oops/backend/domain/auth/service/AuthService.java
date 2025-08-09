@@ -97,7 +97,7 @@ public class AuthService {
                 .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
                 .sameSite("None")
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .build();
 
@@ -110,7 +110,7 @@ public class AuthService {
                 .path("/")
                 .httpOnly(true)
                 .sameSite("None")
-                .secure(true)
+                .secure(false)
                 .build();
 
         response.addHeader("set-cookie", cookie_refresh.toString());
