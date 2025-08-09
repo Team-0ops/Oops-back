@@ -19,13 +19,21 @@ public class MyPageCommandServiceImpl implements MyPageCommandService {
     @Override
     @Transactional
     public void updateMyProfile(User user, UpdateProfileRequestDto dto, MultipartFile profileImage) {
-        // 닉네임 변경
-        user.setUserName(dto.getUserName());
-
-        // 이미지 업로드 처리
+        // 닉네임이 있을 경우만 변경
+        if (dto != null && dto.hasUserName()) {
+            user.setUserName(dto.getUserName());
+        }
+        // 프로필 이미지 처리
         if (profileImage != null && !profileImage.isEmpty()) {
-            String imageUrl = s3ImageService.upload(profileImage, "user_profile", user.getId().toString());
-            user.setProfileImageUrl(imageUrl);
+            // 기존 이미지가 있으면 삭제
+            String oldImageUrl = user.getProfileImageUrl();
+            if (oldImageUrl != null && !oldImageUrl.isBlank()) {
+                s3ImageService.deleteImageFromS3(oldImageUrl);
+            }
+
+            // 새 이미지 업로드
+            String newImageUrl = s3ImageService.upload(profileImage, "user_profile", user.getId().toString());
+            user.setProfileImageUrl(newImageUrl);
         }
 
         userRepository.save(user);
