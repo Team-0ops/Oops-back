@@ -19,7 +19,8 @@ public enum ErrorStatus {
     _NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404", "페이지를 찾을 수 없습니다."),
 
     TEMP_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "TEMP401", "인증 실패"),
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "TEMP402", "토큰 오류"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "TEMP402", "AccessToken 오류"),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "TEMP403", "RefreshToken 오류"),
 
     // 입력값 검증 에러
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "VALID401", "입력값이 올바르지 않습니다."),

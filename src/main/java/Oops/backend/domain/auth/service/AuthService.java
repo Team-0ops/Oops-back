@@ -1,15 +1,16 @@
 package Oops.backend.domain.auth.service;
 
-import Oops.backend.domain.auth.JwtEncoder;
-import Oops.backend.domain.auth.JwtTokenProvider;
-import Oops.backend.domain.auth.PasswordHashEncryption;
+import Oops.backend.domain.auth.*;
+import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
+import Oops.backend.domain.auth.repository.RefreshTokenRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
-
+import Oops.backend.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,10 @@ import java.time.Duration;
 public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordHashEncryption passwordHashEncryption;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AccessTokenProvider accessTokenProvider;
+    private final RefreshTokenProvider refreshTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
     /*
     회원가입
      */
@@ -72,23 +76,45 @@ public class AuthService {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
         }
 
-        String payload = user.getId().toString();
-        String accessToken = jwtTokenProvider.createToken(payload);
-        log.info("AccessToken: " + accessToken);
         log.info("UserName: "+ user.getUserName());
-        ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encodeJwtBearerToken(accessToken))
-                .maxAge(Duration.ofMillis(1800000))
-                .httpOnly(true)
-                .sameSite("None")
-                .secure(false)
-                .path("/")
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+        TokenResponseDto tokenResponseDto = this.createToken(user);
+        setCookie(response, tokenResponseDto.getAccessToken());
+        setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
+
+        response.addHeader("AccessToken", tokenResponseDto.getAccessToken().toString());
+        response.addHeader("RefreshToken", tokenResponseDto.getRefreshToken().toString());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        return LoginResponse.of(user, accessToken);
+        log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
+        log.info("AccessToken: " + tokenResponseDto.getAccessToken());
+
+        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken());
     }
 
+    // login
+    public void setCookie(HttpServletResponse response, String accessToken) {
+        ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encode(accessToken))
+                .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(true)
+                .path("/")
+                .build();
+
+        response.addHeader("set-cookie", cookie.toString());
+    }
+    // refresh
+    public void setCookieForRefreshToken(HttpServletResponse response, String refreshToken) {
+        ResponseCookie cookie_refresh = ResponseCookie.from("RefreshToken", refreshToken)
+                .maxAge(Duration.ofDays(14))
+                .path("/")
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(true)
+                .build();
+
+        response.addHeader("set-cookie", cookie_refresh.toString());
+    }
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
         User user1 = authRepository.findByEmail(user.getEmail());
@@ -102,16 +128,57 @@ public class AuthService {
         authRepository.save(user);
     }
 
-
     public void logout(HttpServletResponse response) {
-        ResponseCookie expiredCookie = ResponseCookie.from("AccessToken", "")
+        ResponseCookie accessCookie = ResponseCookie.from("AccessToken", null)
                 .maxAge(0)
-                .httpOnly(true)
-                .sameSite("None")
-                .secure(false)
                 .path("/")
                 .build();
 
-        response.addHeader("Set-Cookie", expiredCookie.toString());
+        ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken", null)
+                .maxAge(0)
+                .path("/")
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(false)
+                .build();
+
+        response.addHeader("set-cookie", accessCookie.toString());
+        response.addHeader("set-cookie", refreshCookie.toString());
     }
+
+    public TokenResponseDto refreshAccessToken(String refreshToken) {
+        RefreshToken storedRefreshToken = findExistingRefreshToken(refreshToken);
+        validateRefreshToken(storedRefreshToken);
+        User user = findExistingUserByRefreshToken(storedRefreshToken);
+        return createToken(user);
+    }
+
+    private TokenResponseDto createToken(User user) {
+        String payload = String.valueOf(user.getId());
+        String accessToken = accessTokenProvider.createToken(payload);
+        String refreshTokenValue = refreshTokenProvider.createRefreshToken();
+
+        RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
+                .orElse(new RefreshToken(user.getId(), refreshTokenValue));
+
+        refreshToken.setToken(refreshTokenValue);
+        refreshTokenRepository.save(refreshToken);
+
+        return new TokenResponseDto(accessToken, refreshTokenValue);
+    }
+
+    public void validateRefreshToken(RefreshToken refreshToken) {
+        if (refreshTokenProvider.isTokenExpired(refreshToken.getToken())) {
+            throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+    }
+
+    public RefreshToken findExistingRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByToken(refreshToken).orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN));
+    }
+    public User findExistingUserByRefreshToken(RefreshToken refreshToken) {
+        return userRepository.findById(refreshToken.getUserId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+    }
+
 }

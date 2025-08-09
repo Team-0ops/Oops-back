@@ -17,16 +17,19 @@ public class LoginResponse {
 
     String profileImage;
 
+    private String refreshToken;
+
     @Builder
-    private LoginResponse(Long userId, String nickname, String email, String accessToken, String profileImage){
+    private LoginResponse(Long userId, String nickname, String email, String accessToken, String profileImage, String refreshToken){
         this.userId = userId;
         this.nickname = nickname;
         this.email = email;
         this.accessToken = accessToken;
         this.profileImage = profileImage;
+        this.refreshToken = refreshToken;
     }
 
-    public static LoginResponse of(User user, String accessToken){
+    public static LoginResponse of(User user, String accessToken, String refreshToken){
 
         return LoginResponse.builder()
                 .userId(user.getId())
@@ -34,6 +37,7 @@ public class LoginResponse {
                 .email(user.getEmail())
                 .accessToken(accessToken)
                 .profileImage(user.getProfileImageUrl())
+                .refreshToken(refreshToken)
                 .build();
 
     }
