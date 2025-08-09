@@ -157,6 +157,7 @@ public class AuthService {
         String payload = String.valueOf(user.getId());
         String newAccess = accessTokenProvider.createToken(payload);
 
+        log.info("new AccessToken: " + newAccess);
         return new TokenResponseDto(newAccess, stored.getToken());
     }
 
