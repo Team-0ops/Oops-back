@@ -102,27 +102,29 @@ public class AuthController {
     @Operation(
             summary = "AccessToken 갱신",
             description = "RefreshToken을 사용하여 새로운 AccessToken을 발급합니다."
+            // Swagger 보안 스키마를 쓰는 경우: @SecurityRequirement(name = "RefreshTokenHeader")
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "AccessToken 갱신 성공"),
-            @ApiResponse(responseCode = "400", description = "RefreshToken 불일치 또는 인증 실패")
-    })
     @PostMapping("/refresh")
     public ResponseEntity<BaseResponse> refreshToken(
-            HttpServletResponse response, HttpServletRequest request) {
-
-        String refreshToken = getRefreshTokenFromCookie(request);
-        TokenResponseDto tokenResponseDto;
-        tokenResponseDto = authService.refreshAccessToken(refreshToken);
-        authService.setCookie(response, tokenResponseDto.getAccessToken());
-        authService.setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
-
-        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto);
+            HttpServletResponse response,
+            HttpServletRequest request,
+            @RequestHeader(value = "X-Refresh-Token", required = false) String refreshHeader
+    ) {
+        String refreshToken = extractRefreshToken(request, refreshHeader);
+        TokenResponseDto dto = authService.refreshAccessToken(refreshToken);
+        authService.setCookie(response, dto.getAccessToken());
+        authService.setCookieForRefreshToken(response, dto.getRefreshToken());
+        return BaseResponse.onSuccess(SuccessStatus._OK, dto);
     }
 
-    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+    private String extractRefreshToken(HttpServletRequest request, String header) {
+        if (header != null && !header.isBlank()) {
+            String v = header.trim();
+            if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim(); // 옵션
+            if (!v.isEmpty()) return v;
+        }
         Cookie[] cookies = request.getCookies();
-        log.info("AuthController cookies: " + Arrays.toString(cookies));
+        log.info("AuthController cookies: {}", Arrays.toString(cookies));
         if (cookies == null) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "쿠키 없음");
 
         String raw = Arrays.stream(cookies)
@@ -132,10 +134,11 @@ public class AuthController {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 없음"));
 
         String v = raw.trim();
-        if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length()-1);
+        if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length() - 1);
         if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim();
         if (v.isEmpty()) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 비어있음");
         return v;
     }
+
 
 }
