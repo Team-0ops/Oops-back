@@ -14,7 +14,8 @@ public class Terms extends BaseEntity {
     @Column
     private String title;
 
-    @Column
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @Enumerated(EnumType.STRING)
