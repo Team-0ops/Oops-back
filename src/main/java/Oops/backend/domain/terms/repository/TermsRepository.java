@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface TermsRepository extends CrudRepository<Terms, Long> {
     List<Terms> findAllByRequired(RequiredType required);
-
+    List<Terms> findAllByOrderByIdAsc();
 }
