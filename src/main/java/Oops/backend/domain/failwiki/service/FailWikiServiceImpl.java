@@ -40,6 +40,22 @@ public class FailWikiServiceImpl implements FailWikiService {
     }
 
     private FailWikiSummaryResponse refreshIfStale(FailWikiSummary s, String keyword) {
+        int anyCount = postRepository.countByKeyword(keyword);
+        if (anyCount == 0) {
+            // 기존 저장본이 있어도 summary/aiTip 비움 (삭제하고 싶으면 delete로 대체 가능)
+            s.clear(0, null);
+            return FailWikiSummaryResponse.builder()
+                    .keyword(s.getKeyword())
+                    .summary(null)
+                    .aiTip(null)
+                    .postCount(0)
+                    .bestFailers(getBestFailers())
+                    .build();
+        }
+
+
+
+
         int currentCount = postRepository.countByKeywordAndSituations(keyword, SUMM_SITUATIONS);
         LocalDateTime currentMaxUpdatedAt =
                 postRepository.maxUpdatedAtByKeywordAndSituations(keyword, SUMM_SITUATIONS);
@@ -83,6 +99,20 @@ public class FailWikiServiceImpl implements FailWikiService {
     }
 
     private FailWikiSummaryResponse createFresh(String keyword) {
+        int anyCount = postRepository.countByKeyword(keyword);
+        if (anyCount == 0) {
+            // 새 키워드인데 글이 전혀 없으면 저장 없이 즉시 null 응답 (정책에 따라 저장해도 됨)
+            return FailWikiSummaryResponse.builder()
+                    .keyword(keyword)
+                    .summary(null)
+                    .aiTip(null)
+                    .postCount(0)
+                    .bestFailers(getBestFailers())
+                    .build();
+        }
+
+
+
         int count = postRepository.countByKeywordAndSituations(keyword, SUMM_SITUATIONS);
         LocalDateTime maxUpdatedAt =
                 postRepository.maxUpdatedAtByKeywordAndSituations(keyword, SUMM_SITUATIONS);
