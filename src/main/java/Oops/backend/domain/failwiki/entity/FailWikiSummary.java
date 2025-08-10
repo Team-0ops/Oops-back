@@ -45,4 +45,12 @@ public class FailWikiSummary extends BaseEntity {
         return this;
     }
 
+    public FailWikiSummary clear(Integer postCount, LocalDateTime sourceMaxUpdatedAt) {
+        this.postCount = postCount;
+        this.summary = null;
+        this.aiTip = null;
+        this.sourceMaxUpdatedAt = sourceMaxUpdatedAt;
+        return this;
+    }
+
 }

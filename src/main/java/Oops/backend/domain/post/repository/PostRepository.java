@@ -65,6 +65,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                                              @Param("situations") List<Situation> situations,
                                                              Pageable pageable);
 
+    @Query("""
+        select count(p) from Post p
+        where p.title   like concat('%', :keyword, '%')
+           or p.content like concat('%', :keyword, '%')
+    """)
+    int countByKeyword(@Param("keyword") String keyword);
+
+    @Query("""
+        select max(p.modifiedAt) from Post p
+        where p.title   like concat('%', :keyword, '%')
+           or p.content like concat('%', :keyword, '%')
+    """)
+    LocalDateTime maxUpdatedAtByKeyword(@Param("keyword") String keyword);
 
 
 
