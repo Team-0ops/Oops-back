@@ -2,6 +2,7 @@ package Oops.backend.domain.post.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
@@ -28,6 +29,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     private final HomeFeedRepository homeFeedRepository;
     private final UserAndCategoryRepository userAndCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final S3ImageService s3ImageService;
 
     /**
      * 홈화면 첫로딩 - 로그인 사용자
@@ -61,9 +63,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
         Pageable topTen = PageRequest.of(0, 10);
         List<Post> posts = homeFeedRepository.findTop10ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topTen);
 
-        List<PostResponse.PostPreviewDto> markedPreviewDtos = posts.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> markedPreviewDtos = postDtoConverter(posts);
 
         PostResponse.PostPreviewListDto markedListDto = PostResponse.PostPreviewListDto.builder()
                 .name("즐겨찾기한 카테고리")
@@ -108,9 +108,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
         List<Post> bestPosts = homeFeedRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
 
-        List<PostResponse.PostPreviewDto> bestPreviewDtos = bestPosts.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> bestPreviewDtos = postDtoConverter(bestPosts);
 
         PostResponse.PostPreviewListDto bestListDto = PostResponse.PostPreviewListDto.builder()
                 .name("베스트 Failers")
@@ -129,9 +127,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     public PostResponse.PostPreviewListDto getLaterPostList() {
         List<Post> latestPostPerCategories = homeFeedRepository.findLatestPostPerCategory();
 
-        List<PostResponse.PostPreviewDto> previewDtos = latestPostPerCategories.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(latestPostPerCategories);
 
         PostResponse.PostPreviewListDto listDto = PostResponse.PostPreviewListDto.builder()
                 .name("카테고리 목록")
@@ -183,15 +179,30 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 
         boolean isLast = end >= totalSize;
 
-        // DTO로 변환
-        List<PostResponse.PostPreviewDto> previewDtos = pagedPosts.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(pagedPosts);
 
         return PostResponse.PostPreviewListDto.builder()
                 .name("검색 결과")
                 .posts(previewDtos)
                 .isLast(isLast)
                 .build();
+    }
+
+    /**
+     * dto 변환 메서드
+     */
+    private List<PostResponse.PostPreviewDto> postDtoConverter(List<Post> posts){
+
+        List<PostResponse.PostPreviewDto> bestPreviewDtos = posts.stream()
+                .map(post -> {
+                    String imageUrl = null;
+                    if (post.getImages() != null && !post.getImages().isEmpty()) {
+                        String firstKey = post.getImages().get(0);
+                        imageUrl = s3ImageService.getPreSignedUrl(firstKey);
+                    }
+                    return PostResponse.PostPreviewDto.from(post, imageUrl);
+                })
+                .collect(Collectors.toList());
+        return bestPreviewDtos;
     }
 }
