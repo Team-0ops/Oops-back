@@ -44,6 +44,7 @@ public enum ErrorStatus {
     INVALID_POST_CONTEXT(HttpStatus.BAD_REQUEST, "POST400", "추천 기준이 되는 category나 topic이 없습니다."),
     UNAUTHORIZED_FOR_POST(HttpStatus.UNAUTHORIZED, "POST401", "게시글 삭제 권한이 없습니다."),
     ALREADY_LIKED_POST(HttpStatus.BAD_REQUEST, "POST405", "이미 응원한 게시글입니다."),
+    POST_CATEGORY_TOPIC_INVALID(HttpStatus.UNAUTHORIZED, "POST401", "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다."),
 
     // 댓글 관련 에러
     COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMENT400", "존재하지 않는 댓글입니다."),
