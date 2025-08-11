@@ -1,5 +1,6 @@
 package Oops.backend.domain.randomTopic.Repository;
 
+import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -7,7 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 
 public interface RandomTopicRepository extends JpaRepository<RandomTopic, Long> {
@@ -21,4 +24,6 @@ public interface RandomTopicRepository extends JpaRepository<RandomTopic, Long> 
     @Transactional
     @Query("UPDATE RandomTopic r SET r.isCurrent = 0")
     void resetAllCurrent();
+
+    List<RandomTopic> findByNameContainingIgnoreCase(String name);
 }
