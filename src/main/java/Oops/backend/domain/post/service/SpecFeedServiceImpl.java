@@ -167,16 +167,25 @@ public class SpecFeedServiceImpl implements SpecFeedService {
 
         List<PostResponse.PostPreviewDto> previews = posts.getContent().stream()
                 .map(post -> {
+                    String CategoryOrTopicName;
                     String imageUrl = null;
 
-                    // 1) 이미지 키 뽑기
+                    if (post.getCategory() != null && post.getTopic() == null) {        // 카테고리 게시물인 경우
+                        CategoryOrTopicName = post.getCategory().getName();
+                    } else if (post.getCategory() == null && post.getTopic() != null) {  // 랜덤 주제 게시물인 경우
+                        CategoryOrTopicName = post.getTopic().getName();
+                    } else{
+                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID, "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
+                    }
+
+                    // 이미지 키 뽑기
                     if (post.getImages() != null && !post.getImages().isEmpty()) {
                         String firstKey = post.getImages().get(0);
                         imageUrl = s3ImageService.getPreSignedUrl(firstKey);
                     }
 
-                    // 2) DTO 생성
-                    return PostResponse.PostPreviewDto.from(post, imageUrl);
+                    // DTO 생성
+                    return PostResponse.PostPreviewDto.from(post, CategoryOrTopicName, imageUrl);
                 })
                 .collect(Collectors.toList());
 

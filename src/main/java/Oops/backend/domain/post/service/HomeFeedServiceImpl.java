@@ -200,7 +200,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
                         String firstKey = post.getImages().get(0);
                         imageUrl = s3ImageService.getPreSignedUrl(firstKey);
                     }
-                    return PostResponse.PostPreviewDto.from(post, imageUrl);
+                    return PostResponse.PostPreviewDto.from(post, post.getCategory().getName(), imageUrl);
                 })
                 .collect(Collectors.toList());
         return bestPreviewDtos;
