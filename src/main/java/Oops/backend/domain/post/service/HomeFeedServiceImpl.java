@@ -195,12 +195,22 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 
         List<PostResponse.PostPreviewDto> bestPreviewDtos = posts.stream()
                 .map(post -> {
+                    String CategoryOrTopicName;
                     String imageUrl = null;
+
+                    if (post.getCategory() != null && post.getTopic() == null) {        // 카테고리 게시물인 경우
+                        CategoryOrTopicName = post.getCategory().getName();
+                    } else if (post.getCategory() == null && post.getTopic() != null) {  // 랜덤 주제 게시물인 경우
+                        CategoryOrTopicName = post.getTopic().getName();
+                    } else{
+                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID, "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
+                    }
+
                     if (post.getImages() != null && !post.getImages().isEmpty()) {
                         String firstKey = post.getImages().get(0);
                         imageUrl = s3ImageService.getPreSignedUrl(firstKey);
                     }
-                    return PostResponse.PostPreviewDto.from(post, imageUrl);
+                    return PostResponse.PostPreviewDto.from(post, CategoryOrTopicName, imageUrl);
                 })
                 .collect(Collectors.toList());
         return bestPreviewDtos;

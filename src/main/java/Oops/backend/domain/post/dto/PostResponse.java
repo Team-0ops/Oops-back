@@ -24,18 +24,18 @@ public class PostResponse {
         Long postId;
         String title;
         String content;
-        String categoryName;
+        String categoryOrTopicName;
         int likes;
         int comments;
         int views;
         String image;  // 대표 이미지 한 장
 
-        public static PostPreviewDto from(Post post, String imageUrl) {
+        public static PostPreviewDto from(Post post, String CategoryOrTopicName, String imageUrl) {
             return PostPreviewDto.builder()
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(post.getContent())
-                    .categoryName(post.getCategory().getName())
+                    .categoryOrTopicName(CategoryOrTopicName)
                     .likes(post.getLikes())
                     .comments(post.getComments() != null ? post.getComments().size() : 0)
                     .views(post.getWatching())
