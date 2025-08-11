@@ -15,6 +15,7 @@ public class MyPostResponseDto {
     private String title;
     private String content;
     private String categoryOrTopicName;
+    private String situation;
     private int likes;
     private int watching;
 
@@ -36,6 +37,7 @@ public class MyPostResponseDto {
                 .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .situation(post.getSituation().name())
                 .categoryOrTopicName(categoryOrTopicName)
                 .likes(post.getLikes())
                 .watching(post.getWatching())

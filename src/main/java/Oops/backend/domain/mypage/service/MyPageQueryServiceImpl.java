@@ -16,6 +16,8 @@ import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
 import Oops.backend.domain.postReport.repository.PostReportRepository;
+import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,26 +37,40 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
     private final CommentReportRepository commentReportRepository;
     private final PostReportRepository postReportRepository;
     private final UserRepository userRepository;
+    private final RandomTopicRepository randomTopicRepository;
 
     @Override
-    public List<MyPostResponseDto> getMyPosts(User user, Long categoryId) {
-        List<Post> posts;
+    public List<MyPostResponseDto> getMyPosts(User user, Long categoryId, Long topicId, Situation situation) {
+
+        if (categoryId != null && topicId != null) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "카테고리와 랜덤 주제를 동시에 선택할 수 없습니다.");
+        }
+
+        final List<Post> posts;
 
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
-            posts = postRepository.findByUserAndCategory(user, category);
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "존재하지 않는 카테고리입니다."));
+            posts = (situation != null)
+                    ? postRepository.findByUserAndCategoryAndSituation(user, category, situation)
+                    : postRepository.findByUserAndCategory(user, category);
+        } else if (topicId != null) {
+            RandomTopic topic = randomTopicRepository.findById(topicId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "존재하지 않는 랜덤 주제입니다."));
+            posts = (situation != null)
+                    ? postRepository.findByUserAndTopicAndSituation(user, topic, situation)
+                    : postRepository.findByUserAndTopic(user, topic);
         } else {
-            posts = postRepository.findByUser(user);
+            posts = (situation != null)
+                    ? postRepository.findByUserAndSituation(user, situation)
+                    : postRepository.findByUser(user);
         }
 
-        return posts.stream()
-                .map(MyPostResponseDto::from)
-                .toList();
+        return posts.stream().map(MyPostResponseDto::from).toList();
     }
 
+
     @Override
-    @Transactional(readOnly = true)
     public List<MyLessonResponseDto> getMyLessons(User user, String tag) {
         List<Lesson> lessons = (tag != null && !tag.isBlank())
                 ? lessonRepository.findByUserAndTagNameWithPost(user, tag)
