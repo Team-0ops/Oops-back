@@ -96,7 +96,7 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encode(accessToken))
                 .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("LAX")
                 .secure(false)
                 .path("/")
                 .build();
@@ -109,7 +109,7 @@ public class AuthService {
                 .maxAge(Duration.ofDays(14))
                 .path("/")
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("LAX")
                 .secure(false)
                 .build();
 
