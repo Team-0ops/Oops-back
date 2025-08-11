@@ -8,6 +8,7 @@ import Oops.backend.domain.lesson.service.LessonCommandService;
 import Oops.backend.domain.lesson.service.LessonQueryService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class LessonController {
 
     @Operation(summary = "교훈 작성 API")
     @PostMapping
-    public ResponseEntity<BaseResponse> createLesson(@AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> createLesson(@Parameter(hidden = true) @AuthenticatedUser User user,
                                                     @PathVariable Long postId,
                                                     @Valid @RequestBody CreateLessonRequest request){
 
@@ -41,7 +42,7 @@ public class LessonController {
 
     @Operation(summary = "교훈 조회 API")
     @GetMapping
-    public ResponseEntity<BaseResponse> getLesson(@AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getLesson(@Parameter(hidden = true) @AuthenticatedUser User user,
                                                   @PathVariable Long postId){
 
         log.info("Get /api/posts/lessons 호출, User = {}", user.getUserName());
