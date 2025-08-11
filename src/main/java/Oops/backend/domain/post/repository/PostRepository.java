@@ -80,7 +80,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("update Post p set p.watching = p.watching+1 where p.id = :postId")
     void plusPostWatching(@Param("postId") Long postId);
 
-
+    // 해당 랜덤주제로 작성된 게시글 전체 조회
+    List<Post> findPostByTopicId (Long topicId);
 }
 
 
