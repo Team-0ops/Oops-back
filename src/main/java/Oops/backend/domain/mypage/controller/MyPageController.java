@@ -7,11 +7,13 @@ import Oops.backend.domain.mypage.dto.request.UpdateProfileRequestDto;
 import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
 import Oops.backend.domain.mypage.service.MyPageCommandService;
 import Oops.backend.domain.mypage.service.MyPageQueryService;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,10 +32,16 @@ public class MyPageController {
 
     @Operation(summary = "내가 쓴 실패담 조회", description = "내가 작성한 실패담 목록을 조회합니다. 선택적으로 카테고리 ID로 필터링할 수 있습니다.")
     @GetMapping("/posts")
-    public ResponseEntity<BaseResponse> getMyPosts(@Parameter(hidden = true) @AuthenticatedUser User user,
-                                                   @RequestParam(required = false) Long categoryId) {
-        return BaseResponse.onSuccess(SuccessStatus._OK,
-                myPageQueryService.getMyPosts(user, categoryId));
+    public ResponseEntity<BaseResponse> getMyPosts(
+            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long topicId,
+            @RequestParam(required = false) Situation situation
+    ) {
+        return BaseResponse.onSuccess(
+                SuccessStatus._OK,
+                myPageQueryService.getMyPosts(user, categoryId, topicId, situation)
+        );
     }
 
     @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 태그로 필터링할 수 있습니다.")
