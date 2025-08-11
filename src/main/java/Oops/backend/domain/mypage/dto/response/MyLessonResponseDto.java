@@ -12,8 +12,15 @@ public class MyLessonResponseDto {
     private Long lessonId;
     private String title;
     private String content;
-    //private String categoryName;
     private List<String> tags;
+
+    //게시글도 추가
+    private Long postId;
+    private String postTitle;
+    private String postContent;
+    private String categoryName;  // nullable
+    private String topicName;     // nullable
+
 
     public static MyLessonResponseDto from(Lesson lesson) {
 
@@ -25,8 +32,14 @@ public class MyLessonResponseDto {
                 .lessonId(lesson.getId())
                 .title(lesson.getTitle())
                 .content(lesson.getContent())
-                //.categoryName(lesson.getCategory().getName())
                 .tags(tagNames)
+                .postId(lesson.getPost().getId())
+                .postTitle(lesson.getPost().getTitle())
+                .postContent(lesson.getPost().getContent())
+                .categoryName(lesson.getPost().getCategory() != null
+                        ? lesson.getPost().getCategory().getName() : null)
+                .topicName(lesson.getPost().getTopic() != null
+                        ? lesson.getPost().getTopic().getName() : null)
                 .build();
     }
 }

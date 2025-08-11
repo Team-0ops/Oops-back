@@ -52,16 +52,15 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 .map(MyPostResponseDto::from)
                 .toList();
     }
+
     @Override
+    @Transactional(readOnly = true)
     public List<MyLessonResponseDto> getMyLessons(User user, String tag) {
-        if (tag != null) {
-            return lessonRepository.findByUserAndTagName(user, tag)
-                    .stream()
-                    .map(MyLessonResponseDto::from)
-                    .toList();
-        }
-        return lessonRepository.findByUser(user)
-                .stream()
+        List<Lesson> lessons = (tag != null && !tag.isBlank())
+                ? lessonRepository.findByUserAndTagNameWithPost(user, tag)
+                : lessonRepository.findByUserWithPostAndTags(user);
+
+        return lessons.stream()
                 .map(MyLessonResponseDto::from)
                 .toList();
     }
