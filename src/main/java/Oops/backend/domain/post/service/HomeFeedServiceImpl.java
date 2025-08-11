@@ -10,6 +10,8 @@ import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.HomeFeedRepository;
 import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.entity.UserAndCategory;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     private final HomeFeedRepository homeFeedRepository;
     private final UserAndCategoryRepository userAndCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final RandomTopicRepository randomTopicRepository;
     private final S3ImageService s3ImageService;
 
     /**
@@ -156,12 +159,21 @@ public class HomeFeedServiceImpl implements HomeFeedService {
                 ? Collections.emptyList()
                 : homeFeedRepository.findByCategoryIn(categories);
 
+        // 랜덤주제 레포에서 검색어가 포함된 랜덤주제 조회
+        List<RandomTopic> topics = randomTopicRepository.findByNameContainingIgnoreCase(keyword);
+
+        // 랜덤주제에 포함된 게시글 조회
+        List<Post> topicPosts = topics.isEmpty()
+                ? Collections.emptyList()
+                : homeFeedRepository.findByTopicIn(topics);
+
         // 게시글의 제목/본문에 검색어가 포함된 게시글 조회
         List<Post> keywordPosts = homeFeedRepository.findByKeyword(keyword);
 
         // 두 결과 합치고 중복 제거
         Set<Post> mergedPosts = new HashSet<>();
         mergedPosts.addAll(categoryPosts);
+        mergedPosts.addAll(topicPosts);
         mergedPosts.addAll(keywordPosts);
 
         // 최신순 정렬 + 페이징 적용
