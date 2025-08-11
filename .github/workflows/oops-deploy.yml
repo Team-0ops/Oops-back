@@ -96,5 +96,5 @@ jobs:
             sleep 10
             sudo fuser -k -n tcp 8080 || true
             
-            sudo nohup java -jar oops.jar > ./output.log 2>&1 &
+            sudo nohup java -Duser.timezone=Asia/Seoul -jar oops.jar > ./output.log 2>&1 &
             
