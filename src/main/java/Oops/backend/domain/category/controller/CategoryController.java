@@ -31,7 +31,7 @@ public class CategoryController {
      */
     @GetMapping
     @Operation(summary = "전체 카테고리 조회 API",description = "전체 15개의 카테고리를 조회하는 api이며, 카테고리 이름과 즐겨찾기 여부를 반환합니다.")
-    public ResponseEntity<BaseResponse> getCategoryList(@AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> getCategoryList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
         log.info("Get /api/categories 호출, User = {}", user.getUserName());
 

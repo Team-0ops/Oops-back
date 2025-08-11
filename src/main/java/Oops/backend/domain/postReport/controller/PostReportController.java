@@ -7,6 +7,7 @@ import Oops.backend.domain.post.dto.PostReportRequest;
 import Oops.backend.domain.postReport.service.PostReportService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class PostReportController {
     // 실패담 신고
     @Operation(summary = "게시글 신고하기")
     @PostMapping("/{postId}/reports")
-    public ResponseEntity<BaseResponse> reportPost(@AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> reportPost(@Parameter(hidden = true) @AuthenticatedUser User user,
                                                    @PathVariable Long postId,
                                                    @RequestBody PostReportRequest request){
 

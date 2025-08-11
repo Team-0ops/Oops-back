@@ -6,6 +6,7 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.postGroup.service.PostGroupQueryService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ public class PostGroupController {
 
     @GetMapping("/{postId}")
     @Operation(summary = "실패담 상세 조회 API")
-    public ResponseEntity<BaseResponse> getPostGroup(@AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getPostGroup(@Parameter(hidden = true) @AuthenticatedUser User user,
                                                      @PathVariable Long postId){
 
         log.info("Get /api/posts/{postId} 호출");

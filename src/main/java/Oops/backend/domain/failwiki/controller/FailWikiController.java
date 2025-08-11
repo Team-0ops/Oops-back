@@ -1,5 +1,7 @@
 package Oops.backend.domain.failwiki.controller;
 
+import Oops.backend.common.response.BaseResponse;
+import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.failwiki.dto.FailWikiListItemDto;
 import Oops.backend.domain.failwiki.dto.FailWikiSummaryResponse;
 import Oops.backend.domain.failwiki.service.FailWikiQueryService;
@@ -22,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/failwiki")
 @RequiredArgsConstructor
-@Tag(name = "실패위키 API", description = "실패위키 GPT 요약/조언 조회 API")
+@Tag(name = "실패위키 API")
 public class FailWikiController {
 
     private final FailWikiService failWikiService;
@@ -39,16 +41,15 @@ public class FailWikiController {
             """
     )
     @GetMapping("/summary")
-    public ResponseEntity<FailWikiSummaryResponse> getFailWikiSummary(
-            @RequestParam String keyword
-    ) {
-        return ResponseEntity.ok(failWikiService.getSummary(keyword));
+    public ResponseEntity<BaseResponse> getFailWikiSummary(@RequestParam String keyword) {
+        FailWikiSummaryResponse body = failWikiService.getSummary(keyword);
+        return BaseResponse.onSuccess(SuccessStatus._OK, body);
     }
 
     @Operation(summary = "실패위키 전체 조회(저장본만, 최신순, content만)")
     @GetMapping("/all")
-    public ResponseEntity<List<FailWikiListItemDto>> listAllLatest() {
-        return ResponseEntity.ok(failWikiQueryService.listAllLatest());
+    public ResponseEntity<BaseResponse> listAllLatest() {
+        List<FailWikiListItemDto> list = failWikiQueryService.listAllLatest();
+        return BaseResponse.onSuccess(SuccessStatus._OK, list);
     }
-
 }
