@@ -7,6 +7,7 @@ import Oops.backend.domain.commentReport.dto.CommentReportRequest;
 import Oops.backend.domain.commentReport.service.CommentReportService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class CommentReportController {
     @Operation(summary = "댓글 신고하기")
     @PostMapping("/comments/{commentId}/reports")
     public ResponseEntity<BaseResponse> reportComment(@PathVariable Long commentId,
-                                                     @AuthenticatedUser User user,
+                                                      @Parameter(hidden = true) @AuthenticatedUser User user,
                                                      @RequestBody CommentReportRequest request){
 
         log.info("Post /api/comments/{commentId}/reports 호출, User = {}", user.getUserName());
