@@ -28,8 +28,4 @@ public class JoinDto {
     @NotBlank(message = "비밀번호가 비어있습니다.")
     private String password;
 
-    @Schema(description = "사용자 약관 동의 목록")
-    @NotNull(message = "약관 동의 정보가 필요합니다.")
-    @jakarta.validation.Valid
-    private List<AgreeToTermDto> termsAgreement;
 }

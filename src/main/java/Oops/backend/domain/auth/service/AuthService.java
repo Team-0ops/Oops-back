@@ -50,53 +50,18 @@ public class AuthService {
      */
     @Transactional
     public void join(JoinDto joinDto) {
-        // 1) 중복 이메일 체크
+        // 중복 이메일 체크
         this.isEmailExist(joinDto.getEmail());
-        log.info("terms.count={}", termsRepository.count());
-        List<Terms> requiredTerms = termsRepository.findAllByRequired(RequiredType.REQUIRED);
-        Set<Long> requiredIds = requiredTerms.stream()
-                .map(Terms::getId)
-                .collect(Collectors.toSet());
-
-        Map<Long, Boolean> agreedMap = joinDto.getTermsAgreement().stream()
-                .collect(Collectors.toMap(AgreeToTermDto::getTermId, AgreeToTermDto::isAgreed, (a, b) -> a));
-
-        List<Long> notAgreedRequired = requiredIds.stream()
-                .filter(id -> !Boolean.TRUE.equals(agreedMap.get(id)))
-                .toList();
-
-        if (!notAgreedRequired.isEmpty()) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST,
-                    "필수 약관 미동의: " + notAgreedRequired);
-        }
-
-        // 5) 사용자 생성/저장
         String encryptedPassword = this.passwordHashEncryption.encrypt(joinDto.getPassword());
+
+        // 이메일이 존재하지 않는다면 새로운 User 생성
         User user = User.builder()
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
-                .point(0)
                 .build();
-        authRepository.save(user);
-        log.info("requiredIds={}", requiredIds);
-        log.info("agreedMap={}", agreedMap);
-        log.info("notAgreedRequired={}", notAgreedRequired);
-        Set<Long> agreedIds = joinDto.getTermsAgreement().stream()
-                .filter(AgreeToTermDto::isAgreed)
-                .map(AgreeToTermDto::getTermId)
-                .collect(Collectors.toSet());
 
-        if (!agreedIds.isEmpty()) {
-            List<Terms> agreedTerms = StreamSupport.stream(
-                    termsRepository.findAllById(agreedIds).spliterator(), false
-            ).collect(Collectors.toList());            for (Terms t : agreedTerms) {
-                UserAndTerms map = new UserAndTerms();
-                map.setUser(user);
-                map.setTerm(t);
-                userAndTermsRepository.save(map);
-            }
-        }
+        authRepository.save(user);
     }
 
 
