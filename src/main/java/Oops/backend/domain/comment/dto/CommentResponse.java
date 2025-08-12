@@ -17,6 +17,8 @@ public class CommentResponse {
 
     Long userId;
 
+    String userName;
+
     String imageUrl;
 
     Integer likes;
@@ -31,6 +33,7 @@ public class CommentResponse {
     private CommentResponse(Long commentId,
                             String content,
                             Long userId,
+                            String userName,
                             String imageUrl,
                             Integer likes,
                             LocalDateTime createdAt,
@@ -40,6 +43,7 @@ public class CommentResponse {
         this.commentId = commentId;
         this.content = content;
         this.userId = userId;
+        this.userName = userName;
         this.imageUrl = imageUrl;
         this.likes = likes;
         this.createdAt = createdAt;
@@ -52,6 +56,7 @@ public class CommentResponse {
         return CommentResponse.builder()
                 .commentId(comment.getId())
                 .userId(comment.getUser().getId())
+                .userName(comment.getUser().getUserName())
                 .content(comment.getContent())
                 .imageUrl(comment.getUser().getProfileImageUrl())
                 .likes(comment.getLikes())
