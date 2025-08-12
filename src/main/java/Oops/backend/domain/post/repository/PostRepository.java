@@ -4,6 +4,7 @@ import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.postGroup.entity.PostGroup;
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,12 +39,52 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     //situation
     List<Post> findByUserAndSituation(User user, Situation situation);
+    List<Post> findByUserAndCategoryAndSituation(User user, Category category, Situation situation);
+
+    // 토픽 기반
+    List<Post> findByUserAndTopic(User user, RandomTopic topic);
+    List<Post> findByUserAndTopicAndSituation(User user, RandomTopic topic, Situation situation);
 
     //실패위키
-    @Query("SELECT p FROM Post p " +
-            "WHERE p.situation IN ('OVERCOMING', 'OVERCOME') " +
-            "AND p.content LIKE %:keyword%")
-    List<Post> findOvercomingOrOvercomePostsByKeyword(@Param("keyword") String keyword);
+    @Query("""
+    select max(p.modifiedAt) from Post p
+    where p.situation in :situations
+      and p.content like concat('%', :keyword, '%')
+""")
+    LocalDateTime maxUpdatedAtByKeywordAndSituations(@Param("keyword") String keyword,
+                                                     @Param("situations") List<Situation> situations);
+    @Query("""
+    select count(p) from Post p
+    where p.situation in :situations
+      and p.content like concat('%', :keyword, '%')
+""")
+    int countByKeywordAndSituations(@Param("keyword") String keyword,
+                                    @Param("situations") List<Situation> situations);
+
+    @Query("""
+    select p from Post p
+    where p.situation in :situations
+      and p.content like concat('%', :keyword, '%')
+    order by p.watching desc
+""")
+    List<Post> findByKeywordAndSituationsOrderByWatchingDesc(@Param("keyword") String keyword,
+                                                             @Param("situations") List<Situation> situations,
+                                                             Pageable pageable);
+
+    @Query("""
+        select count(p) from Post p
+        where p.title   like concat('%', :keyword, '%')
+           or p.content like concat('%', :keyword, '%')
+    """)
+    int countByKeyword(@Param("keyword") String keyword);
+
+    @Query("""
+        select max(p.modifiedAt) from Post p
+        where p.title   like concat('%', :keyword, '%')
+           or p.content like concat('%', :keyword, '%')
+    """)
+    LocalDateTime maxUpdatedAtByKeyword(@Param("keyword") String keyword);
+
 
 
     @Modifying
@@ -56,6 +98,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query("update Post p set p.watching = p.watching+1 where p.id = :postId")
     void plusPostWatching(@Param("postId") Long postId);
+
+    // 해당 랜덤주제로 작성된 게시글 전체 조회
+    List<Post> findPostByTopicId (Long topicId);
 
 
 }

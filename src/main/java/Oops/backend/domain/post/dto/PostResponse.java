@@ -3,6 +3,7 @@ package Oops.backend.domain.post.dto;
 import Oops.backend.domain.comment.dto.CommentResponse;
 import Oops.backend.domain.comment.model.CommentType;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.config.s3.S3ImageService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,22 +24,22 @@ public class PostResponse {
         Long postId;
         String title;
         String content;
-        String categoryName;
+        String categoryOrTopicName;
         int likes;
         int comments;
         int views;
         String image;  // 대표 이미지 한 장
 
-        public static PostPreviewDto from(Post post) {
-            return PostResponse.PostPreviewDto.builder()
+        public static PostPreviewDto from(Post post, String CategoryOrTopicName, String imageUrl) {
+            return PostPreviewDto.builder()
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(post.getContent())
-                    .categoryName(post.getCategory().getName())
+                    .categoryOrTopicName(CategoryOrTopicName)
                     .likes(post.getLikes())
                     .comments(post.getComments() != null ? post.getComments().size() : 0)
                     .views(post.getWatching())
-                    .image(post.getImages() != null && !post.getImages().isEmpty() ? post.getImages().get(0) : null)
+                    .image(imageUrl)
                     .build();
         }
     }

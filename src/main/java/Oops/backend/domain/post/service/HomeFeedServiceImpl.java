@@ -2,6 +2,7 @@ package Oops.backend.domain.post.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
@@ -9,6 +10,8 @@ import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.HomeFeedRepository;
 import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.entity.UserAndCategory;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,8 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     private final HomeFeedRepository homeFeedRepository;
     private final UserAndCategoryRepository userAndCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final RandomTopicRepository randomTopicRepository;
+    private final S3ImageService s3ImageService;
 
     /**
      * 홈화면 첫로딩 - 로그인 사용자
@@ -61,9 +66,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
         Pageable topTen = PageRequest.of(0, 10);
         List<Post> posts = homeFeedRepository.findTop10ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topTen);
 
-        List<PostResponse.PostPreviewDto> markedPreviewDtos = posts.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> markedPreviewDtos = postDtoConverter(posts);
 
         PostResponse.PostPreviewListDto markedListDto = PostResponse.PostPreviewListDto.builder()
                 .name("즐겨찾기한 카테고리")
@@ -108,9 +111,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
         List<Post> bestPosts = homeFeedRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
 
-        List<PostResponse.PostPreviewDto> bestPreviewDtos = bestPosts.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> bestPreviewDtos = postDtoConverter(bestPosts);
 
         PostResponse.PostPreviewListDto bestListDto = PostResponse.PostPreviewListDto.builder()
                 .name("베스트 Failers")
@@ -129,9 +130,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     public PostResponse.PostPreviewListDto getLaterPostList() {
         List<Post> latestPostPerCategories = homeFeedRepository.findLatestPostPerCategory();
 
-        List<PostResponse.PostPreviewDto> previewDtos = latestPostPerCategories.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(latestPostPerCategories);
 
         PostResponse.PostPreviewListDto listDto = PostResponse.PostPreviewListDto.builder()
                 .name("카테고리 목록")
@@ -160,12 +159,21 @@ public class HomeFeedServiceImpl implements HomeFeedService {
                 ? Collections.emptyList()
                 : homeFeedRepository.findByCategoryIn(categories);
 
+        // 랜덤주제 레포에서 검색어가 포함된 랜덤주제 조회
+        List<RandomTopic> topics = randomTopicRepository.findByNameContainingIgnoreCase(keyword);
+
+        // 랜덤주제에 포함된 게시글 조회
+        List<Post> topicPosts = topics.isEmpty()
+                ? Collections.emptyList()
+                : homeFeedRepository.findByTopicIn(topics);
+
         // 게시글의 제목/본문에 검색어가 포함된 게시글 조회
         List<Post> keywordPosts = homeFeedRepository.findByKeyword(keyword);
 
         // 두 결과 합치고 중복 제거
         Set<Post> mergedPosts = new HashSet<>();
         mergedPosts.addAll(categoryPosts);
+        mergedPosts.addAll(topicPosts);
         mergedPosts.addAll(keywordPosts);
 
         // 최신순 정렬 + 페이징 적용
@@ -183,15 +191,40 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 
         boolean isLast = end >= totalSize;
 
-        // DTO로 변환
-        List<PostResponse.PostPreviewDto> previewDtos = pagedPosts.stream()
-                .map(PostResponse.PostPreviewDto::from)
-                .collect(Collectors.toList());
+        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(pagedPosts);
 
         return PostResponse.PostPreviewListDto.builder()
                 .name("검색 결과")
                 .posts(previewDtos)
                 .isLast(isLast)
                 .build();
+    }
+
+    /**
+     * dto 변환 메서드
+     */
+    private List<PostResponse.PostPreviewDto> postDtoConverter(List<Post> posts){
+
+        List<PostResponse.PostPreviewDto> bestPreviewDtos = posts.stream()
+                .map(post -> {
+                    String CategoryOrTopicName;
+                    String imageUrl = null;
+
+                    if (post.getCategory() != null && post.getTopic() == null) {        // 카테고리 게시물인 경우
+                        CategoryOrTopicName = post.getCategory().getName();
+                    } else if (post.getCategory() == null && post.getTopic() != null) {  // 랜덤 주제 게시물인 경우
+                        CategoryOrTopicName = post.getTopic().getName();
+                    } else{
+                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID, "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
+                    }
+
+                    if (post.getImages() != null && !post.getImages().isEmpty()) {
+                        String firstKey = post.getImages().get(0);
+                        imageUrl = s3ImageService.getPreSignedUrl(firstKey);
+                    }
+                    return PostResponse.PostPreviewDto.from(post, CategoryOrTopicName, imageUrl);
+                })
+                .collect(Collectors.toList());
+        return bestPreviewDtos;
     }
 }

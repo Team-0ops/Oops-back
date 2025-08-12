@@ -2,6 +2,7 @@ package Oops.backend.domain.post.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.post.dto.PostResponse;
@@ -32,6 +33,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
     private final UserAndCategoryRepository userAndCategoryRepository;
     private final CategoryRepository categoryRepository;
     private final RandomTopicRepository randomTopicRepository;
+    private final S3ImageService s3ImageService;
 
     /**
      * 베스트 게시글 전체 조회
@@ -164,7 +166,27 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         }
 
         List<PostResponse.PostPreviewDto> previews = posts.getContent().stream()
-                .map(PostResponse.PostPreviewDto::from)
+                .map(post -> {
+                    String CategoryOrTopicName;
+                    String imageUrl = null;
+
+                    if (post.getCategory() != null && post.getTopic() == null) {        // 카테고리 게시물인 경우
+                        CategoryOrTopicName = post.getCategory().getName();
+                    } else if (post.getCategory() == null && post.getTopic() != null) {  // 랜덤 주제 게시물인 경우
+                        CategoryOrTopicName = post.getTopic().getName();
+                    } else{
+                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID, "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
+                    }
+
+                    // 이미지 키 뽑기
+                    if (post.getImages() != null && !post.getImages().isEmpty()) {
+                        String firstKey = post.getImages().get(0);
+                        imageUrl = s3ImageService.getPreSignedUrl(firstKey);
+                    }
+
+                    // DTO 생성
+                    return PostResponse.PostPreviewDto.from(post, CategoryOrTopicName, imageUrl);
+                })
                 .collect(Collectors.toList());
 
         return PostResponse.PostPreviewListDto.builder()

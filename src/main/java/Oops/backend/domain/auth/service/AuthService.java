@@ -1,16 +1,23 @@
 package Oops.backend.domain.auth.service;
 
-import Oops.backend.domain.auth.JwtEncoder;
-import Oops.backend.domain.auth.JwtTokenProvider;
-import Oops.backend.domain.auth.PasswordHashEncryption;
+import Oops.backend.domain.auth.*;
+import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
+import Oops.backend.domain.auth.repository.RefreshTokenRepository;
+import Oops.backend.domain.terms.entity.RequiredType;
+import Oops.backend.domain.terms.entity.Terms;
+import Oops.backend.domain.terms.entity.UserAndTerms;
+import Oops.backend.domain.terms.repository.TermsRepository;
+import Oops.backend.domain.terms.repository.UserAndTermsRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
-
+import Oops.backend.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
+import Oops.backend.domain.auth.dto.request.AgreeToTermDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -20,6 +27,11 @@ import Oops.backend.domain.auth.repository.AuthRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @AllArgsConstructor
@@ -27,25 +39,66 @@ import java.time.Duration;
 public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordHashEncryption passwordHashEncryption;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AccessTokenProvider accessTokenProvider;
+    private final RefreshTokenProvider refreshTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
+    private final TermsRepository termsRepository;
+    private final UserAndTermsRepository userAndTermsRepository;
     /*
     회원가입
      */
+    @Transactional
     public void join(JoinDto joinDto) {
-        // 이메일이 이미 존재하는지 확인
+        // 1) 중복 이메일 체크
         this.isEmailExist(joinDto.getEmail());
-        String encryptedPassword = this.passwordHashEncryption.encrypt(joinDto.getPassword());
+        log.info("terms.count={}", termsRepository.count());
+        List<Terms> requiredTerms = termsRepository.findAllByRequired(RequiredType.REQUIRED);
+        Set<Long> requiredIds = requiredTerms.stream()
+                .map(Terms::getId)
+                .collect(Collectors.toSet());
 
-        // 이메일이 존재하지 않는다면 새로운 User 생성
+        Map<Long, Boolean> agreedMap = joinDto.getTermsAgreement().stream()
+                .collect(Collectors.toMap(AgreeToTermDto::getTermId, AgreeToTermDto::isAgreed, (a, b) -> a));
+
+        List<Long> notAgreedRequired = requiredIds.stream()
+                .filter(id -> !Boolean.TRUE.equals(agreedMap.get(id)))
+                .toList();
+
+        if (!notAgreedRequired.isEmpty()) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST,
+                    "필수 약관 미동의: " + notAgreedRequired);
+        }
+
+        // 5) 사용자 생성/저장
+        String encryptedPassword = this.passwordHashEncryption.encrypt(joinDto.getPassword());
         User user = User.builder()
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
                 .point(0)
                 .build();
-
         authRepository.save(user);
+        log.info("requiredIds={}", requiredIds);
+        log.info("agreedMap={}", agreedMap);
+        log.info("notAgreedRequired={}", notAgreedRequired);
+        Set<Long> agreedIds = joinDto.getTermsAgreement().stream()
+                .filter(AgreeToTermDto::isAgreed)
+                .map(AgreeToTermDto::getTermId)
+                .collect(Collectors.toSet());
+
+        if (!agreedIds.isEmpty()) {
+            List<Terms> agreedTerms = StreamSupport.stream(
+                    termsRepository.findAllById(agreedIds).spliterator(), false
+            ).collect(Collectors.toList());            for (Terms t : agreedTerms) {
+                UserAndTerms map = new UserAndTerms();
+                map.setUser(user);
+                map.setTerm(t);
+                userAndTermsRepository.save(map);
+            }
+        }
     }
+
 
     /*
     Email 유일성 확인
@@ -72,23 +125,45 @@ public class AuthService {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
         }
 
-        String payload = user.getId().toString();
-        String accessToken = jwtTokenProvider.createToken(payload);
-        log.info("AccessToken: " + accessToken);
         log.info("UserName: "+ user.getUserName());
-        ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encodeJwtBearerToken(accessToken))
-                .maxAge(Duration.ofMillis(1800000))
+        TokenResponseDto tokenResponseDto = this.createToken(user);
+        setCookie(response, tokenResponseDto.getAccessToken());
+        setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
+
+        response.addHeader("AccessToken", tokenResponseDto.getAccessToken().toString());
+        response.addHeader("RefreshToken", tokenResponseDto.getRefreshToken().toString());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
+        log.info("AccessToken: " + tokenResponseDto.getAccessToken());
+
+        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken());
+    }
+
+    // login
+    public void setCookie(HttpServletResponse response, String accessToken) {
+        ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encode(accessToken))
+                .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("LAX")
                 .secure(false)
                 .path("/")
                 .build();
+
         response.addHeader("Set-Cookie", cookie.toString());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-        return LoginResponse.of(user, accessToken);
     }
+    // refresh
+    public void setCookieForRefreshToken(HttpServletResponse response, String refreshToken) {
+        ResponseCookie cookie_refresh = ResponseCookie.from("RefreshToken", refreshToken)
+                .maxAge(Duration.ofDays(14))
+                .path("/")
+                .httpOnly(true)
+                .sameSite("LAX")
+                .secure(false)
+                .build();
 
+        response.addHeader("Set-Cookie", cookie_refresh.toString());
+    }
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
         User user1 = authRepository.findByEmail(user.getEmail());
@@ -102,16 +177,65 @@ public class AuthService {
         authRepository.save(user);
     }
 
-
     public void logout(HttpServletResponse response) {
-        ResponseCookie expiredCookie = ResponseCookie.from("AccessToken", "")
+        ResponseCookie accessCookie = ResponseCookie.from("AccessToken", null)
                 .maxAge(0)
-                .httpOnly(true)
-                .sameSite("None")
-                .secure(false)
                 .path("/")
                 .build();
 
-        response.addHeader("Set-Cookie", expiredCookie.toString());
+        ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken", null)
+                .maxAge(0)
+                .path("/")
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(false)
+                .build();
+
+        response.addHeader("set-cookie", accessCookie.toString());
+        response.addHeader("set-cookie", refreshCookie.toString());
     }
+
+    public TokenResponseDto refreshAccessToken(String refreshToken) {
+        RefreshToken stored = findExistingRefreshToken(refreshToken);
+
+        // 만료 검사
+        validateRefreshToken(stored);
+
+        User user = findExistingUserByRefreshToken(stored);
+
+        String payload = String.valueOf(user.getId());
+        String newAccess = accessTokenProvider.createToken(payload);
+
+        log.info("new AccessToken: " + newAccess);
+        return new TokenResponseDto(newAccess, stored.getToken());
+    }
+
+    private TokenResponseDto createToken(User user) {
+        String payload = String.valueOf(user.getId());
+        String accessToken = accessTokenProvider.createToken(payload);
+        String refreshTokenValue = refreshTokenProvider.createRefreshToken();
+
+        RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
+                .orElse(new RefreshToken(user.getId(), refreshTokenValue));
+
+        refreshToken.setToken(refreshTokenValue);
+        refreshTokenRepository.save(refreshToken);
+
+        return new TokenResponseDto(accessToken, refreshTokenValue);
+    }
+
+    public void validateRefreshToken(RefreshToken refreshToken) {
+        if (refreshTokenProvider.isTokenExpired(refreshToken.getToken())) {
+            throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN);
+        }
+    }
+
+    public RefreshToken findExistingRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByToken(refreshToken).orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN));
+    }
+    public User findExistingUserByRefreshToken(RefreshToken refreshToken) {
+        return userRepository.findById(refreshToken.getUserId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+    }
+
 }

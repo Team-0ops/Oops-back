@@ -2,6 +2,8 @@ package Oops.backend.domain.post.repository;
 
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -47,5 +49,8 @@ public interface HomeFeedRepository extends JpaRepository<Post, Long> {
 
     // 특정 카테고리 리스트에 포함된 게시글
     List<Post> findByCategoryIn(List<Category> categories);
+
+    // 특정 랜덤주제 리스트에 포함된 게시글
+    List<Post> findByTopicIn(List<RandomTopic> topics);
 
 }

@@ -13,14 +13,33 @@ import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
-    List<Lesson> findByUser(User user);
+    // 내 교훈 전체 조회 (Post/Category/Topic/Tag까지 미리 로딩)
+    @Query("""
+        SELECT DISTINCT l FROM Lesson l
+        JOIN FETCH l.post p
+        LEFT JOIN FETCH p.category c
+        LEFT JOIN FETCH p.topic t
+        LEFT JOIN FETCH l.tags lt
+        LEFT JOIN FETCH lt.tag tg
+        WHERE l.user = :user
+        ORDER BY l.id DESC
+    """)
+    List<Lesson> findByUserWithPostAndTags(@Param("user") User user);
 
-    @Query("SELECT l FROM Lesson l " +
-            "JOIN l.tags lt " +
-            "JOIN lt.tag t " +
-            "WHERE l.user = :user AND t.name = :tag")
-    List<Lesson> findByUserAndTagName(@Param("user") User user,
-                                      @Param("tag") String tag);
+    // 태그 필터 조회
+    @Query("""
+        SELECT DISTINCT l FROM Lesson l
+        JOIN FETCH l.post p
+        LEFT JOIN FETCH p.category c
+        LEFT JOIN FETCH p.topic t
+        JOIN l.tags lt
+        JOIN lt.tag tg
+        WHERE l.user = :user AND tg.name = :tag
+        ORDER BY l.id DESC
+    """)
+    List<Lesson> findByUserAndTagNameWithPost(@Param("user") User user,
+                                              @Param("tag") String tag);
+
 
     boolean existsLessonByUserAndPost(User user, Post post);
 
@@ -28,5 +47,5 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
     void deleteAllByPost(Post post);
 
-    //List<Lesson> findByUserAndCategory(User user, Category category);
+    List<Lesson> findLessonsByPost(Post post);
 }

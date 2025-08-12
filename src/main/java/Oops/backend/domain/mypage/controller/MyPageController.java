@@ -7,11 +7,13 @@ import Oops.backend.domain.mypage.dto.request.UpdateProfileRequestDto;
 import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
 import Oops.backend.domain.mypage.service.MyPageCommandService;
 import Oops.backend.domain.mypage.service.MyPageQueryService;
+import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,24 +32,21 @@ public class MyPageController {
 
     @Operation(summary = "내가 쓴 실패담 조회", description = "내가 작성한 실패담 목록을 조회합니다. 선택적으로 카테고리 ID로 필터링할 수 있습니다.")
     @GetMapping("/posts")
-    public ResponseEntity<BaseResponse> getMyPosts(@AuthenticatedUser User user,
-                                                   @RequestParam(required = false) Long categoryId) {
-        return BaseResponse.onSuccess(SuccessStatus._OK,
-                myPageQueryService.getMyPosts(user, categoryId));
+    public ResponseEntity<BaseResponse> getMyPosts(
+            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long topicId,
+            @RequestParam(required = false) Situation situation
+    ) {
+        return BaseResponse.onSuccess(
+                SuccessStatus._OK,
+                myPageQueryService.getMyPosts(user, categoryId, topicId, situation)
+        );
     }
 
-    /*
-    @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 카테고리로 필터링할 수 있습니다.")
-    @GetMapping("/lessons")
-    public ResponseEntity<BaseResponse> getMyLessons(@AuthenticatedUser User user,
-                                                     @RequestParam(required = false) Long categoryId) {
-        return BaseResponse.onSuccess(SuccessStatus._OK,
-                myPageQueryService.getMyLessons(user, categoryId));
-    }
-    */
     @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 태그로 필터링할 수 있습니다.")
     @GetMapping("/lessons")
-    public ResponseEntity<BaseResponse> getMyLessons(@AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getMyLessons(@Parameter(hidden = true) @AuthenticatedUser User user,
                                                      @RequestParam(required = false) String tag) {
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 myPageQueryService.getMyLessons(user, tag));
@@ -57,7 +56,7 @@ public class MyPageController {
     @Operation(summary = "내 프로필 조회", description = "내 이메일, 닉네임, 포인트, 신고 수 등의 프로필 정보를 조회합니다.")
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getMyProfile(
-            @AuthenticatedUser User user) {
+            @Parameter(hidden = true) @AuthenticatedUser User user) {
         return BaseResponse.onSuccess(SuccessStatus._OK, myPageQueryService.getMyProfile(user));
     }
 
@@ -66,7 +65,7 @@ public class MyPageController {
             summary = "내 프로필 수정",
             description = """
     닉네임과 프로필 이미지를 수정합니다.
-    - `data`: 닉네임 JSON 문자열
+    - `data`: 닉네임 JSON 문자열 (안 바꿀거면 null로 쓰면 됨!)
     - `profileImage`: 이미지 파일 (선택)
 
     **예시(JSON)**:
@@ -77,11 +76,15 @@ public class MyPageController {
     )
     @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse> updateMyProfile(
-            @AuthenticatedUser User user,
-            @RequestPart("data") String data,
+            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @RequestPart(value = "data") String data,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) throws JsonProcessingException {
-        UpdateProfileRequestDto dto = new ObjectMapper().readValue(data, UpdateProfileRequestDto.class);
+        UpdateProfileRequestDto dto = null;
+        if (data != null && !data.isBlank()) {
+            dto = new ObjectMapper().readValue(data, UpdateProfileRequestDto.class);
+        }
+
         myPageCommandService.updateMyProfile(user, dto, profileImage);
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }

@@ -23,6 +23,7 @@ public class Lesson extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
 
