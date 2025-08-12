@@ -58,7 +58,7 @@ public class CommentCommandServiceImpl implements CommentCommandService{
         Post post = postQueryService.findPost(postId);
 
         // 게시글 작성한 사용자가 아니거나 댓글을 단 사용자가 아닐 경우 오류
-        if (!post.getUser().equals(user1) || !comment.getUser().equals(user1)){
+        if (!comment.getUser().equals(user1)){
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "댓글 삭제 권한이 없습니다.");
         }
 
