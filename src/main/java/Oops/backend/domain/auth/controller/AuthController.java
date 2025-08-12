@@ -97,11 +97,6 @@ public class AuthController {
                                                     "  \"email\": \"test1@example.com\",\n" +
                                                     "  \"userName\": \"홍길동\",\n" +
                                                     "  \"password\": \"1234abcd!\",\n" +
-                                                    "  \"termsAgreement\": [\n" +
-                                                    "    { \"termId\": 1, \"agreed\": true },\n" +
-                                                    "    { \"termId\": 2, \"agreed\": true },\n" +
-                                                    "    { \"termId\": 3, \"agreed\": true }\n" +
-                                                    "  ]\n" +
                                                     "}"
                                     )
                             }
