@@ -2,6 +2,7 @@ package Oops.backend.domain.mypage.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
@@ -38,6 +39,7 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
     private final PostReportRepository postReportRepository;
     private final UserRepository userRepository;
     private final RandomTopicRepository randomTopicRepository;
+    private final S3ImageService s3ImageService;
 
     @Override
     public List<MyPostResponseDto> getMyPosts(User user, Long categoryId, Long topicId, Situation situation) {
@@ -86,8 +88,25 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
         long commentReportCount = commentReportRepository.countByReportUser(user);
         long postReportCount = postReportRepository.countByUser(user);
 
-        return MyProfileResponseDto.from(user, commentReportCount, postReportCount);
+        String imageKey = user.getProfileImageUrl();
+
+        String imageUrl = null;
+        if (imageKey != null && !imageKey.isBlank()) {
+            try {
+                imageUrl = s3ImageService.getPreSignedUrl(imageKey); // 유효 5분짜리 URL
+            } catch (Exception e) {
+                // presigned URL 생성 실패 시, 프론트 요구에 맞춰 null로 내려 안정적으로 응답
+                imageUrl = null;
+                // 필요하면 로깅만 남김
+                // log.warn("Failed to create presigned url for key={}", imageKey, e);
+            }
+        }
+
+        return MyProfileResponseDto.from(user, commentReportCount, postReportCount, imageUrl);
     }
+
+
+
 
     @Override
     public OtherProfileResponseDto getOtherUserProfile(Long userId) {
