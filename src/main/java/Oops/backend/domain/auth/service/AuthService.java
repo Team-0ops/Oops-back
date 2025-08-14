@@ -1,5 +1,6 @@
 package Oops.backend.domain.auth.service;
 
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.auth.*;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.dto.request.JoinDto;
@@ -45,6 +46,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final TermsRepository termsRepository;
     private final UserAndTermsRepository userAndTermsRepository;
+    private final S3ImageService s3ImageService;
+
     /*
     회원가입
      */
@@ -100,7 +103,9 @@ public class AuthService {
         log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
         log.info("AccessToken: " + tokenResponseDto.getAccessToken());
 
-        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken());
+        String profileImage = s3ImageService.getPreSignedUrl(user.getProfileImageUrl());
+
+        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
     }
 
     // login

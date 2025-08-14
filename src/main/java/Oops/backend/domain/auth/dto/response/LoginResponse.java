@@ -29,14 +29,14 @@ public class LoginResponse {
         this.refreshToken = refreshToken;
     }
 
-    public static LoginResponse of(User user, String accessToken, String refreshToken){
+    public static LoginResponse of(User user, String accessToken, String refreshToken, String profileImage){
 
         return LoginResponse.builder()
                 .userId(user.getId())
                 .nickname(user.getUserName())
                 .email(user.getEmail())
                 .accessToken(accessToken)
-                .profileImage(user.getProfileImageUrl())
+                .profileImage(profileImage)
                 .refreshToken(refreshToken)
                 .build();
 
