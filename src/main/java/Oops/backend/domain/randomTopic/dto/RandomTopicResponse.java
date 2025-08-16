@@ -1,5 +1,6 @@
 package Oops.backend.domain.randomTopic.dto;
 
+import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,5 +32,28 @@ public class RandomTopicResponse {
         Long topicId;
         String topicName;
         String topicIcon;
+    }
+
+    @Getter
+    public static class RandomTopicOfPostDto{
+
+        Long randomTopicId;
+        String randomTopicName;
+
+        @Builder
+        private RandomTopicOfPostDto(RandomTopic randomTopic){
+            this.randomTopicId = randomTopic.getId();
+            this.randomTopicName = randomTopic.getName();
+        }
+
+        public static RandomTopicOfPostDto from(RandomTopic randomTopic){
+
+            if (randomTopic == null) return null;
+
+            return RandomTopicOfPostDto.builder()
+                    .randomTopic(randomTopic)
+                    .build();
+        }
+
     }
 }

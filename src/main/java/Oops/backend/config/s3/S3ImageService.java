@@ -129,8 +129,8 @@ public class S3ImageService {
      */
     public String getPreSignedUrl(String key){
 
-        //유효 시간 5분
-        Date expiration = new Date(System.currentTimeMillis()+ 1000 * 60 * 5);
+        //유효 시간 1시간 (임시)
+        Date expiration = new Date(System.currentTimeMillis()+ 1000 * 60 * 60);
 
         GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName, key)
                                                                     .withMethod(HttpMethod.GET)
