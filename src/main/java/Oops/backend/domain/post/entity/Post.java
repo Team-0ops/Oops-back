@@ -73,10 +73,5 @@ public class Post extends BaseEntity {
     @Column(name = "comment_type")
     private List<CommentType> wantedCommentTypes;
 
-    public RandomTopic getTopic(){
-        if (this.topic == null) return null;
-        return this.topic;
-    }
-
 }
 

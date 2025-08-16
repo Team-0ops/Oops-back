@@ -26,8 +26,4 @@ public class PostGroup extends BaseEntity {
     @OneToMany(mappedBy = "postGroup", cascade = CascadeType.ALL)
     List<Post> posts = new ArrayList<>(3);
 
-    public Category getCategory(){
-        if (this.category == null) return null;
-        return this.category;
-    }
 }
