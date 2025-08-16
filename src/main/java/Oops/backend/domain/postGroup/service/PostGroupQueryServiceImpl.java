@@ -15,6 +15,7 @@ import Oops.backend.domain.post.service.PostLikeQueryService;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.postGroup.dto.GetPostGroupResponse;
 import Oops.backend.domain.postGroup.entity.PostGroup;
+import Oops.backend.domain.randomTopic.dto.RandomTopicResponse;
 import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -88,8 +89,12 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
             postViewDtoOvercome = toPostViewDto(postOvercome, user, profileImage);
         }
 
+        RandomTopicResponse.RandomTopicOfPostDto randomTopic =
+                RandomTopicResponse.RandomTopicOfPostDto.from(postFailure.getTopic());
+
         return GetPostGroupResponse.of(postGroup.getId(),
                 categoryResponseDto,
+                randomTopic,
                 postViewDtoFailure,
                 postViewDtoOvercoming,
                 postViewDtoOvercome);

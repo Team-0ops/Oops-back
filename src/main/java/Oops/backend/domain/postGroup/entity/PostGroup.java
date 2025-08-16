@@ -19,11 +19,15 @@ import java.util.List;
 @AllArgsConstructor
 public class PostGroup extends BaseEntity {
 
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category")
     private Category category;
 
     @OneToMany(mappedBy = "postGroup", cascade = CascadeType.ALL)
     List<Post> posts = new ArrayList<>(3);
+
+    public Category getCategory(){
+        if (this.category == null) return null;
+        return this.category;
+    }
 }

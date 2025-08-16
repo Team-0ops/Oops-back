@@ -16,11 +16,15 @@ public class CategoryResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CategoryResponseDto {
+
         Long categoryId;
         String name;
-        boolean isStored;    // 즐겨찾기 여부
+        boolean isStored; // 즐겨찾기 여부
 
         public static CategoryResponseDto from(Category category){
+
+            if (category==null) return null;
+
             return CategoryResponseDto.builder()
                     .categoryId(category.getId())
                     .name(category.getName())
