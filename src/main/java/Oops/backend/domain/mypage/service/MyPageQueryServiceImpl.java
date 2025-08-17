@@ -105,21 +105,6 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
 
 
 
-/*
-    @Override
-    public OtherProfileResponseDto getOtherUserProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
-
-        List<Post> posts = postRepository.findByUser(user); // 사용자 게시글 가져오기
-
-        // 베스트 실패자 게시글 6개 조회
-        List<Situation> bestSituations = List.of(Situation.OOPS, Situation.OVERCOMING, Situation.OVERCOME);
-        List<Post> bestFailers = postRepository.findBestFailers(bestSituations, PageRequest.of(0, 6));
-
-        return OtherProfileResponseDto.from(user, posts, bestFailers);
-    }*/
-
     @Override
     public OtherProfileResponseDto getOtherUserProfile(Long userId) {
         User user = userRepository.findById(userId)
