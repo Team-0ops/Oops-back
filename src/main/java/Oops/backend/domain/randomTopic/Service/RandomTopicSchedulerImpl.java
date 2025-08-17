@@ -22,8 +22,8 @@ public class RandomTopicSchedulerImpl {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
 
-    //@Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00시
-    @Scheduled(cron = "0 * * * * *") // 디버깅용 - 매 분 0초에 실행
+    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00시
+    //@Scheduled(cron = "0 * * * * *") // 디버깅용 - 매 분 0초에 실행
     @Transactional
     public void updateWeeklyTopic() {
 
