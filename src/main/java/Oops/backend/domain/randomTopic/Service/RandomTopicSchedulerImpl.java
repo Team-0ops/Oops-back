@@ -5,6 +5,7 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.HomeFeedRepository;
 import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.postGroup.entity.PostGroup;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ public class RandomTopicSchedulerImpl {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
 
-    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00시
-    //@Scheduled(cron = "0 * * * * *") // 디버깅용 - 매 분 0초에 실행
+    //@Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00시
+    @Scheduled(cron = "0 * * * * *") // 디버깅용 - 매 분 0초에 실행
     @Transactional
     public void updateWeeklyTopic() {
 
@@ -40,6 +41,10 @@ public class RandomTopicSchedulerImpl {
         for (Post post : currentTopicPosts) {
             post.setTopic(null);
             post.setCategory(freeCategory);
+            PostGroup postGroup = post.getPostGroup();
+            if (postGroup.getCategory() == null) {
+                postGroup.setCategory(freeCategory);
+            }
         }
 
         // 모든 주제 초기화
