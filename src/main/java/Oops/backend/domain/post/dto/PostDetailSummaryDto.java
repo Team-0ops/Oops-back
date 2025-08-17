@@ -15,6 +15,7 @@ public class PostDetailSummaryDto {
     private String situation;
     private String content;
     private String categoryName;
+    private String topicName;
     private String imageUrl;
 
     public static PostDetailSummaryDto from(Post post) {
@@ -26,6 +27,11 @@ public class PostDetailSummaryDto {
                 .categoryName(
                         post.getCategory() != null
                                 ? post.getCategory().getName()
+                                : null
+                )
+                .topicName(
+                        post.getTopic() != null
+                                ? post.getTopic().getName()
                                 : null
                 )
                 .imageUrl(
