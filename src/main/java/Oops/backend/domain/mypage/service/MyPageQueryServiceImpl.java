@@ -9,10 +9,8 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.commentReport.repository.CommentReportRepository;
 import Oops.backend.domain.lesson.entity.Lesson;
 import Oops.backend.domain.lesson.repository.LessonRepository;
-import Oops.backend.domain.mypage.dto.response.MyLessonResponseDto;
-import Oops.backend.domain.mypage.dto.response.MyPostResponseDto;
-import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
-import Oops.backend.domain.mypage.dto.response.OtherProfileResponseDto;
+import Oops.backend.domain.mypage.dto.response.*;
+import Oops.backend.domain.post.dto.PostSummaryDto;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
@@ -107,7 +105,7 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
 
 
 
-
+/*
     @Override
     public OtherProfileResponseDto getOtherUserProfile(Long userId) {
         User user = userRepository.findById(userId)
@@ -120,6 +118,28 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
         List<Post> bestFailers = postRepository.findBestFailers(bestSituations, PageRequest.of(0, 6));
 
         return OtherProfileResponseDto.from(user, posts, bestFailers);
+    }*/
+
+    @Override
+    public OtherProfileResponseDto getOtherUserProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
+        List<Post> posts = postRepository.findByUser(user);
+
+        List<Situation> bestSituations = List.of(Situation.OOPS, Situation.OVERCOMING, Situation.OVERCOME);
+        List<Post> bestFailers = postRepository.findBestFailers(bestSituations, PageRequest.of(0, 6));
+
+        // ✅ Presigned URL 생성기를 넘겨서 DTO 변환
+        List<OtherUserPostDto> postDtos = posts.stream()
+                .map(p -> OtherUserPostDto.from(p, key -> {
+                    try { return s3ImageService.getPreSignedUrl(key); }
+                    catch (Exception e) { return null; }
+                }))
+                .toList();
+
+        return OtherProfileResponseDto.from(user, postDtos, bestFailers);
     }
+
 
 }
