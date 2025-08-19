@@ -13,10 +13,10 @@ import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
-    // 내 교훈 전체 조회 (Post/Category/Topic/Tag까지 미리 로딩)
+    // ✅ 내 교훈 전체 조회 (삭제된 게시글도 포함: post가 null인 Lesson도 포함됨)
     @Query("""
         SELECT DISTINCT l FROM Lesson l
-        JOIN FETCH l.post p
+        LEFT JOIN FETCH l.post p
         LEFT JOIN FETCH p.category c
         LEFT JOIN FETCH p.topic t
         LEFT JOIN FETCH l.tags lt
@@ -26,10 +26,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     """)
     List<Lesson> findByUserWithPostAndTags(@Param("user") User user);
 
-    // 태그 필터 조회
+    // ✅ 태그 필터 조회 (필터 자체는 태그에 대해 INNER JOIN, 게시글 fetch는 LEFT로)
     @Query("""
         SELECT DISTINCT l FROM Lesson l
-        JOIN FETCH l.post p
+        LEFT JOIN FETCH l.post p
         LEFT JOIN FETCH p.category c
         LEFT JOIN FETCH p.topic t
         JOIN l.tags lt

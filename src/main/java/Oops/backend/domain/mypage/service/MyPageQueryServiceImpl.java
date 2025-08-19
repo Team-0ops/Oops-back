@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +68,22 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                     : postRepository.findByUser(user);
         }
 
-        return posts.stream().map(MyPostResponseDto::from).toList();
+        return posts.stream()
+                .map(post -> {
+                    List<String> urls = List.of();
+                    if (post.getImages() != null && !post.getImages().isEmpty()) {
+                        urls = post.getImages().stream()
+                                // 필요하면 .limit(n) 으로 썸네일만
+                                .map(key -> {
+                                    try { return s3ImageService.getPreSignedUrl(key); }
+                                    catch (Exception e) { return null; } // 실패 시 해당 이미지만 제외
+                                })
+                                .filter(Objects::nonNull)
+                                .toList();
+                    }
+                    return MyPostResponseDto.fromWithImages(post, urls);
+                })
+                .toList();
     }
 
 
@@ -76,9 +93,20 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 ? lessonRepository.findByUserAndTagNameWithPost(user, tag)
                 : lessonRepository.findByUserWithPostAndTags(user);
 
-        return lessons.stream()
-                .map(MyLessonResponseDto::from)
-                .toList();
+        return lessons.stream().map(lesson -> {
+            var post = lesson.getPost();
+            List<String> urls = List.of();
+            if (post != null && post.getImages() != null && !post.getImages().isEmpty()) {
+                urls = post.getImages().stream()
+                        .map(key -> {
+                            try { return s3ImageService.getPreSignedUrl(key); }
+                            catch (Exception e) { return null; }
+                        })
+                        .filter(Objects::nonNull)
+                        .toList();
+            }
+            return MyLessonResponseDto.fromWithImages(lesson, urls);
+        }).toList();
     }
 
     @Override
