@@ -6,6 +6,9 @@ import Oops.backend.domain.post.entity.Post;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 
 @Getter
@@ -18,8 +21,12 @@ public class MyPostResponseDto {
     private String situation;
     private int likes;
     private int watching;
+    private List<String> imageUrls;
 
     public static MyPostResponseDto from(Post post) {
+        return fromWithImages(post, List.of());
+    }
+    public static MyPostResponseDto fromWithImages(Post post, List<String> imageUrls) {
         String categoryOrTopicName;
 
         if (post.getCategory() != null && post.getTopic() == null) {
@@ -41,7 +48,20 @@ public class MyPostResponseDto {
                 .categoryOrTopicName(categoryOrTopicName)
                 .likes(post.getLikes())
                 .watching(post.getWatching())
+                .imageUrls(imageUrls == null ? List.of() : imageUrls)
                 .build();
+    }
+    public static MyPostResponseDto from(Post post, Function<String, String> presign) {
+        List<String> urls = (post.getImages() == null || post.getImages().isEmpty())
+                ? List.of()
+                : post.getImages().stream()
+                .map(k -> {
+                    try { return presign.apply(k); } catch (Exception e) { return null; }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        return fromWithImages(post, urls);
     }
 }
 
