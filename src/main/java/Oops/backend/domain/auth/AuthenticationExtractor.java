@@ -12,35 +12,30 @@ import java.util.Optional;
 @Slf4j
 public class AuthenticationExtractor {
     private static final String TOKEN_COOKIE_NAME = "AccessToken";
-
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     public static String extractTokenFromRequest(final HttpServletRequest request) {
         // 1. Authorization 헤더 우선
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("AccessToken".equals(cookie.getName())) {
-                    try {
-                        String decoded = JwtEncoder.decode(cookie.getValue());
-                        log.info("AccessToken 쿠키에서 디코딩 성공: {}", decoded);
-                        return decoded;
-                    } catch (Exception e) {
-                        log.error("AccessToken 쿠키 디코딩 실패: {}", e.getMessage());
-                        return null;
-                    }
-                }
+        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            String token = authHeader.substring(BEARER_PREFIX.length()).trim();
+            if (!token.isEmpty()) {
+                log.debug("Authorization 헤더에서 토큰 추출 성공");
+                return token;
             }
         }
 
         // 2. Authorization 헤더에서 찾기
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            try {
-                String decoded = JwtEncoder.decodeJwtBearerToken(authHeader);
-                log.info("Authorization 헤더에서 디코딩 성공: {}", decoded);
-                return decoded;
-            } catch (Exception e) {
-                log.error("Authorization 헤더 디코딩 실패: {}", e.getMessage());
-                return null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                    String token = cookie.getValue();
+                    if (token != null && !token.isBlank()) {
+                        log.debug("쿠키에서 토큰 추출 성공");
+                        return token;
+                    }
+                }
             }
         }
 
