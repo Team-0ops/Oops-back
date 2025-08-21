@@ -18,7 +18,7 @@ public class RandomTopicServiceImpl implements RandomTopicService {
 
     @Override
     @Transactional(readOnly = true)
-    public RandomTopicResponse.BannarsInfoDto getBannarInfo(User user){
+    public RandomTopicResponse.BannarsInfoDto getBannarInfoAuth(User user){
 
         // 이번주 랜덤 주제 조회
         RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
@@ -51,6 +51,40 @@ public class RandomTopicServiceImpl implements RandomTopicService {
                 .lastTopicInfo(lastTopicInfoDto)
                 .currentTopicInfo(currentTopicInfoDto)
                 .isBestUser(isBestUser)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RandomTopicResponse.BannarsInfoDto getBannarInfoGuest(){
+        // 이번주 랜덤 주제 조회
+        RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
+                .orElseThrow(() -> new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR));
+
+        // 이번주 주제 dto 변환
+        RandomTopicResponse.TopicInfoDto currentTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
+                .informNum(1)
+                .topicId(currentTopic.getId())
+                .topicName(currentTopic.getName())
+                .topicIcon(currentTopic.getImage())
+                .build();
+
+        // 저번주 랜덤 주제 조회
+        RandomTopic lastTopic = currentTopic.getLastRandomTopic();
+
+        // 저번주 주제 dto 변환
+        RandomTopicResponse.TopicInfoDto lastTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
+                .informNum(2)
+                .topicId(lastTopic.getId())
+                .topicName(lastTopic.getName())
+                .topicIcon(lastTopic.getImage())
+                .build();
+
+        // 결과 반환
+        return RandomTopicResponse.BannarsInfoDto.builder()
+                .lastTopicInfo(lastTopicInfoDto)
+                .currentTopicInfo(currentTopicInfoDto)
+                .isBestUser(false)
                 .build();
     }
 }
