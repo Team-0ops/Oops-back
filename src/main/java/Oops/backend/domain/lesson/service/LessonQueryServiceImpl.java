@@ -30,13 +30,15 @@ public class LessonQueryServiceImpl implements LessonQueryService{
         Post post = postQueryService.findPost(postId);
 
         Lesson lesson = lessonRepository.findByUserAndPost(user, post)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "교훈이 존재하지 않습니다."));
-        
+                .orElse(null);
+
         /* TODO : 검증 로직 수정
         if (user.getId() != lesson.getUser().getId()){
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "다른 사용자의 교훈은 조회할 수 없습니다.");
         }
         */
+
+        if (lesson == null) return null;
 
         String title = lesson.getTitle();
         String content = lesson.getContent();
