@@ -99,10 +99,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("update Post p set p.watching = p.watching+1 where p.id = :postId")
     void plusPostWatching(@Param("postId") Long postId);
 
-    // 해당 랜덤주제로 작성된 게시글 전체 조회
-    List<Post> findPostByTopicId (Long topicId);
-
-
+    // 랜덤 주제로 작성된 게시글 자유 카테고리로 등록
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Post p
+           set p.category = :free, p.topic = null
+         where p.topic.id = :topicId
+    """)
+    int movePostsToFree(@Param("topicId") Long topicId,
+                        @Param("free") Category free);
 }
 
 

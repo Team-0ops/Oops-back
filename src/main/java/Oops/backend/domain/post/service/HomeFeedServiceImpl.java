@@ -47,7 +47,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
         PostResponse.PostPreviewListDto bestListDto = convertBestListDto();
         result.add(bestListDto);
 
-        // 2. 즐겨찾기한 카테고리의 최신 글 10개 조회
+        // 2. 즐겨찾기한 카테고리의 최신 글 5개 조회
         List<UserAndCategory> userCategories = userAndCategoryRepository.findByUserId(user.getId());
         List<Long> categoryIds = userCategories.stream()
                 .map(uc -> uc.getCategory().getId())
@@ -63,8 +63,8 @@ public class HomeFeedServiceImpl implements HomeFeedService {
             return result;
         }
 
-        Pageable topTen = PageRequest.of(0, 10);
-        List<Post> posts = homeFeedRepository.findTop10ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topTen);
+        Pageable topFive = PageRequest.of(0, 5);
+        List<Post> posts = homeFeedRepository.findTop5ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topFive);
 
         List<PostResponse.PostPreviewDto> markedPreviewDtos = postDtoConverter(posts);
 

@@ -27,7 +27,7 @@ public interface HomeFeedRepository extends JpaRepository<Post, Long> {
 
     // 즐찾 카테고리 중 최신 실패담 10개 조회
     @Query("SELECT p FROM Post p WHERE p.category.id IN :categoryIds ORDER BY p.createdAt DESC")
-    List<Post> findTop10ByCategoryIdsOrderByCreatedAtDesc(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
+    List<Post> findTop5ByCategoryIdsOrderByCreatedAtDesc(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
 
     // 각 카테고리별 최신글 1개씩 조회
     @Query(value = """
