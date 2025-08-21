@@ -24,6 +24,7 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                         "/api/auth/refresh",
                         "/api/feeds/home/first-guest",
                         "/api/feeds/home/later",
+                        "/api/feeds/banners/guest",
                         "/hello",
                         "/api/terms",
                         "/health",
