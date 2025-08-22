@@ -32,12 +32,6 @@ public class LessonQueryServiceImpl implements LessonQueryService{
         Lesson lesson = lessonRepository.findByUserAndPost(user, post)
                 .orElse(null);
 
-        /* TODO : 검증 로직 수정
-        if (user.getId() != lesson.getUser().getId()){
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "다른 사용자의 교훈은 조회할 수 없습니다.");
-        }
-        */
-
         if (lesson == null) return null;
 
         String title = lesson.getTitle();
