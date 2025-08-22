@@ -82,7 +82,6 @@ public class PostCommandServiceImpl implements PostCommandService{
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
 
-        log.info("post.getUser().equals(user)={}", post.getUser().equals(user1));
 
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
         if (post.getUser() != user1 ){
