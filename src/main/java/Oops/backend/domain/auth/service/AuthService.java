@@ -111,7 +111,7 @@ public class AuthService {
     // login
     public void setCookie(HttpServletResponse response, String accessToken) {
         ResponseCookie cookie = ResponseCookie.from("AccessToken", JwtEncoder.encode(accessToken))
-                .maxAge(Duration.ofDays(14))
+                .maxAge(Duration.ofMillis(Duration.ofDays(2).toMillis()))
                 .httpOnly(true)
                 .sameSite("LAX")
                 .secure(false)
