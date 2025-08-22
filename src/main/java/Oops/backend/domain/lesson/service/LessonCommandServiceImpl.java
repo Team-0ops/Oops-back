@@ -38,7 +38,6 @@ public class LessonCommandServiceImpl implements LessonCommandService{
 
         Post post = postQueryService.findPost(postId);
 
-        //TODO : 리팩터링 필요
         User user1 = authRepository.findByEmail(user.getEmail());
 
         // 게시글 작성자는 교훈을 작성할 수 없음
