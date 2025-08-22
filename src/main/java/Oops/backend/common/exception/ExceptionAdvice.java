@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
@@ -65,5 +66,10 @@ public class ExceptionAdvice {
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, ConversionFailedException.class})
     public ResponseEntity<BaseResponse> handleConversionFailedException(Exception e) {
         return BaseResponse.onFailure((ErrorStatus._BAD_REQUEST));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<BaseResponse> handleMaxUploadSizeExceededException(Exception e) {
+        return BaseResponse.onFailure(ErrorStatus._BAD_REQUEST, "파일의 용량이 1MB를 초과하여 업로드 할 수 없습니다.");
     }
 }
