@@ -4,6 +4,7 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.comment.dto.CommentRequestDto;
 import Oops.backend.domain.comment.entity.Comment;
+import Oops.backend.domain.comment.entity.CommentLike;
 import Oops.backend.domain.comment.repository.CommentRepository;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.service.PostQueryService;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +64,8 @@ public class CommentCommandServiceImpl implements CommentCommandService{
         if (!comment.getUser().equals(user1)){
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "댓글 삭제 권한이 없습니다.");
         }
+
+        commentLikeService.deleteCommentLike(comment, user);
 
         commentRepository.delete(comment);
     }

@@ -45,4 +45,9 @@ public class CommentLikeService {
         commentLike.ifPresent(commentLikeRepository::delete);
     }
 
+    public void deleteCommentLike(CommentLike commentLike){
+
+        commentLikeRepository.delete(commentLike);
+    }
+
 }
