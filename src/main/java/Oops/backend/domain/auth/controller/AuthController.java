@@ -197,5 +197,10 @@ public class AuthController {
         return v;
     }
 
-
+    @GetMapping("/kakao/callback")
+    public ResponseEntity<BaseResponse> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
+        log.info("카카오 로그인 콜백, 인가 코드: {}", code);
+        LoginResponse loginResponse = authService.kakaoLogin(code, response);
+        return BaseResponse.onSuccess(SuccessStatus._OK, loginResponse);
+    }
 }

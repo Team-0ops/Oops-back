@@ -206,4 +206,74 @@ public class AuthService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
     }
 
+    @Transactional
+    public LoginResponse kakaoLogin(String code, HttpServletResponse httpServletResponse) {
+        // 1. 인가 코드로 카카오 액세스 토큰 발급 받기
+        String kakaoAccessToken = getKakaoAccessToken(code);
+
+        // 2. 카카오 액세스 토큰으로 사용자 정보 가져오기
+        KakaoUserDto kakaoUser = getKakaoUserInfo(kakaoAccessToken);
+
+        // 3. 사용자 정보로 회원가입 또는 로그인 처리
+        User user = authRepository.findByEmail(kakaoUser.getEmail());
+
+        if (user == null) {
+            // 신규 회원: 회원가입 진행
+            user = User.builder()
+                    .email(kakaoUser.getEmail())
+                    .userName(kakaoUser.getNickname())
+                    .provider("KAKAO") // 소셜 로그인임을 구분
+                    .build();
+            authRepository.save(user);
+        }
+
+        // 4. 자체 JWT 토큰 생성
+        TokenResponseDto tokenResponseDto = createToken(user);
+
+        // 5. 쿠키에 JWT 토큰 설정
+        setCookie(httpServletResponse, tokenResponseDto.getAccessToken());
+        setCookieForRefreshToken(httpServletResponse, tokenResponseDto.getRefreshToken());
+
+        String profileImage = s3ImageService.getPreSignedUrl(user.getProfileImageUrl());
+
+        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
+    }
+
+    // 인가 코드로 카카오 액세스 토큰 발급 요청
+    private String getKakaoAccessToken(String code) {
+        // WebClient를 사용한 예시
+        String tokenUri = "https://kauth.kakao.com/oauth/token";
+        String clientId = "YOUR_KAKAO_REST_API_KEY";
+        String redirectUri = "http://localhost:8080/api/auth/kakao/callback";
+
+        String responseBody = webClient.post()
+                .uri(tokenUri)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
+                        .with("client_id", clientId)
+                        .with("redirect_uri", redirectUri)
+                        .with("code", code))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block(); // 비동기이지만 예시를 위해 block 사용
+
+        // 응답 JSON 파싱하여 access_token 반환
+        return parseAccessToken(responseBody);
+    }
+
+    // 카카오 액세스 토큰으로 사용자 정보 요청
+    private KakaoUserDto getKakaoUserInfo(String kakaoAccessToken) {
+        // WebClient를 사용한 예시
+        String userInfoUri = "https://kapi.kakao.com/v2/user/me";
+
+        String responseBody = webClient.get()
+                .uri(userInfoUri)
+                .header("Authorization", "Bearer " + kakaoAccessToken)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block(); // 비동기이지만 예시를 위해 block 사용
+
+        // 응답 JSON 파싱하여 KakaoUserDto 반환
+        return parseUserInfo(responseBody);
+    }
 }
