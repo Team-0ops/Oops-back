@@ -2,6 +2,7 @@ package Oops.backend.domain.auth.service;
 
 import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.auth.*;
+import Oops.backend.domain.auth.dto.response.KakaoUserDto;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
@@ -17,15 +18,21 @@ import Oops.backend.domain.terms.repository.UserAndTermsRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import Oops.backend.domain.auth.dto.request.AgreeToTermDto;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 import java.util.List;
@@ -35,7 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class AuthService {
     private final AuthRepository authRepository;
@@ -47,6 +54,20 @@ public class AuthService {
     private final TermsRepository termsRepository;
     private final UserAndTermsRepository userAndTermsRepository;
     private final S3ImageService s3ImageService;
+    private final ObjectMapper objectMapper;
+    private final WebClient webClient;
+
+    @Value("${security.oauth2.client.registration.kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${security.oauth2.client.registration.kakao.redirect-uri}")
+    private String kakaoRedirectUri;
+
+    @Value("${security.oauth2.client.provider.kakao.token-uri}")
+    private String kakaoTokenUri;
+
+    @Value("${security.oauth2.client.provider.kakao.user-info-uri}")
+    private String kakaoUserInfoUri;
 
     /*
     회원가입
@@ -241,39 +262,47 @@ public class AuthService {
 
     // 인가 코드로 카카오 액세스 토큰 발급 요청
     private String getKakaoAccessToken(String code) {
-        // WebClient를 사용한 예시
         String tokenUri = "https://kauth.kakao.com/oauth/token";
-        String clientId = "YOUR_KAKAO_REST_API_KEY";
-        String redirectUri = "http://localhost:8080/api/auth/kakao/callback";
 
         String responseBody = webClient.post()
                 .uri(tokenUri)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
-                        .with("client_id", clientId)
-                        .with("redirect_uri", redirectUri)
+                .body(BodyInserters.fromFormData("grant_type","authorization_code")
+                        .with("client_id", kakaoClientId)          // @Value 또는 설정 주입
+                        .with("redirect_uri", kakaoRedirectUri)
                         .with("code", code))
                 .retrieve()
                 .bodyToMono(String.class)
-                .block(); // 비동기이지만 예시를 위해 block 사용
+                .timeout(Duration.ofSeconds(5))
+                .block();
 
-        // 응답 JSON 파싱하여 access_token 반환
-        return parseAccessToken(responseBody);
+        try {
+            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, Map.class);
+            String token = (String) jsonMap.get("access_token");
+            if (token == null) throw new GeneralException(ErrorStatus._UNAUTHORIZED, "카카오 토큰 없음");
+            return token;
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR, "카카오 토큰 파싱 오류");
+        }
     }
+
 
     // 카카오 액세스 토큰으로 사용자 정보 요청
     private KakaoUserDto getKakaoUserInfo(String kakaoAccessToken) {
-        // WebClient를 사용한 예시
-        String userInfoUri = "https://kapi.kakao.com/v2/user/me";
-
         String responseBody = webClient.get()
-                .uri(userInfoUri)
-                .header("Authorization", "Bearer " + kakaoAccessToken)
+                .uri("https://kapi.kakao.com/v2/user/me")
+                .headers(h -> h.setBearerAuth(kakaoAccessToken))
                 .retrieve()
                 .bodyToMono(String.class)
-                .block(); // 비동기이지만 예시를 위해 block 사용
+                .timeout(Duration.ofSeconds(5))
+                .block();
 
-        // 응답 JSON 파싱하여 KakaoUserDto 반환
-        return parseUserInfo(responseBody);
+        try {
+            return objectMapper.readValue(responseBody, KakaoUserDto.class);
+        } catch (JsonProcessingException e) {
+            throw new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR, "카카오 사용자 정보 파싱 오류");
+        }
     }
+
+
 }
