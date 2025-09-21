@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "lastLuckyDraws")
     @Query("SELECT u FROM User u WHERE u.id = :userId")
     Optional<User> findWithlastLuckyDrawsById(@Param("userId") Long userId);
+
+    <T> Optional<T> findByEmail(String email);
 }
