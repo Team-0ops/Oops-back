@@ -16,6 +16,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name="users")
 public class User extends BaseEntity {
 
     @Column
@@ -44,7 +45,6 @@ public class User extends BaseEntity {
     private List<UserLastLuckyDraw> lastLuckyDraws = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @Column
     private Set<UserTag> tags = new LinkedHashSet<>();
 
     public void addUserTag(UserTag userTag) {
