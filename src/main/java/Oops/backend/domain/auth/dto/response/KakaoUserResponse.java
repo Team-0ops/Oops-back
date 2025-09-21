@@ -2,11 +2,9 @@ package Oops.backend.domain.auth.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
-@Getter
-public class KakaoTokenResponse {
+public class KakaoUserResponse {
 
     private Long id;
 
@@ -28,5 +26,20 @@ public class KakaoTokenResponse {
 
         @JsonProperty("thumbnail_image_url")
         private String thumbnailImageUrl;
+    }
+
+    // ===== 편의 Getter (Null-safe) =====
+    public String getEmail() {
+        return kakaoAccount != null ? kakaoAccount.getEmail() : null;
+    }
+
+    public String getNickname() {
+        return kakaoAccount != null && kakaoAccount.getProfile() != null
+                ? kakaoAccount.getProfile().getNickname() : null;
+    }
+
+    public String getProfileImageUrl() {
+        return kakaoAccount != null && kakaoAccount.getProfile() != null
+                ? kakaoAccount.getProfile().getProfileImageUrl() : null;
     }
 }
