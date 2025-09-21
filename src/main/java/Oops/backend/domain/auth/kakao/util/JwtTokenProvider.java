@@ -17,7 +17,6 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    // 기존 jwt.secret → 새 규격 jwt.secret-base64 로 변경
     private final Key key;
     private final long accessMinutes;
     private final long refreshDays;
@@ -60,7 +59,6 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token);  // signature, exp 검증
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            // SignatureException, ExpiredJwtException, MalformedJwtException 등 포함
             return false;
         }
     }
