@@ -30,21 +30,6 @@ public class KakaoLoginController {
 
     private final KakaoService kakaoService;
 
-    @GetMapping("/test")
-    public ResponseEntity<BaseResponse> testKakaoLogin(
-            @RequestParam(value = "code", required = false) String code, @AuthenticatedUser User user
-    ) {
-        log.info("카카오 로그인 테스트 호출됨, code={}", code + user.getUserName());
-        log.info(user.getUserName());
-
-        if (code == null || code.isBlank()) {
-            return BaseResponse.onSuccess(SuccessStatus._OK, "테스트 OK - code 없음");
-        }
-
-        var result = kakaoService.login(code, null);
-        return BaseResponse.onSuccess(SuccessStatus._OK, result);
-    }
-
     @GetMapping("/callback")
     public ResponseEntity<BaseResponse> callback(@RequestParam String code,
                                                  @RequestParam(value="redirect-url", required=false) String redirectUrl, HttpServletResponse response) {
@@ -53,15 +38,6 @@ public class KakaoLoginController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 인증 완료");
     }
 
-
-    @GetMapping("/kakao/login")
-    public ResponseEntity<BaseResponse> kakaoCallback(
-            @RequestParam("code") String code,
-            @RequestParam(value = "redirect-url", required = false) String redirectUrl
-    ) {
-        this.kakaoService.login(code, redirectUrl);
-        return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 로그인 성공");
-    }
 
     @PostMapping("/kakao/login")
     public ResponseEntity<BaseResponse> kakaoCallback(@RequestBody KakaoLoginRequestDto kakaoLoginRequestDto) {
@@ -78,4 +54,31 @@ public class KakaoLoginController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 로그아웃");
     }
 
+
+
+
+//    @GetMapping("/kakao/login")
+//    public ResponseEntity<BaseResponse> kakaoCallback(
+//            @RequestParam("code") String code,
+//            @RequestParam(value = "redirect-url", required = false) String redirectUrl
+//    ) {
+//        this.kakaoService.login(code, redirectUrl);
+//        return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 로그인 성공");
+//    }
+
+
+//    @GetMapping("/test")
+//    public ResponseEntity<BaseResponse> testKakaoLogin(
+//            @RequestParam(value = "code", required = false) String code, @AuthenticatedUser User user
+//    ) {
+//        log.info("카카오 로그인 테스트 호출됨, code={}", code + user.getUserName());
+//        log.info(user.getUserName());
+//
+//        if (code == null || code.isBlank()) {
+//            return BaseResponse.onSuccess(SuccessStatus._OK, "테스트 OK - code 없음");
+//        }
+//
+//        var result = kakaoService.login(code, null);
+//        return BaseResponse.onSuccess(SuccessStatus._OK, result);
+//    }
 }

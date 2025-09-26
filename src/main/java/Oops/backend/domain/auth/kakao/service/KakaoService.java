@@ -2,7 +2,6 @@ package Oops.backend.domain.auth.kakao.service;
 
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
-import Oops.backend.domain.auth.dto.response.TokenWithCookieResponse;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.kakao.util.JwtTokenProvider;
 import Oops.backend.domain.auth.repository.AuthRepository;
@@ -23,7 +22,6 @@ import Oops.backend.common.status.ErrorStatus;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,7 +31,6 @@ public class KakaoService {
     private final AuthRepository authRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
-
 
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -229,10 +226,10 @@ public class KakaoService {
     @Transactional
     protected User upsertUser(KakaoUserInfo kuser) {
         String email = normalizeEmail(kuser);
-        Optional<User> existing = authRepository.findByEmail(email);
+        User existing = authRepository.findByEmail(email);
 
-        if (existing.isPresent()) {
-            User u = existing.get();
+        if (existing != null) {
+            User u = existing;
             boolean dirty = false;
             if (kuser.nickname() != null && !kuser.nickname().equals(u.getUserName())) {
                 u.setUserName(kuser.nickname());
@@ -268,7 +265,7 @@ public class KakaoService {
     }
 
 
-    /** 이메일 미동의 시 placeholder 생성 */
+    // 이메일 미동의 시 placeholder 생성
     private String normalizeEmail(KakaoUserInfo kakaoUser) {
         String email = kakaoUser.email();
         if (email == null || email.isBlank()) {
@@ -302,6 +299,7 @@ public class KakaoService {
         if (v instanceof Number n) return n.longValue();
         try { return v != null ? Long.parseLong(String.valueOf(v)) : null; } catch (Exception e) { return null; }
     }
+
     /** 내부 전용 record */
     private record KakaoUserInfo(
             Long id,
