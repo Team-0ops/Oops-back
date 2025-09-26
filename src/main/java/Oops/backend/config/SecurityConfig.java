@@ -40,7 +40,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/kakao/callback", "/public/**").permitAll()
+                        .requestMatchers("/auth/kakao/callback", "/public/**", "/auth/join", "auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )

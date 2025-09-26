@@ -1,5 +1,6 @@
 package Oops.backend.domain.auth.entity;
 
+import Oops.backend.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
         name = "refresh_token",
         uniqueConstraints = @UniqueConstraint(name = "ux_refresh_token_user", columnNames = "user_id")
 )
-public class RefreshToken {
+public class RefreshToken extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -29,4 +30,5 @@ public class RefreshToken {
     }
 
     public void setToken(String token) { this.token = token; }
+    public void setUserId(Long userId) { this.userId = userId; }
 }

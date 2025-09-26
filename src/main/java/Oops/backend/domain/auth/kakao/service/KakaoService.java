@@ -22,6 +22,7 @@ import Oops.backend.common.status.ErrorStatus;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -226,10 +227,10 @@ public class KakaoService {
     @Transactional
     protected User upsertUser(KakaoUserInfo kuser) {
         String email = normalizeEmail(kuser);
-        User existing = authRepository.findByEmail(email);
+        Optional<User> existing = authRepository.findByEmail(email);
 
-        if (existing != null) {
-            User u = existing;
+        if (!existing.isPresent()) {
+            User u = existing.get();
             boolean dirty = false;
             if (kuser.nickname() != null && !kuser.nickname().equals(u.getUserName())) {
                 u.setUserName(kuser.nickname());

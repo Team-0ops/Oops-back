@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -40,18 +41,18 @@ public class AuthService {
     */
     public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
-        User user = this.authRepository.findByEmail(loginDto.getEmail());
+        Optional<User> user = this.authRepository.findByEmail(loginDto.getEmail());
 
         if(user == null) {
             throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
         }
 
-        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword())) {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
         }
 
-        log.info("UserName: "+ user.getUserName());
-        TokenResponseDto tokenResponseDto = this.createToken(user);
+        log.info("UserName: "+ user.get().getUserName());
+        TokenResponseDto tokenResponseDto = this.createToken(user.get());
         setCookie(response, tokenResponseDto.getAccessToken());
         setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
 
@@ -62,9 +63,9 @@ public class AuthService {
         log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
         log.info("AccessToken: " + tokenResponseDto.getAccessToken());
 
-        String profileImage = s3ImageService.getPreSignedUrl(user.getProfileImageUrl());
+        String profileImage = s3ImageService.getPreSignedUrl(user.get().getProfileImageUrl());
 
-        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
+        return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
     }
 
     @Transactional
@@ -134,18 +135,24 @@ public class AuthService {
 
 
     public void isEmailExist(String email) {
-        User user = this.authRepository.findByEmail(email);
-        if (user != null) {
+        Optional<User> user = this.authRepository.findByEmail(email);
+        if (user.isPresent()) {
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
         }
     }
 
     private TokenResponseDto createToken(User user) {
+        log.info("UserId: "+ user.getId());
+
         String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
         String refreshTokenValue = jwtTokenProvider.generateRefreshToken(user.getId());
 
         RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
-                .orElse(new RefreshToken());
+                .orElseGet(() -> {
+                    RefreshToken rt = new RefreshToken();
+                    rt.setUserId(user.getId());
+                    return rt;
+                });
 
         refreshToken.setToken(refreshTokenValue);
         refreshTokenRepository.save(refreshToken);
