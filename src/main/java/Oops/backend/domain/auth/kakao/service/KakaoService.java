@@ -3,7 +3,7 @@ package Oops.backend.domain.auth.kakao.service;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.RefreshToken;
-import Oops.backend.domain.auth.kakao.util.JwtTokenProvider;
+import Oops.backend.domain.auth.util.JwtTokenProvider;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
 import Oops.backend.domain.user.entity.User;

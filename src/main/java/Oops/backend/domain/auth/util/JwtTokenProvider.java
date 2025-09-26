@@ -1,4 +1,4 @@
-package Oops.backend.domain.auth.kakao.util;
+package Oops.backend.domain.auth.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

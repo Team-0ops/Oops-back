@@ -1,7 +1,7 @@
 package Oops.backend.config;
 
-import Oops.backend.domain.auth.kakao.util.JwtAuthenticationFilter;
-import Oops.backend.domain.auth.kakao.util.JwtUtil;
+import Oops.backend.domain.auth.util.JwtAuthenticationFilter;
+import Oops.backend.domain.auth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

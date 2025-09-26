@@ -1,4 +1,4 @@
-package Oops.backend.domain.auth.kakao.util;
+package Oops.backend.domain.auth.util;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;

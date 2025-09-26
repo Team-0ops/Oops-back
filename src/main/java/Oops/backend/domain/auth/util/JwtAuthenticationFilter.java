@@ -1,4 +1,4 @@
-package Oops.backend.domain.auth.kakao.util;
+package Oops.backend.domain.auth.util;
 
 import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.user.entity.User;
