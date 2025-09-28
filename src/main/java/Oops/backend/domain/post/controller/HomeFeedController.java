@@ -3,7 +3,6 @@ package Oops.backend.domain.post.controller;
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
-import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.service.HomeFeedService;
 import Oops.backend.domain.user.entity.User;

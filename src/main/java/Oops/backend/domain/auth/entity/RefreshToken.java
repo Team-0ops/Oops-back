@@ -10,6 +10,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(
         name = "refresh_token",
@@ -26,13 +29,15 @@ public class RefreshToken extends BaseEntity {
     @Column(nullable = false, length = 512)
     private String token;
 
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
     public static RefreshToken of(Long userId, String token) {
         RefreshToken rt = new RefreshToken();
         rt.userId = userId;
         rt.token = token;
         return rt;
     }
-
     public void setToken(String token) {
         this.token = token;
     }

@@ -9,13 +9,13 @@ import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
-
 import Oops.backend.domain.terms.repository.TermsRepository;
 import Oops.backend.domain.terms.repository.UserAndTermsRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
+import Oops.backend.domain.auth.dto.request.AgreeToTermDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
@@ -25,7 +25,12 @@ import Oops.backend.domain.auth.repository.AuthRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Service
@@ -33,7 +38,6 @@ import java.util.Optional;
 @Slf4j
 public class AuthService {
     private final AuthRepository authRepository;
-
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final S3ImageService s3ImageService;
@@ -65,20 +69,6 @@ public class AuthService {
             return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
         }
 
-    @Transactional
-    public void join(JoinDto joinDto) {
-        this.isEmailExist(joinDto.getEmail());
-        String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
-        // 이메일이 존재하지 않는다면 새로운 User 생성
-        User user = User.builder()
-                .email(joinDto.getEmail())
-                .password(encryptedPassword)
-                .userName(joinDto.getUserName())
-                .build();
-
-        authRepository.save(user);
-    }
-
         @Transactional
         public void changePassword(User user, String oldPassword, String newPassword) {
             log.info(user.getUserName());
@@ -90,6 +80,7 @@ public class AuthService {
             user.setPassword(encryptedPassword);
             authRepository.save(user);
         }
+
 
     // login
     public void setCookie(HttpServletResponse response, String accessToken) {
@@ -134,27 +125,19 @@ public class AuthService {
         response.addHeader("set-cookie", accessCookie.toString());
         response.addHeader("set-cookie", refreshCookie.toString());
     }
+    @Transactional
+    public void join(JoinDto joinDto) {
+        this.isEmailExist(joinDto.getEmail());
+        String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
+        // 이메일이 존재하지 않는다면 새로운 User 생성
+        User user = User.builder()
+                .email(joinDto.getEmail())
+                .password(encryptedPassword)
+                .userName(joinDto.getUserName())
+                .build();
 
-    public TokenResponseDto refreshAccessToken(String refreshToken) {
-        RefreshToken stored = findExistingRefreshToken(refreshToken);
-
-        // 만료 검사
-        validateRefreshToken(stored);
-
-        User user = findExistingUserByRefreshToken(stored);
-
-        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
-
-        log.info("new AccessToken: " + newAccess);
-        return new TokenResponseDto(newAccess, stored.getToken());
+        authRepository.save(user);
     }
-    public void isEmailExist(String email) {
-        Optional<User> user = this.authRepository.findByEmail(email);
-        if (user.isPresent()) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
-        }
-    }
-
     private TokenResponseDto createToken(User user) {
         log.info("UserId: "+ user.getId());
 
@@ -172,12 +155,32 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
         return TokenResponseDto.of(accessToken, refreshTokenValue);
     }
+    public TokenResponseDto refreshAccessToken(String refreshToken) {
+        RefreshToken stored = findExistingRefreshToken(refreshToken);
 
+        // 만료 검사
+        validateRefreshToken(stored);
+
+        User user = findExistingUserByRefreshToken(stored);
+
+        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
+
+        log.info("new AccessToken: " + newAccess);
+        return new TokenResponseDto(newAccess, stored.getToken());
+    }
+
+    public void isEmailExist(String email) {
+        Optional<User> user = this.authRepository.findByEmail(email);
+        if (user.isPresent()) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
+        }
+    }
     public void validateRefreshToken(RefreshToken refreshToken) {
         if (jwtTokenProvider.validate(refreshToken.getToken())) {
             throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
     }
+
 
     public RefreshToken findExistingRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByToken(refreshToken).orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN));

@@ -1,7 +1,6 @@
 package Oops.backend.domain.auth.naver.service;
 
 import Oops.backend.common.security.token.TokenService;
-import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
 import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;

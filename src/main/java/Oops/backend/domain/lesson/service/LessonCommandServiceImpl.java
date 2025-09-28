@@ -38,9 +38,7 @@ public class LessonCommandServiceImpl implements LessonCommandService{
     public Lesson createLesson(User user, Long postId, CreateLessonRequest request) {
 
         Post post = postQueryService.findPost(postId);
-
-        Optional<User> user1 = authRepository.findByEmail(user.getEmail());
-
+        Optional<User> user1 = authRepository.findById(user.getId());
         // 게시글 작성자는 교훈을 작성할 수 없음
         log.info("게시글 작성자와 비교");
         if (user.getId() == post.getUser().getId()){
