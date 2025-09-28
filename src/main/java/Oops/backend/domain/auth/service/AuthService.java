@@ -1,7 +1,7 @@
 package Oops.backend.domain.auth.service;
 
+import Oops.backend.common.security.util.JwtTokenProvider;
 import Oops.backend.config.s3.S3ImageService;
-import Oops.backend.domain.auth.*;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
@@ -9,52 +9,66 @@ import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
-import Oops.backend.domain.terms.entity.RequiredType;
-import Oops.backend.domain.terms.entity.Terms;
-import Oops.backend.domain.terms.entity.UserAndTerms;
+
 import Oops.backend.domain.terms.repository.TermsRepository;
 import Oops.backend.domain.terms.repository.UserAndTermsRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
-import Oops.backend.domain.auth.dto.request.AgreeToTermDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.Optional;
+
 
 @Service
 @AllArgsConstructor
 @Slf4j
 public class AuthService {
     private final AuthRepository authRepository;
-    private final PasswordHashEncryption passwordHashEncryption;
-    private final AccessTokenProvider accessTokenProvider;
-    private final RefreshTokenProvider refreshTokenProvider;
+
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final TermsRepository termsRepository;
-    private final UserAndTermsRepository userAndTermsRepository;
     private final S3ImageService s3ImageService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
-    /*
-    회원가입
-     */
+    public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
+        log.info("login 진입");
+        Optional<User> user = this.authRepository.findByEmail(loginDto.getEmail());
+
+        if(user == null) {
+            throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
+        }
+
+        if (!passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword())) {
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
+        }
+
+        log.info("UserName: "+ user.get().getUserName());
+        TokenResponseDto tokenResponseDto = this.createToken(user.get());
+        setCookie(response, tokenResponseDto.getAccessToken());
+        setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
+
+            log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
+            log.info("AccessToken: " + tokenResponseDto.getAccessToken());
+
+            String profileImage = s3ImageService.getPreSignedUrl(user.get().getProfileImageUrl());
+
+            return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
+        }
+
     @Transactional
     public void join(JoinDto joinDto) {
         this.isEmailExist(joinDto.getEmail());
-        String encryptedPassword = this.passwordHashEncryption.encrypt(joinDto.getPassword());
+        String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
         // 이메일이 존재하지 않는다면 새로운 User 생성
         User user = User.builder()
                 .email(joinDto.getEmail())
@@ -65,48 +79,17 @@ public class AuthService {
         authRepository.save(user);
     }
 
+        @Transactional
+        public void changePassword(User user, String oldPassword, String newPassword) {
+            log.info(user.getUserName());
+            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+                throw new GeneralException(ErrorStatus._UNAUTHORIZED, "기존 비밀번호가 일치하지 않습니다.");
+            }
 
-    /*
-    Email 유일성 확인
-     */
-    public void isEmailExist(String email) {
-        User user = this.authRepository.findByEmail(email);
-        if (user != null) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
+            String encryptedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encryptedPassword);
+            authRepository.save(user);
         }
-    }
-
-    /*
-    login
-     */
-    public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
-        log.info("login 진입");
-        User user = this.authRepository.findByEmail(loginDto.getEmail());
-
-        if(user == null) {
-            throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
-        }
-
-        if (!passwordHashEncryption.matches(loginDto.getPassword(), user.getPassword())) {
-            throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
-        }
-
-        log.info("UserName: "+ user.getUserName());
-        TokenResponseDto tokenResponseDto = this.createToken(user);
-        setCookie(response, tokenResponseDto.getAccessToken());
-        setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
-
-        response.addHeader("AccessToken", tokenResponseDto.getAccessToken().toString());
-        response.addHeader("RefreshToken", tokenResponseDto.getRefreshToken().toString());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-        log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
-        log.info("AccessToken: " + tokenResponseDto.getAccessToken());
-
-        String profileImage = s3ImageService.getPreSignedUrl(user.getProfileImageUrl());
-
-        return LoginResponse.of(user, tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
-    }
 
     // login
     public void setCookie(HttpServletResponse response, String accessToken) {
@@ -132,18 +115,7 @@ public class AuthService {
 
         response.addHeader("Set-Cookie", cookie_refresh.toString());
     }
-    @Transactional
-    public void changePassword(User user, String oldPassword, String newPassword) {
-        User user1 = authRepository.findByEmail(user.getEmail());
-        log.info(user1.getUserName());
-        if (!passwordHashEncryption.matches(oldPassword, user.getPassword())) {
-            throw new GeneralException(ErrorStatus._UNAUTHORIZED, "기존 비밀번호가 일치하지 않습니다.");
-        }
 
-        String encryptedPassword = passwordHashEncryption.encrypt(newPassword);
-        user.setPassword(encryptedPassword);
-        authRepository.save(user);
-    }
 
     public void logout(HttpServletResponse response) {
         ResponseCookie accessCookie = ResponseCookie.from("AccessToken", null)
@@ -171,29 +143,38 @@ public class AuthService {
 
         User user = findExistingUserByRefreshToken(stored);
 
-        String payload = String.valueOf(user.getId());
-        String newAccess = accessTokenProvider.createToken(payload);
+        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
 
         log.info("new AccessToken: " + newAccess);
         return new TokenResponseDto(newAccess, stored.getToken());
     }
+    public void isEmailExist(String email) {
+        Optional<User> user = this.authRepository.findByEmail(email);
+        if (user.isPresent()) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
+        }
+    }
 
     private TokenResponseDto createToken(User user) {
-        String payload = String.valueOf(user.getId());
-        String accessToken = accessTokenProvider.createToken(payload);
-        String refreshTokenValue = refreshTokenProvider.createRefreshToken();
+        log.info("UserId: "+ user.getId());
+
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
+        String refreshTokenValue = jwtTokenProvider.generateRefreshToken(user.getId());
 
         RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
-                .orElse(new RefreshToken(user.getId(), refreshTokenValue));
+                .orElseGet(() -> {
+                    RefreshToken rt = new RefreshToken();
+                    rt.setUserId(user.getId());
+                    return rt;
+                });
 
         refreshToken.setToken(refreshTokenValue);
         refreshTokenRepository.save(refreshToken);
-
-        return new TokenResponseDto(accessToken, refreshTokenValue);
+        return TokenResponseDto.of(accessToken, refreshTokenValue);
     }
 
     public void validateRefreshToken(RefreshToken refreshToken) {
-        if (refreshTokenProvider.isTokenExpired(refreshToken.getToken())) {
+        if (jwtTokenProvider.validate(refreshToken.getToken())) {
             throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
     }
