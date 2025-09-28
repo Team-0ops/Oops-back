@@ -7,6 +7,7 @@ import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.SocialAccount;
+import Oops.backend.domain.auth.kakao.service.KakaoService;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.user.entity.User;
@@ -75,6 +76,21 @@ public class NaverService {
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "userId가 필요합니다.");
         }
         tokenService.revokeAllAndClearCookies(userId, response);
+    }
+    @Transactional
+    public TokenResponseDto login(String code, String redirectUrl) {
+        log.info("login code: {}", code);
+        if (code == null || code.isBlank()) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "code가 필요합니다.");
+        }
+        String redirect = (redirectUrl != null && !redirectUrl.isBlank()) ? redirectUrl : naverRedirectUri;
+
+        String kakaoAccessToken = exchangeToken(code, null,redirect);
+        NaverUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
+
+        User user = loginOrLink(kakaoUser);
+        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getId(), user.getEmail());
+        return tokenService.issue(user);
     }
 
     @Transactional

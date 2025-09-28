@@ -2,6 +2,7 @@ package Oops.backend.domain.auth.naver.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
+import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
 import Oops.backend.domain.auth.naver.service.NaverService;
 import Oops.backend.domain.user.entity.User;
@@ -19,6 +20,21 @@ import org.springframework.web.bind.annotation.*;
 public class NaverController {
 
     private final NaverService naverService;
+
+    @GetMapping("/test")
+    public ResponseEntity<BaseResponse> testNaverLogin(
+            @RequestParam(value = "code", required = false) String code, @AuthenticatedUser User user
+    ) {
+        log.info("네이버 로그인 테스트 호출됨, code={}", code + user.getUserName());
+        log.info(user.getUserName());
+
+        if (code == null || code.isBlank()) {
+            return BaseResponse.onSuccess(SuccessStatus._OK, "테스트 OK - code 없음");
+        }
+
+        var result = naverService.login(code, null);
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
+    }
 
     @GetMapping("/callback")
     public ResponseEntity<BaseResponse> callback(@RequestParam("code") String code,
