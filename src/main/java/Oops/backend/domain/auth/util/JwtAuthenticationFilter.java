@@ -34,13 +34,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final AntPathMatcher matcher = new AntPathMatcher();
     private static final String[] WHITELIST = {
             "/auth/kakao/callback",
+            "/auth/naver/callback",
             "/login/**",
             "/oauth2/**",
             "/public/**",
             "/favicon.ico",
             "/error",
             "/actuator/**",
-            "/css/**", "/js/**", "/images/**", "/webjars/**"
+            "/css/**", "/js/**", "/images/**", "/webjars/**",
+            "/.well-known/**",
+            "/json",
+            "/json/**",
+            "/devtools/**"
     };
 
     @Override
