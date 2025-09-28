@@ -1,8 +1,12 @@
 package Oops.backend.domain.auth.kakao.service;
 
+import Oops.backend.common.security.token.TokenService;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
+import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.RefreshToken;
+import Oops.backend.domain.auth.entity.SocialAccount;
+import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.auth.util.JwtTokenProvider;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
@@ -28,11 +32,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
-
     private final AuthRepository authRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtTokenProvider jwtTokenProvider;
-
+    private final TokenService tokenService;
+    private final SocialAccountRepository socialAccountRepository;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoClientId;
@@ -48,29 +50,12 @@ public class KakaoService {
 
     @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
     private String kakaoUserInfoUri;
+    private static final String PROVIDER_NAVER = "Kakao";
 
     @Transactional
     public void loginAndSetCookie(String code, String redirectUrl, HttpServletResponse response) {
         TokenResponseDto tokens = login(code, redirectUrl);
-
-        ResponseCookie access = ResponseCookie.from("AccessToken", tokens.getAccessToken())
-                .httpOnly(true)
-                .sameSite("None")
-                .secure(true)
-                .path("/")
-                .maxAge(30 * 60)
-                .build();
-
-        ResponseCookie refresh = ResponseCookie.from("RefreshToken", tokens.getRefreshToken())
-                .httpOnly(true)
-                .sameSite("None")
-                .secure(true)
-                .path("/")
-                .maxAge(14 * 24 * 60 * 60)
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, access.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
+        tokenService.setLoginCookies(response, tokens);
     }
 
     @Transactional
@@ -84,9 +69,9 @@ public class KakaoService {
         String kakaoAccessToken = exchangeToken(code, redirect);
         KakaoUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
 
-        User user = upsertUser(kakaoUser);
+        User user = loginOrLink(kakaoUser);
         log.info("[KAKAO-LOGIN] userId={}, email={}", user.getId(), user.getEmail());
-        return issueTokens(user);
+        return tokenService.issue(user);
     }
 
     @Transactional
@@ -100,18 +85,17 @@ public class KakaoService {
 
         String kakaoAccessToken = exchangeToken(requestDto.getCode(), redirect);
         KakaoUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
+        User user = loginOrLink(kakaoUser);
 
-        User user = upsertUser(kakaoUser);
-        return issueTokens(user);
+        return tokenService.issue(user);
     }
 
     @Transactional
-    public void logout(Long userId, String redirectUrl) {
+    public void logout(Long userId, String redirectUrl, HttpServletResponse response) {
         if (userId == null) {
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "userId가 필요합니다.");
         }
-        refreshTokenRepository.deleteByUserId(userId);
-        log.info("[KAKAO-LOGOUT] userId={} -> refreshToken revoked", userId);
+        tokenService.revokeAllAndClearCookies(userId, response);
     }
 
 
@@ -225,6 +209,50 @@ public class KakaoService {
     }
 
     @Transactional
+    protected User loginOrLink(KakaoUserInfo kakaoUserInfo) {
+        final String providerId = String.valueOf(kakaoUserInfo.id);
+        final String email      = kakaoUserInfo.email;
+        final String nickname   = kakaoUserInfo.nickname;
+        final String profileUrl = kakaoUserInfo.profileImageUrl;
+        var socialOpt = socialAccountRepository
+                .findByProviderAndProviderId(PROVIDER_NAVER, providerId);
+        if (socialOpt.isPresent()) {
+            return socialOpt.get().getUser();
+        }
+        if (email != null && !email.isBlank()) {
+            var userOpt = authRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                var user = userOpt.get();
+                attachSocial(user, PROVIDER_NAVER, providerId, email);
+                if (user.getUserName() == null || user.getUserName().isBlank()) {
+                    user.setUserName(nickname);
+                }
+                if (profileUrl != null && (user.getProfileImageUrl() == null || user.getProfileImageUrl().isBlank())) {
+                    user.setProfileImageUrl(profileUrl);
+                }
+                return user;
+            }
+        }
+        var newUser = authRepository.save(
+                User.builder()
+                        .email(email)
+                        .userName(nickname)
+                        .profileImageUrl(profileUrl)
+                        .build()
+        );
+        attachSocial(newUser, PROVIDER_NAVER, providerId, email);
+        return newUser;
+    }
+
+    private void attachSocial(User user, String provider, String providerId, String emailFromProvider) {
+        var sa = new SocialAccount();
+        sa.setUser(user);
+        sa.setProvider(provider);
+        sa.setProviderId(providerId);
+        sa.setEmailFromProvider(emailFromProvider);
+        socialAccountRepository.save(sa);
+    }
+    @Transactional
     protected User upsertUser(KakaoUserInfo kuser) {
         String email = normalizeEmail(kuser);
         Optional<User> existing = authRepository.findByEmail(email);
@@ -249,20 +277,9 @@ public class KakaoService {
                 .userName(kuser.nickname())
                 .provider("KAKAO")
                 .profileImageUrl(kuser.profileImageUrl())
+                .providerId(existing.get().getProviderId())
                 .build();
         return authRepository.save(created);
-    }
-
-    protected TokenResponseDto issueTokens(User user) {
-        String access  = jwtTokenProvider.generateAccessToken(user.getId());
-        String refresh = jwtTokenProvider.generateRefreshToken(user.getId());
-
-        RefreshToken rt = refreshTokenRepository.findByUserId(user.getId())
-                .orElseGet(() -> RefreshToken.of(user.getId(), refresh));
-        rt.setToken(refresh);
-        refreshTokenRepository.save(rt);
-
-        return TokenResponseDto.of(access, refresh);
     }
 
 

@@ -4,29 +4,19 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
-import Oops.backend.domain.auth.dto.response.LoginResponse;
-import Oops.backend.domain.auth.dto.response.TokenResponseDto;
-import Oops.backend.domain.auth.dto.response.TokenWithCookieResponse;
 import Oops.backend.domain.auth.kakao.service.KakaoService;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth/kakao")
-public class KakaoLoginController {
+public class KakaoController {
 
     private final KakaoService kakaoService;
 
@@ -39,18 +29,19 @@ public class KakaoLoginController {
     }
 
 
-    @PostMapping("/kakao/login")
+    @PostMapping("/login")
     public ResponseEntity<BaseResponse> kakaoCallback(@RequestBody KakaoLoginRequestDto kakaoLoginRequestDto) {
         this.kakaoService.login(kakaoLoginRequestDto);
         return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 로그인 성공");
     }
 
 
-    @PostMapping("/kakao/logout")
+    @PostMapping("/logout")
     public ResponseEntity<BaseResponse> logout(
-             User user,
-            @RequestParam(value = "redirect-url", required = false) String redirectUrl){
-        this.kakaoService.logout(user.getId(), redirectUrl);
+            @AuthenticatedUser User user,
+            @RequestParam(value="redirect-url", required=false) String redirectUrl,
+            HttpServletResponse res){
+        this.kakaoService.logout(user.getId(), redirectUrl, res);
         return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 로그아웃");
     }
 
