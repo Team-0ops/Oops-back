@@ -3,7 +3,7 @@ package Oops.backend.common.security.token;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
-import Oops.backend.domain.auth.util.JwtTokenProvider;
+import Oops.backend.common.security.util.JwtTokenProvider;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

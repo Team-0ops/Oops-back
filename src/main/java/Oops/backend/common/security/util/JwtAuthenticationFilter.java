@@ -1,4 +1,4 @@
-package Oops.backend.domain.auth.util;
+package Oops.backend.common.security.util;
 
 import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.user.entity.User;

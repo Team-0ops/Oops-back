@@ -1,4 +1,4 @@
-package Oops.backend.domain.auth.util;
+package Oops.backend.common.security.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

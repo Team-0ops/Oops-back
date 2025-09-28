@@ -2,14 +2,10 @@ package Oops.backend.domain.auth.kakao.service;
 
 import Oops.backend.common.security.token.TokenService;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
-import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
-import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.entity.SocialAccount;
 import Oops.backend.domain.auth.repository.SocialAccountRepository;
-import Oops.backend.domain.auth.util.JwtTokenProvider;
 import Oops.backend.domain.auth.repository.AuthRepository;
-import Oops.backend.domain.auth.repository.RefreshTokenRepository;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

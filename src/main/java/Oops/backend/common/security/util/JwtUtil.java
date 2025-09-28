@@ -1,4 +1,4 @@
-package Oops.backend.domain.auth.util;
+package Oops.backend.common.security.util;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
