@@ -1,6 +1,8 @@
 package Oops.backend.domain.auth.naver.service;
 
 import Oops.backend.common.security.token.TokenService;
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
@@ -18,8 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-import Oops.backend.common.exception.GeneralException;
-import Oops.backend.common.status.ErrorStatus;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
