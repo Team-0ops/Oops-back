@@ -28,7 +28,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowCredentials(true);
-        cfg.setAllowedOrigins(List.of("http://localhost:5173")); // 프런트
+        clientProperties.getHost().forEach(cfg::addAllowedOrigin);
+
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With","Accept","Origin"));
 
@@ -39,12 +40,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+                                                   JwtAuthenticationFilter jwtAuthenticationFilter,
+                                                   CorsConfigurationSource corsConfigurationSource) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/kakao/callback", "/public/**", "/api/auth/join", "/api/auth/login", "/auth/naver/callback",
-                                "/css/**", "/js/**", "/images/**", "/webjars/**", "/api/feeds/home/first-auth").permitAll()
+                        .requestMatchers(
+                                "/auth/kakao/callback",
+                                "/public/**",
+                                "/api/auth/join",
+                                "/api/auth/login",
+                                "/auth/naver/callback",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/webjars/**",
+                                "/api/feeds/home/first-auth"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
