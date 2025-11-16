@@ -2,6 +2,7 @@ package Oops.backend.domain.postGroup.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
+import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.postGroup.service.PostGroupQueryService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +27,7 @@ public class PostGroupController {
 
     @GetMapping("/{postId}")
     @Operation(summary = "실패담 상세 조회 API")
-    public ResponseEntity<BaseResponse> getPostGroup(@Parameter(hidden = true) User user,
+    public ResponseEntity<BaseResponse> getPostGroup(@Parameter(hidden = true)@AuthenticatedUser User user,
                                                      @PathVariable Long postId){
 
         log.info("Get /api/posts/{postId} 호출");

@@ -3,6 +3,7 @@ package Oops.backend.domain.post.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
+import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.post.dto.*;
 import Oops.backend.domain.post.service.PostCommandService;
 import Oops.backend.domain.post.service.PostQueryService;
@@ -38,7 +39,7 @@ public class PostRestController {
     @Operation(summary = "응원하기 API")
     @PostMapping("/{postId}/cheers")
     public ResponseEntity<BaseResponse> postCheer(@PathVariable Long postId,
-                                                  @Parameter(hidden = true) User user){
+                                                  @Parameter(hidden = true)@AuthenticatedUser User user){
 
         log.info("Post /api/posts/{postId}/cheers 호출, User = {}", user.getUserName());
 
@@ -49,7 +50,7 @@ public class PostRestController {
     @Operation(summary = "실패담 삭제 API")
     @DeleteMapping("/{postId}")
     public ResponseEntity<BaseResponse> deletePost(@PathVariable("postId") Long postId,
-                                                   @Parameter(hidden = true) User user){
+                                                   @Parameter(hidden = true) @AuthenticatedUser User user){
 
         log.info("Delete /api/posts/{postId} 호출, User = {}", user.getUserName());
 
@@ -102,7 +103,7 @@ public class PostRestController {
     // [추가] 내가 작성한 전체 실패담 조회 API
     @Operation(summary = "내가 작성한 실패담 조회", description = "로그인한 사용자가 작성한 모든 실패담을 조회합니다.")
     @GetMapping("/my")
-    public ResponseEntity<BaseResponse> getMyPosts(@Parameter(hidden = true) User user) {
+    public ResponseEntity<BaseResponse> getMyPosts(@Parameter(hidden = true) @AuthenticatedUser User user) {
         List<PostDetailSummaryDto> response = postQueryService.getMyPosts(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
@@ -115,7 +116,7 @@ public class PostRestController {
     @Operation(summary = "실패담 추천 조회", description = "특정 실패담과 같은 카테고리의 실패담과 베스트 실패담을 추천해줍니다.")
     @GetMapping("/{postId}/recommendations")
     public ResponseEntity<BaseResponse> recommendPosts(
-            @Parameter(hidden = true) User user,
+            @Parameter(hidden = true) @AuthenticatedUser User user,
             @PathVariable Long postId) {
 
         log.info("Get /api/posts/{postId}/recommendations 호출, User = {}", user.getUserName());
