@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "메인 화면 관련 API")
+@Tag(name = "메인페이지 관련 API")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -32,39 +32,37 @@ public class HomeFeedController {
     private final HomeFeedService feedService;
 
     /**
-     * 홈화면 첫 로딩 - 로그인 O
+     * 베스트 실패담 5개 조회
      */
-    @GetMapping("/home/first-auth")
-    @Operation(summary = "로그인한 경우 홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개와 즐겨찾기한 실패담 10개만 우선 조회합니다.")
-    public ResponseEntity<BaseResponse> getFirstPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    @GetMapping("/home/best")
+    @Operation(summary = "홈화면 베스트 실패담 조회 API",description = "베스트 실패담 5개를 조회합니다.")
+    public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-        log.info("Get /api/feeds/home/first 호출, User = {}", user.getUserName());
+        PostResponse.PostPreviewListDto result = feedService.getBestPostList(user);
 
-        List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostList(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     /**
-     * 홈화면 첫 로딩 - 로그인 X
+     * 즐겨찾기한 카테고리 중 하나의 실패담 10개 조회
      */
-    @GetMapping("/home/first-guest")
-    @Operation(summary = "로그인하지 않은 경우 홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개를 조회합니다. 즐찾 리스트는 null ")
-    public ResponseEntity<BaseResponse> getFirstPostList() {
+    @GetMapping("/home/bookmarked")
+    @Operation(summary = "홈화면 특정 즐겨찾기 카테고리의 실패담 조회 API",description = "즐겨찾기한 카테고리 중 사용자가 선택한 카테고리의 실패담 10개를 조회합니다.")
+    public ResponseEntity<BaseResponse> getBookmarkedPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-        List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostListForGuest();
+        PostResponse.PostPreviewListDto result = feedService.getBookmarkedPostList(user);
+
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     /**
-     * 홈 화면 이후 로딩
+     * 카테고리별 최신글 1개씩 조회
      */
-    @GetMapping("/home/later")
-    @Operation(summary = "홈화면 이후 로딩 API",description ="카테고리별 최신글 하나씩 조회합니다.")
-    public ResponseEntity<BaseResponse> getLaterPostList() {
+    @GetMapping("/home/categories")
+    @Operation(summary = "카테고리별 최신글 1개씩 조회 API",description ="카테고리별 최신글 하나씩 조회합니다.")
+    public ResponseEntity<BaseResponse> getCategoriesPostList() {
 
-        log.info("Get /api/feeds/home/later");
-
-        PostResponse.PostPreviewListDto result = feedService.getLaterPostList();
+        PostResponse.PostPreviewListDto result = feedService.getCategoriesPostList();
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 

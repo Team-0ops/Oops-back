@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Tag(name = "상단 배너 표시 API")
 @Slf4j
 @RestController
@@ -28,21 +30,11 @@ public class RandomTopicController {
 
     private final RandomTopicService randomTopicService;
 
-    @GetMapping("/banners/auth")
-    @Operation(summary = "로그인 한 경우 홈화면 배너 API",description = "로그인 한 경우 홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
-    public ResponseEntity<BaseResponse> getBannarInfoAuth (@Parameter(hidden = true) @AuthenticatedUser User user) {
+    @GetMapping("/banners")
+    @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
+    public ResponseEntity<BaseResponse> getBannarInfo (@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-
-        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfoAuth(user);
-
-        return BaseResponse.onSuccess(SuccessStatus._OK, result);
-    }
-
-    @GetMapping("/banners/guest")
-    @Operation(summary = "로그인 안 한 경우 홈화면 배너 API",description = "로그인 안 한 경우 홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
-    public ResponseEntity<BaseResponse> getBannarInfoGuest () {
-
-        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfoGuest();
+        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(user);
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }

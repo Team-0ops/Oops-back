@@ -7,8 +7,8 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface HomeFeedService {
-    List<PostResponse.PostPreviewListDto> getFirstPostList(User user);
-    PostResponse.PostPreviewListDto getLaterPostList();
+    PostResponse.PostPreviewListDto getBestPostList(User user);
+    PostResponse.PostPreviewListDto getBookmarkedPostList(User user);
+    PostResponse.PostPreviewListDto getCategoriesPostList();
     PostResponse.PostPreviewListDto searchPosts(String keyword, Pageable pageable);
-    List<PostResponse.PostPreviewListDto> getFirstPostListForGuest();
 }

@@ -35,79 +35,11 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     private final S3ImageService s3ImageService;
 
     /**
-     * 홈화면 첫로딩 - 로그인 사용자
+     * 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
      */
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse.PostPreviewListDto> getFirstPostList(User user) {
-
-        List<PostResponse.PostPreviewListDto> result = new ArrayList<>();
-
-        // 1. 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
-        PostResponse.PostPreviewListDto bestListDto = convertBestListDto();
-        result.add(bestListDto);
-
-        // 2. 즐겨찾기한 카테고리의 최신 글 5개 조회
-        List<UserAndCategory> userCategories = userAndCategoryRepository.findByUserId(user.getId());
-        List<Long> categoryIds = userCategories.stream()
-                .map(uc -> uc.getCategory().getId())
-                .collect(Collectors.toList());
-
-        if (categoryIds.isEmpty()) {  // 즐겨찾기한 카테고리가 없는 경우
-            PostResponse.PostPreviewListDto emptyListDto = PostResponse.PostPreviewListDto.builder()
-                    .name("즐겨찾기한 카테고리가 없습니다.")
-                    .posts(Collections.emptyList())
-                    .build();
-
-            result.add(emptyListDto);
-            return result;
-        }
-
-        Pageable topFive = PageRequest.of(0, 5);
-        List<Post> posts = homeFeedRepository.findTop5ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topFive);
-
-        List<PostResponse.PostPreviewDto> markedPreviewDtos = postDtoConverter(posts);
-
-        PostResponse.PostPreviewListDto markedListDto = PostResponse.PostPreviewListDto.builder()
-                .name("즐겨찾기한 카테고리")
-                .posts(markedPreviewDtos)
-                .isLast(true)
-                .build();
-
-        result.add(markedListDto);
-
-        return result;
-    }
-
-    /**
-     * 홈화면 첫로딩 - 게스트 이용자
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<PostResponse.PostPreviewListDto> getFirstPostListForGuest() {
-
-        List<PostResponse.PostPreviewListDto> result = new ArrayList<>();
-
-        // 1. 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
-        PostResponse.PostPreviewListDto bestListDto = convertBestListDto();
-        result.add(bestListDto);
-
-        // 2. 즐겨찾기 부분은 null
-        result.add(
-                PostResponse.PostPreviewListDto.builder()
-                        .name("즐겨찾기한 카테고리")
-                        .posts(Collections.emptyList())
-                        .isLast(true)
-                        .build()
-        );
-
-        return result;
-    }
-
-    /**
-     * 베스트 실패담 조회 및 dto 변환
-     */
-    private PostResponse.PostPreviewListDto convertBestListDto(){
+    public PostResponse.PostPreviewListDto getBestPostList(User user) {
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
         List<Post> bestPosts = homeFeedRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
 
@@ -123,11 +55,54 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     }
 
     /**
-     * 홈화면 이후 로딩
+     * 홈화면 특정 즐겨찾기 카테고리 실패담 10개 조회
      */
     @Override
     @Transactional(readOnly = true)
-    public PostResponse.PostPreviewListDto getLaterPostList() {
+    public PostResponse.PostPreviewListDto getBookmarkedPostList(User user) {
+        PostResponse.PostPreviewListDto result = new PostResponse.PostPreviewListDto();
+
+        if (user == null){
+            // 로그인하지 않은 사용자의 경우 null 리스트 반환
+            return PostResponse.PostPreviewListDto.builder()
+                    .name("즐겨찾기한 카테고리")
+                    .posts(Collections.emptyList())
+                    .isLast(true)
+                    .build();
+        } else {
+            // 로그인한 사용자의 경우 즐겨찾기한 카테고리의 최신 글 5개 조회
+            List<UserAndCategory> userCategories = userAndCategoryRepository.findByUserId(user.getId());
+            List<Long> categoryIds = userCategories.stream()
+                    .map(uc -> uc.getCategory().getId())
+                    .collect(Collectors.toList());
+
+            if (categoryIds.isEmpty()) {  // 즐겨찾기한 카테고리가 없는 경우 null 리스트 반환
+                return PostResponse.PostPreviewListDto.builder()
+                        .name("즐겨찾기한 카테고리")
+                        .posts(Collections.emptyList())
+                        .isLast(true)
+                        .build();
+            }
+
+            Pageable topFive = PageRequest.of(0, 5);
+            List<Post> posts = homeFeedRepository.findTop5ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topFive);
+
+            List<PostResponse.PostPreviewDto> markedPreviewDtos = postDtoConverter(posts);
+
+            return PostResponse.PostPreviewListDto.builder()
+                    .name("즐겨찾기한 카테고리")
+                    .posts(markedPreviewDtos)
+                    .isLast(true)
+                    .build();
+        }
+    }
+
+    /**
+     * 홈화면 카테고리별 실패담 1개씩 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto getCategoriesPostList() {
         List<Post> latestPostPerCategories = homeFeedRepository.findLatestPostPerCategory();
 
         List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(latestPostPerCategories);
