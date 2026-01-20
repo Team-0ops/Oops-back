@@ -25,9 +25,21 @@ public interface HomeFeedRepository extends JpaRepository<Post, Long> {
             "ORDER BY (p.watching + 5 * p.likes + 10 * COUNT(c)) DESC")
     List<Post> findTopBestPostBefore(@Param("cutoff") LocalDateTime cutoff, Pageable pageable);
 
-    // 즐찾 카테고리 중 최신 실패담 10개 조회
+    // 즐겨찾기한 카테고리들의 최신 실패담 5개 조회
     @Query("SELECT p FROM Post p WHERE p.category.id IN :categoryIds ORDER BY p.createdAt DESC")
     List<Post> findTop5ByCategoryIdsOrderByCreatedAtDesc(@Param("categoryIds") List<Long> categoryIds, Pageable pageable);
+
+    // 특정 카테고리 중 최신 실패담 5개 조회
+    @Query("""
+        SELECT p
+        FROM Post p
+        WHERE p.category.id = :categoryId
+        ORDER BY p.createdAt DESC
+    """)
+    List<Post> findLatestByCategory(
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
 
     // 각 카테고리별 최신글 1개씩 조회
     @Query(value = """

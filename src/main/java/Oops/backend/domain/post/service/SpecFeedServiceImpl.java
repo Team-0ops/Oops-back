@@ -7,24 +7,24 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
+import Oops.backend.domain.post.entity.SortType;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.SpecFeedRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
+import Oops.backend.domain.user.entity.UserAndCategory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SpecFeedServiceImpl implements SpecFeedService {
@@ -36,48 +36,141 @@ public class SpecFeedServiceImpl implements SpecFeedService {
     private final S3ImageService s3ImageService;
 
     /**
-     * 베스트 게시글 전체 조회
+     * 베스트 실패담 50개 정렬 기준에 맞춰 조회
      */
     @Override
-    @Transactional
-    public PostResponse.PostPreviewListDto getBestPostList(LocalDateTime cutoff, Pageable pageable){
-        Page<Post> posts = specFeedRepository.sortByBestPost(cutoff, pageable);
-        if (posts.getContent().isEmpty()) {
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto getBestPostList(LocalDateTime cutoff, Pageable pageable, SortType sort){
+        // 1. 베스트 50개 확정
+        Page<Post> bestPosts = specFeedRepository.findTopBestPosts(
+                PageRequest.of(0, 50, Sort.unsorted())
+        );
+
+        if (bestPosts.isEmpty()) {
             throw new GeneralException(ErrorStatus.NO_POST);
         }
 
-        return toPreviewListDto(posts, "베스트 Failers");
+        // 2. sort 기준 정렬
+        List<Post> best50 = new ArrayList<>(bestPosts.getContent()); // bestPosts.getContent()는 수정 불가능한 리스트
+        if (sort != SortType.BEST) { // BEST면 그대로(베스트 점수순 유지)
+            if (sort == SortType.COMMENT){
+                List<Long> bestIds = specFeedRepository.findTop50BestPostIds(PageRequest.of(0, 50));
+
+                if (bestIds.isEmpty()) throw new GeneralException(ErrorStatus.NO_POST);
+
+                List<Post> sorted = specFeedRepository.findPostsInIdsOrderByCommentCount(bestIds);
+
+                // pageable 적용 (50개 안에서)
+                int start = (int) pageable.getOffset();
+                if (start >= sorted.size()) {
+                    return toPreviewListDto(new PageImpl<>(List.of(), pageable, sorted.size()), "베스트 Failers");
+                }
+                int end = Math.min(start + pageable.getPageSize(), sorted.size());
+
+                Page<Post> paged = new PageImpl<>(sorted.subList(start, end), pageable, sorted.size());
+                return toPreviewListDto(paged, "베스트 Failers");
+            }
+            best50.sort(toComparator(sort));
+        }
+
+        // 3. pageable 적용
+        int start = (int) pageable.getOffset();
+        // page offset 범위 체크
+        if (start >= best50.size()) {
+            return toPreviewListDto(new PageImpl<>(List.of(), pageable, best50.size()), "베스트 Failers");
+        }
+        int end = Math.min(start + pageable.getPageSize(), best50.size());
+
+        List<Post> content = best50.subList(start, end);
+
+        Page<Post> pagedPosts = new PageImpl<>(
+                content,
+                pageable,
+                best50.size()
+        );
+
+        return toPreviewListDto(pagedPosts, "베스트 Failers");
     }
 
     /**
-     * 즐겨찾기한 카테고리 게시글 전체 조회
+     * 즐겨찾기한 카테고리 게시글 정렬 기준에 따라 조회
+     * categoryId == 0 : 즐겨찾기 전체 카테고리
+     * categoryId > 0  : 특정 즐겨찾기 카테고리
      */
     @Override
-    @Transactional
-    public PostResponse.PostPreviewListDto getMarkedPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, User user){
-        // 사용자가 즐겨찾기한 카테고리 아이디 조회
-        List<Long> userCategoryIds = userAndCategoryRepository.findCategoryIdsByUser(user);
-        if (userCategoryIds.isEmpty()){
-            throw new GeneralException(ErrorStatus.NO_BOOKMARKED);
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto getMarkedPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, User user, SortType sort, Long categoryId){
+        /** 로그인하지 않은 사용자의 경우 null 리스트 반환 */
+        if (user == null){
+            return toPreviewListDto(null, "로그인한 사용자만 이용할 수 있습니다.");
         }
 
-        // 즐찾 카테고리의 게시글 최신순 정렬하여 allPosts에 저장
-        Page<Post> posts = specFeedRepository.findByCategoryIdInAndSituationAndCreatedAtBefore(userCategoryIds, situation, cutoff, pageable);
+        List<Long> categoryIds = new ArrayList<>();
 
-        return toPreviewListDto(posts, "즐겨찾기한 실패담");
+        if (categoryId == 0) { /** 즐겨찾기 전체 카테고리에서 조회 */
+            categoryIds = userAndCategoryRepository.findCategoryIdsByUser(user);
+            if (categoryIds.isEmpty()) throw new GeneralException(ErrorStatus.NO_BOOKMARKED);
+        } else { /** 특정 카테고리 존재 검증 */
+            if (!categoryRepository.existsById(categoryId)) {
+                throw new GeneralException(ErrorStatus._BAD_REQUEST, "존재하지 않는 카테고리입니다.");
+            }
+            userAndCategoryRepository.findByUserIdAndCategoryId(user.getId(), categoryId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "사용자가 해당 카테고리를 즐겨찾기하지 않습니다."));
+
+            categoryIds.add(categoryId);
+        }
+
+        // 댓글순 정렬인 경우
+        if (sort == SortType.COMMENT) {
+            Page<Post> posts = specFeedRepository.findMarkedPostsOrderByCommentCount(
+                    categoryIds, situation, cutoff,
+                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
+            );
+            return toPreviewListDto(posts, "즐겨찾기한 실패담 " + sort + "순");
+        }
+
+        // 다른 정렬 기준인 경우 Sort 이용
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                toSort(sort)
+        );
+
+        Page<Post> posts = specFeedRepository
+                .findByCategoryIdInAndSituationAndCreatedAtBefore(
+                        categoryIds, situation, cutoff, sortedPageable
+                );
+
+        return toPreviewListDto(posts, "즐겨찾기한 실패담 " + sort + "순");
     }
 
     /**
      * 카테고리별 피드
      */
     @Override
-    @Transactional
-    public PostResponse.PostPreviewListDto getPostByCategoryList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId){
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto getPostByCategoryList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId, SortType sort){
 
         String categoryName = categoryRepository.findNameById(categoryId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.CATEGORY_NOT_FOUND));
 
-        Page<Post> posts = specFeedRepository.findByCategoryIdAndSituationAndCreatedAtBeforeWithCategory(categoryId, situation, cutoff, pageable);
+        // 댓글순 정렬인 경우
+        if (sort == SortType.COMMENT) {
+            Page<Post> posts = specFeedRepository.findCategoryPostsOrderByCommentCount(
+                    categoryId, situation, cutoff,
+                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
+            );
+            return toPreviewListDto(posts, categoryName + " 카테고리");
+        }
+
+        // 다른 정렬 기준인 경우 Sort 이용
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                toSort(sort)
+        );
+
+        Page<Post> posts = specFeedRepository.findByCategoryIdAndSituationAndCreatedAtBeforeWithCategory(categoryId, situation, cutoff, sortedPageable);
 
         return toPreviewListDto(posts, categoryName + " 카테고리");
     }
@@ -86,9 +179,10 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      * 이번주 랜덤 주제 피드
      */
     @Override
-    @Transactional
-    public PostResponse.PostPreviewListDto getThisWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable){
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto getThisWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort){
 
+        // 이번주 랜덤 주제 조회
         RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
                 .orElseThrow(() -> new GeneralException(ErrorStatus.NO_CURRENT_TOPIC));
 
@@ -97,7 +191,24 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         String topicName = randomTopicRepository.findNameById(currentTopicId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.TOPIC_NOT_FOUND));
 
-        Page<Post> posts = specFeedRepository.findByTopicIdAndSituationAndCreatedAtBefore(currentTopicId, situation, cutoff, pageable);
+        // 이번주 주제에 맞는 게시글 조회 (정렬기준에 따라)
+        // 댓글순 정렬인 경우
+        if (sort == SortType.COMMENT) {
+            Page<Post> posts = specFeedRepository.findTopicPostsOrderByCommentCount(
+                    currentTopicId, situation, cutoff,
+                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
+            );
+            return toPreviewListDto(posts, topicName);
+        }
+
+        // 다른 정렬 기준인 경우 Sort 이용
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                toSort(sort)
+        );
+
+        Page<Post> posts = specFeedRepository.findByTopicIdAndSituationAndCreatedAtBefore(currentTopicId, situation, cutoff, sortedPageable);
 
         return toPreviewListDto(posts, topicName);
     }
@@ -106,8 +217,8 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      * 저번주 랜덤 주제 피드
      */
     @Override
-    @Transactional
-    public List<PostResponse.PostPreviewListDto> getLastWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable){
+    @Transactional(readOnly = true)
+    public List<PostResponse.PostPreviewListDto> getLastWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort){
 
         // 이번주 랜덤 주제 조회
         RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
@@ -136,9 +247,27 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                 .map(Post::getId)
                 .toList();
 
-        // 나머지 게시글 조회 (top 3 제외)
+        // 나머지 게시글 정렬 기준에 따라 조회 (top 3 제외)
+        // 댓글순 정렬인 경우
+        if (sort == SortType.COMMENT) {
+            Page<Post> posts = specFeedRepository.findLastTopicPostsOrderByCommentCount(
+                    lastTopicId, situation, cutoff, bestPostIds,
+                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
+            );
+            PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts, topicName);
+            result.add(postDto);
+            return result;
+        }
+
+        // 다른 정렬 기준인 경우 Sort 이용
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                toSort(sort)
+        );
+
         Page<Post> posts = specFeedRepository.findFilteredPostsExcludingIds(
-                lastTopicId, situation, cutoff, bestPostIds, pageable);
+                lastTopicId, situation, cutoff, bestPostIds, sortedPageable);
 
         // posts가 없으면 예외
         if (posts.isEmpty()) {
@@ -146,7 +275,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         }
 
         // posts 추가
-        PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts, "조회수 순 " + topicName + " 실패담");
+        PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts,  topicName + " 실패담");
         result.add(postDto);
 
         return result;
@@ -159,7 +288,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
 
         if (posts == null) {
             return PostResponse.PostPreviewListDto.builder()
-                    .name(listName)
+                    .comment(listName)
                     .posts(Collections.emptyList())
                     .isLast(true) // null일 경우 더 이상 페이지 없음으로 처리
                     .build();
@@ -190,9 +319,41 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                 .collect(Collectors.toList());
 
         return PostResponse.PostPreviewListDto.builder()
-                .name(listName)
+                .comment(listName)
                 .posts(previews)
                 .isLast(posts.isLast())
                 .build();
+    }
+
+    /**
+     * enum -> Sort로 변경
+     */
+    private Sort toSort(SortType sortType) {
+        return switch (sortType) {
+            case LATEST -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case LIKE   -> Sort.by(Sort.Direction.DESC, "likes");
+            case VIEW   -> Sort.by(Sort.Direction.DESC, "watching");
+            case COMMENT -> throw new IllegalArgumentException("COMMENT는 전용 쿼리 사용");
+            case BEST -> throw new IllegalArgumentException("BEST는 전용 정렬 로직/쿼리 사용");
+        };
+    }
+
+    /**
+     * enum -> Comparator로 변경
+     */
+    private Comparator<Post> toComparator(SortType sortType) {
+        return switch (sortType) {
+            case LATEST -> Comparator.comparing(
+                            (Post post) -> Optional.ofNullable(post.getCreatedAt()).orElse(LocalDateTime.MIN)
+                    ).reversed();
+            case LIKE -> Comparator.comparing(
+                            (Post post) -> Optional.ofNullable(post.getLikes()).orElse(0)
+                    ).reversed();
+            case VIEW -> Comparator.comparing(
+                            (Post post) -> Optional.ofNullable(post.getWatching()).orElse(0)
+                    ).reversed();
+            case COMMENT -> throw new IllegalArgumentException("COMMENT는 전용 정렬 로직/쿼리 사용");
+            case BEST -> throw new IllegalArgumentException("BEST는 전용 정렬 로직/쿼리 사용");
+        };
     }
 }

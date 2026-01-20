@@ -6,6 +6,8 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.service.HomeFeedService;
+import Oops.backend.domain.randomTopic.Service.RandomTopicService;
+import Oops.backend.domain.randomTopic.dto.RandomTopicResponse;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +32,19 @@ import java.util.List;
 @RequestMapping("/api/feeds")
 public class HomeFeedController {
     private final HomeFeedService feedService;
+    private final RandomTopicService randomTopicService;
+
+    /**
+     * 상단 배너 정보 조회
+     */
+    @GetMapping("/home/banners")
+    @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
+    public ResponseEntity<BaseResponse> getBannarInfo (@Parameter(hidden = true) @AuthenticatedUser User user) {
+
+        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(user);
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
+    }
 
     /**
      * 베스트 실패담 5개 조회
@@ -44,13 +59,15 @@ public class HomeFeedController {
     }
 
     /**
-     * 즐겨찾기한 카테고리 중 하나의 실패담 10개 조회
+     * 즐겨찾기한 카테고리 중 하나의 실패담 5개 조회
      */
     @GetMapping("/home/bookmarked")
-    @Operation(summary = "홈화면 특정 즐겨찾기 카테고리의 실패담 조회 API",description = "즐겨찾기한 카테고리 중 사용자가 선택한 카테고리의 실패담 10개를 조회합니다.")
-    public ResponseEntity<BaseResponse> getBookmarkedPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    @Operation(summary = "홈화면 특정 즐겨찾기 카테고리의 실패담 조회 API",description = "즐겨찾기한 카테고리 중 사용자가 선택한 카테고리의 실패담 5개를 조회합니다.")
+    public ResponseEntity<BaseResponse> getBookmarkedPostList(@Parameter(hidden = true) @AuthenticatedUser User user,
+                                                              @Parameter(description = "카테고리 아이디: 0이면 전체 카테고리 조회입니다.")
+                                                              @RequestParam Long categoryId) {
 
-        PostResponse.PostPreviewListDto result = feedService.getBookmarkedPostList(user);
+        PostResponse.PostPreviewListDto result = feedService.getBookmarkedPostList(user, categoryId);
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }

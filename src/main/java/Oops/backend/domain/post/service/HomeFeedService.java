@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface HomeFeedService {
     PostResponse.PostPreviewListDto getBestPostList(User user);
-    PostResponse.PostPreviewListDto getBookmarkedPostList(User user);
+    PostResponse.PostPreviewListDto getBookmarkedPostList(User user, Long categoryId);
     PostResponse.PostPreviewListDto getCategoriesPostList();
     PostResponse.PostPreviewListDto searchPosts(String keyword, Pageable pageable);
 }
