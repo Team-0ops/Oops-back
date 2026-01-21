@@ -10,10 +10,10 @@ import lombok.Getter;
 @Builder
 public class JoinDto {
 
-    @Schema(description = "사용자 이메일", example = "test@example.com")
-    @NotBlank(message = "이메일이 비었습니다.")
-    @jakarta.validation.constraints.Email(message = "이메일 형식이 맞지 않습니다.")
-    private String email;
+    @Schema(description = "사용자 아이디", example = "test123!")
+    @NotBlank(message = "아이디가 비었습니다.")
+    @jakarta.validation.constraints.Email(message = "아이디 형식이 맞지 않습니다.")
+    private String loginId;
 
     @Schema(description = "사용자 닉네임", example = "홍길동")
     @NotBlank(message = "닉네임이 비어있습니다.")

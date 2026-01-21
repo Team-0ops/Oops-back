@@ -38,7 +38,7 @@ public class AuthService {
 
     public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
-        Optional<User> user = this.authRepository.findByEmail(loginDto.getEmail());
+        Optional<User> user = this.authRepository.findByLoginId(loginDto.getLoginId());
 
         if(user == null) {
             throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
@@ -119,11 +119,11 @@ public class AuthService {
     }
     @Transactional
     public void join(JoinDto joinDto) {
-        this.isEmailExist(joinDto.getEmail());
+        this.isIdExist(joinDto.getLoginId());
         String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
         // 이메일이 존재하지 않는다면 새로운 User 생성
         User user = User.builder()
-                .email(joinDto.getEmail())
+                .loginId(joinDto.getLoginId())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
                 .build();
@@ -147,24 +147,24 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
         return TokenResponseDto.of(accessToken, refreshTokenValue);
     }
-    public TokenResponseDto refreshAccessToken(String refreshToken) {
-        RefreshToken stored = findExistingRefreshToken(refreshToken);
+//    public TokenResponseDto refreshAccessToken(String refreshToken) {
+//        RefreshToken stored = findExistingRefreshToken(refreshToken);
+//
+//        // 만료 검사
+//        validateRefreshToken(stored);
+//
+//        User user = findExistingUserByRefreshToken(stored);
+//
+//        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
+//
+//        log.info("new AccessToken: " + newAccess);
+//        return new TokenResponseDto(newAccess, stored.getToken());
+//    }
 
-        // 만료 검사
-        validateRefreshToken(stored);
-
-        User user = findExistingUserByRefreshToken(stored);
-
-        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
-
-        log.info("new AccessToken: " + newAccess);
-        return new TokenResponseDto(newAccess, stored.getToken());
-    }
-
-    public void isEmailExist(String email) {
-        Optional<User> user = this.authRepository.findByEmail(email);
+    public void isIdExist(String loginId) {
+        Optional<User> user = this.authRepository.findByLoginId(loginId) ;
         if (user.isPresent()) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 아이디 입니다.");
         }
     }
     public void validateRefreshToken(RefreshToken refreshToken) {

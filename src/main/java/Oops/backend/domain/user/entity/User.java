@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.security.Provider;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,7 +24,7 @@ public class User extends BaseEntity {
     private String userName;
 
     @Column
-    private String email;
+    private String loginId;
 
     @Column
     private String password;
@@ -61,7 +62,10 @@ public class User extends BaseEntity {
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
 
-    private String provider; // Oauth 제공자
-    private String providerId; //Oauth 별 유저 ID;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Provider provider; // Oauth 제공자
+    private String providerId; //Oauth 별 유저 ID
+
 }
 
