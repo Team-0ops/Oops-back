@@ -17,7 +17,7 @@ public class PostSummaryDto {
         return PostSummaryDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
-                .situation(post.getSituation().name()) // 그대로 Enum name 사용
+                .situation(post.getSituation().name()) // 그대로 Enum comment 사용
                 .build();
     }
 }

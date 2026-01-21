@@ -18,7 +18,7 @@ public class RandomTopicServiceImpl implements RandomTopicService {
 
     @Override
     @Transactional(readOnly = true)
-    public RandomTopicResponse.BannarsInfoDto getBannarInfoAuth(User user){
+    public RandomTopicResponse.BannarsInfoDto getBannarInfo(User user) {
 
         // 이번주 랜덤 주제 조회
         RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
@@ -44,47 +44,16 @@ public class RandomTopicServiceImpl implements RandomTopicService {
                 .build();
 
         // 사용자가 저번주 주제에 대하여 인기글에 선정되었는지 여부
-        Boolean isBestUser = user.getIsSelected();
+        Boolean isBestUser = false;
+        if (user != null){
+            isBestUser = user.getIsSelected();
+        }
 
         // 결과 반환
         return RandomTopicResponse.BannarsInfoDto.builder()
                 .lastTopicInfo(lastTopicInfoDto)
                 .currentTopicInfo(currentTopicInfoDto)
                 .isBestUser(isBestUser)
-                .build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RandomTopicResponse.BannarsInfoDto getBannarInfoGuest(){
-        // 이번주 랜덤 주제 조회
-        RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
-                .orElseThrow(() -> new GeneralException(ErrorStatus._INTERNAL_SERVER_ERROR));
-
-        // 이번주 주제 dto 변환
-        RandomTopicResponse.TopicInfoDto currentTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
-                .informNum(1)
-                .topicId(currentTopic.getId())
-                .topicName(currentTopic.getName())
-                .topicIcon(currentTopic.getImage())
-                .build();
-
-        // 저번주 랜덤 주제 조회
-        RandomTopic lastTopic = currentTopic.getLastRandomTopic();
-
-        // 저번주 주제 dto 변환
-        RandomTopicResponse.TopicInfoDto lastTopicInfoDto = RandomTopicResponse.TopicInfoDto.builder()
-                .informNum(2)
-                .topicId(lastTopic.getId())
-                .topicName(lastTopic.getName())
-                .topicIcon(lastTopic.getImage())
-                .build();
-
-        // 결과 반환
-        return RandomTopicResponse.BannarsInfoDto.builder()
-                .lastTopicInfo(lastTopicInfoDto)
-                .currentTopicInfo(currentTopicInfoDto)
-                .isBestUser(false)
                 .build();
     }
 }
