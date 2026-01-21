@@ -1,11 +1,11 @@
 package Oops.backend.domain.user.entity;
 
+import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.security.Provider;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

@@ -11,7 +11,7 @@ public class LoginResponse {
 
     String nickname;
 
-    String email;
+    String loginId;
 
     String accessToken;
 
@@ -20,10 +20,10 @@ public class LoginResponse {
     private String refreshToken;
 
     @Builder
-    private LoginResponse(Long userId, String nickname, String email, String accessToken, String profileImage, String refreshToken){
+    private LoginResponse(Long userId, String nickname, String loginId, String accessToken, String profileImage, String refreshToken){
         this.userId = userId;
         this.nickname = nickname;
-        this.email = email;
+        this.loginId = loginId;
         this.accessToken = accessToken;
         this.profileImage = profileImage;
         this.refreshToken = refreshToken;
@@ -34,7 +34,7 @@ public class LoginResponse {
         return LoginResponse.builder()
                 .userId(user.getId())
                 .nickname(user.getUserName())
-                .email(user.getEmail())
+                .loginId(user.getLoginId())
                 .accessToken(accessToken)
                 .profileImage(profileImage)
                 .refreshToken(refreshToken)

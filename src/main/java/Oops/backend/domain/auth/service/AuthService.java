@@ -147,19 +147,6 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
         return TokenResponseDto.of(accessToken, refreshTokenValue);
     }
-//    public TokenResponseDto refreshAccessToken(String refreshToken) {
-//        RefreshToken stored = findExistingRefreshToken(refreshToken);
-//
-//        // 만료 검사
-//        validateRefreshToken(stored);
-//
-//        User user = findExistingUserByRefreshToken(stored);
-//
-//        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
-//
-//        log.info("new AccessToken: " + newAccess);
-//        return new TokenResponseDto(newAccess, stored.getToken());
-//    }
 
     public void isIdExist(String loginId) {
         Optional<User> user = this.authRepository.findByLoginId(loginId) ;
@@ -182,4 +169,19 @@ public class AuthService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
     }
 
+
+    // refresh token 관련
+    //    public TokenResponseDto refreshAccessToken(String refreshToken) {
+//        RefreshToken stored = findExistingRefreshToken(refreshToken);
+//
+//        // 만료 검사
+//        validateRefreshToken(stored);
+//
+//        User user = findExistingUserByRefreshToken(stored);
+//
+//        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
+//
+//        log.info("new AccessToken: " + newAccess);
+//        return new TokenResponseDto(newAccess, stored.getToken());
+//    }
 }
