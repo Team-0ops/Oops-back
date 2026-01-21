@@ -6,6 +6,8 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.AuthenticationContext;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.service.HomeFeedService;
+import Oops.backend.domain.randomTopic.Service.RandomTopicService;
+import Oops.backend.domain.randomTopic.dto.RandomTopicResponse;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,48 +25,61 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "메인 화면 관련 API")
+@Tag(name = "메인페이지 관련 API")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feeds")
 public class HomeFeedController {
     private final HomeFeedService feedService;
+    private final RandomTopicService randomTopicService;
 
     /**
-     * 홈화면 첫 로딩 - 로그인 O
+     * 상단 배너 정보 조회
      */
-    @GetMapping("/home/first-auth")
-    @Operation(summary = "로그인한 경우 홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개와 즐겨찾기한 실패담 10개만 우선 조회합니다.")
-    public ResponseEntity<BaseResponse> getFirstPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    @GetMapping("/home/banners")
+    @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
+    public ResponseEntity<BaseResponse> getBannarInfo (@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-        log.info("Get /api/feeds/home/first 호출, User = {}", user.getUserName());
+        RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(user);
 
-        List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostList(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     /**
-     * 홈화면 첫 로딩 - 로그인 X
+     * 베스트 실패담 5개 조회
      */
-    @GetMapping("/home/first-guest")
-    @Operation(summary = "로그인하지 않은 경우 홈화면 첫 로딩 API",description = "홈화면 처음 로딩 시 필요한 베스트 실패담 5개를 조회합니다. 즐찾 리스트는 null ")
-    public ResponseEntity<BaseResponse> getFirstPostList() {
+    @GetMapping("/home/best")
+    @Operation(summary = "홈화면 베스트 실패담 조회 API",description = "베스트 실패담 5개를 조회합니다.")
+    public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-        List<PostResponse.PostPreviewListDto> result = feedService.getFirstPostListForGuest();
+        PostResponse.PostPreviewListDto result = feedService.getBestPostList(user);
+
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     /**
-     * 홈 화면 이후 로딩
+     * 즐겨찾기한 카테고리 중 하나의 실패담 5개 조회
      */
-    @GetMapping("/home/later")
-    @Operation(summary = "홈화면 이후 로딩 API",description ="카테고리별 최신글 하나씩 조회합니다.")
-    public ResponseEntity<BaseResponse> getLaterPostList() {
+    @GetMapping("/home/bookmarked")
+    @Operation(summary = "홈화면 특정 즐겨찾기 카테고리의 실패담 조회 API",description = "즐겨찾기한 카테고리 중 사용자가 선택한 카테고리의 실패담 5개를 조회합니다.")
+    public ResponseEntity<BaseResponse> getBookmarkedPostList(@Parameter(hidden = true) @AuthenticatedUser User user,
+                                                              @Parameter(description = "카테고리 아이디: 0이면 전체 카테고리 조회입니다.")
+                                                              @RequestParam Long categoryId) {
 
-        log.info("Get /api/feeds/home/later");
+        PostResponse.PostPreviewListDto result = feedService.getBookmarkedPostList(user, categoryId);
 
-        PostResponse.PostPreviewListDto result = feedService.getLaterPostList();
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
+    }
+
+    /**
+     * 카테고리별 최신글 1개씩 조회
+     */
+    @GetMapping("/home/categories")
+    @Operation(summary = "카테고리별 최신글 1개씩 조회 API",description ="카테고리별 최신글 하나씩 조회합니다.")
+    public ResponseEntity<BaseResponse> getCategoriesPostList() {
+
+        PostResponse.PostPreviewListDto result = feedService.getCategoriesPostList();
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
