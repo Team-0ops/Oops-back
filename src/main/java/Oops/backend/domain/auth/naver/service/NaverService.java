@@ -89,7 +89,7 @@ public class NaverService {
         NaverUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
 
         User user = loginOrLink(kakaoUser);
-        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getUserName(), user.getLoginId());
+        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getUserName(), user.getEmail());
         return tokenService.issue(user);
     }
 
@@ -105,7 +105,7 @@ public class NaverService {
         NaverUserInfo naverUser = fetchUserOrThrow(accessToken);
 
         User user = loginOrLink(naverUser);
-        log.info("[NAVER-LOGIN] userId={}, email={}", user.getId(), user.getLoginId());
+        log.info("[NAVER-LOGIN] userId={}, email={}", user.getId(), user.getEmail());
         return tokenService.issue(user);
     }
 
@@ -160,6 +160,7 @@ public class NaverService {
     @Transactional
     protected User loginOrLink(NaverUserInfo naverUser) {
         final String providerId = naverUser.getId();
+        final String email      = naverUser.getEmail();
         final String nickname   = naverUser.getNickname();
         final String profileUrl = naverUser.getProfileImage();
 
@@ -169,15 +170,29 @@ public class NaverService {
             return socialOpt.get().getUser();
         }
 
+        if (email != null && !email.isBlank()) {
+            var userOpt = authRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                var user = userOpt.get();
+                attachSocial(user, PROVIDER_NAVER, providerId, email);
+                if (user.getUserName() == null || user.getUserName().isBlank()) {
+                    user.setUserName(nickname);
+                }
+                if (profileUrl != null && (user.getProfileImageUrl() == null || user.getProfileImageUrl().isBlank())) {
+                    user.setProfileImageUrl(profileUrl);
+                }
+                return user;
+            }
+        }
+
         var newUser = authRepository.save(
                 User.builder()
+                        .email(email)
                         .userName(nickname)
                         .profileImageUrl(profileUrl)
                         .build()
         );
-
-        attachSocial(newUser, PROVIDER_NAVER, providerId, null);
-
+        attachSocial(newUser, PROVIDER_NAVER, providerId, email);
         return newUser;
     }
 
@@ -236,17 +251,19 @@ public class NaverService {
     }
 
     private User upsertUser(NaverUserInfo naverUser) {
-
-        return authRepository
-                .findByProviderAndProviderId("NAVER", naverUser.getId())
-                .orElseGet(() -> authRepository.save(
+        String email = StringUtils.hasText(naverUser.getEmail()) ? naverUser.getEmail()
+                : null;
+        Optional<User> found = (email != null) ? authRepository.findByEmail(email)
+                : authRepository.findByProviderAndProviderId("NAVER", naverUser.getId());
+        return found.orElseGet(()
+                -> authRepository.save(
                         User.builder()
-                                .userName(naverUser.getNickname())
-                                .provider(Provider.NAVER)
-                                .providerId(naverUser.getId())
-                                .profileImageUrl(naverUser.getProfileImage())
-                                .build()
-                ));
+                .email(email)
+                .userName(naverUser.getNickname())
+                .provider(Provider.NAVER)
+                .providerId(naverUser.getId())
+                .profileImageUrl(naverUser.getProfileImage())
+                .build() ));
     }
 
 

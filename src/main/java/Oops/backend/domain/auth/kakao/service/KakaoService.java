@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
@@ -69,7 +70,7 @@ public class KakaoService {
         KakaoUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
 
         User user = loginOrLink(kakaoUser);
-        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getUserName(), user.getLoginId());
+        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getEmail(), user.getUserName());
         return tokenService.issue(user);
     }
 
@@ -208,10 +209,11 @@ public class KakaoService {
     }
 
     @Transactional
-    protected User loginOrLink(KakaoUserInfo kakaoUser) {
-        final String providerId = kakaoUser.id();
-        final String nickname   = kakaoUser.nickname();
-        final String profileUrl = kakaoUser.profileImageUrl();
+    protected User loginOrLink(KakaoUserInfo kakaoUserInfo) {
+        final String providerId = kakaoUserInfo.id();
+        final String email      = kakaoUserInfo.email();
+        final String nickname   = kakaoUserInfo.nickname();
+        final String profileUrl = kakaoUserInfo.profileImageUrl();
 
         var socialOpt = socialAccountRepository
                 .findByProviderAndProviderId(PROVIDER_KAKAO, providerId);
@@ -219,15 +221,29 @@ public class KakaoService {
             return socialOpt.get().getUser();
         }
 
+        if (email != null && !email.isBlank()) {
+            var userOpt = authRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                var user = userOpt.get();
+                attachSocial(user, PROVIDER_KAKAO, providerId, email);
+                if (user.getUserName() == null || user.getUserName().isBlank()) {
+                    user.setUserName(nickname);
+                }
+                if (profileUrl != null && (user.getProfileImageUrl() == null || user.getProfileImageUrl().isBlank())) {
+                    user.setProfileImageUrl(profileUrl);
+                }
+                return user;
+            }
+        }
+
         var newUser = authRepository.save(
                 User.builder()
+                        .email(email)
                         .userName(nickname)
                         .profileImageUrl(profileUrl)
                         .build()
         );
-
-        attachSocial(newUser, PROVIDER_KAKAO, providerId, null);
-
+        attachSocial(newUser, PROVIDER_KAKAO, providerId, email);
         return newUser;
     }
 
@@ -241,11 +257,18 @@ public class KakaoService {
     }
     @Transactional
     protected User upsertUser(KakaoUserInfo kuser) {
+        String email = StringUtils.hasText(kuser.email())
+                ? kuser.email()
+                : null;
 
+        Optional<User> found = (email != null)
+                ? authRepository.findByEmail(email)
+                : authRepository.findByProviderAndProviderId(PROVIDER_KAKAO, kuser.id());
         return authRepository
                 .findByProviderAndProviderId(PROVIDER_KAKAO, kuser.id)
                 .orElseGet(() -> authRepository.save(
                         User.builder()
+                                .email(kuser.email())
                                 .userName(kuser.nickname)
                                 .provider(Provider.KAKAO)
                                 .providerId(kuser.id)

@@ -38,7 +38,7 @@ public class AuthService {
 
     public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
-        Optional<User> user = this.authRepository.findByLoginId(loginDto.getLoginId());
+        Optional<User> user = this.authRepository.findByEmail(loginDto.getEmail());
 
         if(user == null) {
             throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
@@ -119,11 +119,11 @@ public class AuthService {
     }
     @Transactional
     public void join(JoinDto joinDto) {
-        this.isIdExist(joinDto.getLoginId());
+        this.isIdExist(joinDto.getEmail());
         String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
         // 이메일이 존재하지 않는다면 새로운 User 생성
         User user = User.builder()
-                .loginId(joinDto.getLoginId())
+                .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
                 .build();
@@ -148,10 +148,10 @@ public class AuthService {
         return TokenResponseDto.of(accessToken, refreshTokenValue);
     }
 
-    public void isIdExist(String loginId) {
-        Optional<User> user = this.authRepository.findByLoginId(loginId) ;
+    public void isIdExist(String email) {
+        Optional<User> user = this.authRepository.findByEmail(email) ;
         if (user.isPresent()) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 아이디 입니다.");
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
         }
     }
     public void validateRefreshToken(RefreshToken refreshToken) {
