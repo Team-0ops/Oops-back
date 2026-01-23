@@ -2,7 +2,6 @@ package Oops.backend.domain.lesson.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.lesson.dto.request.CreateLessonRequest;
 import Oops.backend.domain.lesson.service.LessonCommandService;
 import Oops.backend.domain.lesson.service.LessonQueryService;
@@ -29,7 +28,7 @@ public class LessonController {
 
     @Operation(summary = "교훈 작성 API")
     @PostMapping
-    public ResponseEntity<BaseResponse> createLesson(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> createLesson(@Parameter(hidden = true) User user,
                                                     @PathVariable Long postId,
                                                     @Valid @RequestBody CreateLessonRequest request){
 
@@ -42,7 +41,7 @@ public class LessonController {
 
     @Operation(summary = "교훈 조회 API")
     @GetMapping
-    public ResponseEntity<BaseResponse> getLesson(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getLesson(@Parameter(hidden = true) User user,
                                                   @PathVariable Long postId){
 
         log.info("Get /api/posts/lessons 호출, User = {}", user.getUserName());

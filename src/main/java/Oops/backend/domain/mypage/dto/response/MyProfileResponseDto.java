@@ -1,7 +1,6 @@
 package Oops.backend.domain.mypage.dto.response;
 
 
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

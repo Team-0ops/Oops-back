@@ -16,6 +16,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name="users")
 public class User extends BaseEntity {
 
     @Column
@@ -60,5 +61,7 @@ public class User extends BaseEntity {
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
 
+    private String provider; // Oauth 제공자
+    private String providerId; //Oauth 별 유저 ID;
 }
 

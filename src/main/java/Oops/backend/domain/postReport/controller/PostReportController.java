@@ -2,7 +2,6 @@ package Oops.backend.domain.postReport.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.post.dto.PostReportRequest;
 import Oops.backend.domain.postReport.service.PostReportService;
 import Oops.backend.domain.user.entity.User;
@@ -26,7 +25,7 @@ public class PostReportController {
     // 실패담 신고
     @Operation(summary = "게시글 신고하기")
     @PostMapping("/{postId}/reports")
-    public ResponseEntity<BaseResponse> reportPost(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> reportPost(@Parameter(hidden = true) User user,
                                                    @PathVariable Long postId,
                                                    @RequestBody PostReportRequest request){
 

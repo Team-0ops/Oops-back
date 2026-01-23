@@ -2,7 +2,6 @@ package Oops.backend.domain.commentReport.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.commentReport.dto.CommentReportRequest;
 import Oops.backend.domain.commentReport.service.CommentReportService;
 import Oops.backend.domain.user.entity.User;
@@ -26,7 +25,7 @@ public class CommentReportController {
     @Operation(summary = "댓글 신고하기")
     @PostMapping("/comments/{commentId}/reports")
     public ResponseEntity<BaseResponse> reportComment(@PathVariable Long commentId,
-                                                      @Parameter(hidden = true) @AuthenticatedUser User user,
+                                                      @Parameter(hidden = true) User user,
                                                      @RequestBody CommentReportRequest request){
 
         log.info("Post /api/comments/{commentId}/reports 호출, User = {}", user.getUserName());

@@ -2,7 +2,6 @@ package Oops.backend.domain.comment.controller;
 
 import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.comment.dto.CommentRequestDto;
 import Oops.backend.domain.comment.service.CommentCommandService;
 import Oops.backend.domain.comment.service.CommentQueryService;
@@ -29,7 +28,7 @@ public class CommentRestController {
     @Operation(summary = "댓글 달기")
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<BaseResponse> leaveComment(@PathVariable("postId") Long postId,
-                                                     @Parameter(hidden = true) @AuthenticatedUser User user,
+                                                     @Parameter(hidden = true) User user,
                                                      @Valid @RequestBody CommentRequestDto.LeaveCommentDto request){
 
         log.info("Post /api/{postId}/comments 호출, User = {}", user.getUserName());
@@ -43,7 +42,7 @@ public class CommentRestController {
     @DeleteMapping("posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse> deleteComment(@PathVariable("postId") Long postId,
                                                       @PathVariable("commentId") Long commentId,
-                                                      @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                      @Parameter(hidden = true) User user){
 
         log.info("Delete /api/{postId}/comments/{commentId} 호출, User = {}", user.getUserName());
 
@@ -55,7 +54,7 @@ public class CommentRestController {
     @Operation(summary = "댓글 좋아요 누르기")
     @PostMapping("/comments/{commentId}/cheers")
     public ResponseEntity<BaseResponse> cheerComment(@PathVariable Long commentId,
-                                                     @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                     @Parameter(hidden = true) User user){
 
         log.info("Post /api/comments/{commentId}/cheers 호출, User = {}", user.getUserName());
 
@@ -67,7 +66,7 @@ public class CommentRestController {
     @Operation(summary = "게시글에 대한 댓글 조회")
     @GetMapping("/post/{postId}/comments")
     public ResponseEntity<BaseResponse> getCommentsOfPost(@PathVariable Long postId,
-                                                          @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                          @Parameter(hidden = true) User user){
 
         return BaseResponse.onSuccess(SuccessStatus._OK, commentQueryService.findCommentsOfPost(postId, user));
     }
