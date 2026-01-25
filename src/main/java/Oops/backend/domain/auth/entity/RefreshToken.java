@@ -29,8 +29,6 @@ public class RefreshToken extends BaseEntity {
     @Column(nullable = false, length = 512)
     private String token;
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
 
     public static RefreshToken of(Long userId, String token) {
         RefreshToken rt = new RefreshToken();
