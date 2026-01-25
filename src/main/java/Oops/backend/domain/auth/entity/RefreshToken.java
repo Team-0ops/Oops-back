@@ -19,9 +19,9 @@ import java.time.LocalDateTime;
         uniqueConstraints = @UniqueConstraint(name = "ux_refresh_token_user", columnNames = "user_id")
 )
 public class RefreshToken extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
