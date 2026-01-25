@@ -68,6 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
+            log.info("doFilterInternal");
             String token = resolveAccessToken(request);
             if (token != null && !token.isBlank()) {
                 if (jwtTokenProvider.validate(token)) {
@@ -95,16 +96,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String resolveAccessToken(HttpServletRequest request) {
         String authz = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authz != null && authz.startsWith("Bearer ")) {
-            return authz.substring(7);
+        log.info("resolveAccessToken Authorization: {}", authz);
+
+        if (authz != null && !authz.isBlank()) {
+            if (authz.startsWith("Bearer ")) {
+                return authz.substring(7).trim();
+            }
+            if (looksLikeJwt(authz)) {
+                return authz.trim();
+            }
         }
+
+        String accessTokenHeader = request.getHeader("AccessToken");
+        if (accessTokenHeader != null && !accessTokenHeader.isBlank()) {
+            log.info("resolveAccessToken AccessToken header: {}", accessTokenHeader);
+            if (accessTokenHeader.startsWith("Bearer ")) return accessTokenHeader.substring(7).trim();
+            return accessTokenHeader.trim();
+        }
+
+        String xAccessTokenHeader = request.getHeader("X-Access-Token");
+        if (xAccessTokenHeader != null && !xAccessTokenHeader.isBlank()) {
+            log.info("resolveAccessToken X-Access-Token header: {}", xAccessTokenHeader);
+            if (xAccessTokenHeader.startsWith("Bearer ")) return xAccessTokenHeader.substring(7).trim();
+            return xAccessTokenHeader.trim();
+        }
+
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
                 if ("AccessToken".equals(c.getName())) {
+                    log.info("resolveAccessToken cookie AccessToken: present");
                     return c.getValue();
                 }
             }
         }
+
         return null;
     }
+
+    private boolean looksLikeJwt(String s) {
+        int dots = 0;
+        for (int i = 0; i < s.length(); i++) if (s.charAt(i) == '.') dots++;
+        return dots == 2 && s.startsWith("ey");
+    }
+
 }
