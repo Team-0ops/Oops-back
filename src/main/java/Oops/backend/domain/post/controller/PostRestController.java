@@ -82,7 +82,7 @@ public class PostRestController {
     )
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse> createPost(
-            @Parameter(hidden = true) User user,
+            @Parameter(hidden = true) @AuthenticatedUser User user,
             @Parameter(
                     description = "실패담 데이터(JSON 문자열)",
                     required = true
