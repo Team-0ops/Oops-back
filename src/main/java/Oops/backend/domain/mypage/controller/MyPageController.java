@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/my-page")
 @RequiredArgsConstructor
+@Slf4j
 public class MyPageController {
 
     private final MyPageQueryService myPageQueryService;
@@ -54,6 +56,7 @@ public class MyPageController {
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getMyProfile(
             @Parameter(hidden = true)@AuthenticatedUser  User user) {
+        log.info("User: " + user.getUserName());
         return BaseResponse.onSuccess(SuccessStatus._OK, myPageQueryService.getMyProfile(user));
     }
 
