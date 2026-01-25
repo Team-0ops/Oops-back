@@ -27,7 +27,7 @@ public class PostGroupController {
 
     @GetMapping("/{postId}")
     @Operation(summary = "실패담 상세 조회 API")
-    public ResponseEntity<BaseResponse> getPostGroup(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getPostGroup(@Parameter(hidden = true)@AuthenticatedUser User user,
                                                      @PathVariable Long postId){
 
         log.info("Get /api/posts/{postId} 호출");

@@ -31,7 +31,7 @@ public class CategoryController {
      */
     @GetMapping
     @Operation(summary = "전체 카테고리 조회 API",description = "전체 15개의 카테고리를 조회하는 api이며, 카테고리 이름과 즐겨찾기 여부를 반환합니다.")
-    public ResponseEntity<BaseResponse> getCategoryList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> getCategoryList(@Parameter(hidden = true)@AuthenticatedUser User user) {
 
         log.info("Get /api/categories 호출, User = {}", user.getUserName());
 
@@ -44,7 +44,7 @@ public class CategoryController {
      */
     @GetMapping("/search")
     @Operation(summary = "카테고리 검색 API",description = "카테고리를 이름으로 검색하는 API로 즐겨찾기 여부까지 반환됩니다.")
-    public ResponseEntity<BaseResponse> searchCategoriesByName(@RequestParam("name") String searchName, @Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> searchCategoriesByName(@RequestParam("name") String searchName, @Parameter(hidden = true)@AuthenticatedUser  User user) {
 
         log.info("Get /api/categories/search 호출, User = {}", user.getUserName());
 
@@ -62,7 +62,7 @@ public class CategoryController {
      */
     @PostMapping("/{categoryId}/bookmark")
     @Operation(summary = "카테고리 즐겨찾기 설정 API",description = "선택된 카테고리를 즐겨찾기로 설정합니다.")
-    public ResponseEntity<BaseResponse> bookmarked (@PathVariable Long categoryId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> bookmarked (@PathVariable Long categoryId, @Parameter(hidden = true)@AuthenticatedUser  User user) {
 
         log.info("Post /api/{categoryId}/bookmark 호출, User = {}", user.getUserName());
 
@@ -75,7 +75,7 @@ public class CategoryController {
      */
     @DeleteMapping("/{categoryId}/unbookmark")
     @Operation(summary = "카테고리 즐겨찾기 해제 API",description = "선택된 카테고리를 즐겨찾기 해제합니다.")
-    public ResponseEntity<BaseResponse> unbookmarked (@PathVariable Long categoryId, @Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> unbookmarked (@PathVariable Long categoryId, @Parameter(hidden = true)@AuthenticatedUser  User user) {
 
         log.info("Delete /api/{categoryId}/unbookmark 호출, User = {}", user.getUserName());
 
