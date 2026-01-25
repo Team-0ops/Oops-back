@@ -80,8 +80,8 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from("AccessToken", accessToken)
                 .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
-                .sameSite("LAX")
-                .secure(false)
+                .sameSite("None")
+                .secure(true)
                 .path("/")
                 .build();
 
@@ -174,10 +174,11 @@ public class AuthService {
         }
     }
     public void validateRefreshToken(RefreshToken refreshToken) {
-        if (jwtTokenProvider.validate(refreshToken.getToken())) {
+        if (!jwtTokenProvider.validate(refreshToken.getToken())) {
             throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
     }
+
 
 
     public RefreshToken findExistingRefreshToken(String refreshToken) {
