@@ -80,7 +80,7 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from("AccessToken", accessToken)
                 .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("LAX")
                 .secure(true)
                 .path("/")
                 .build();
