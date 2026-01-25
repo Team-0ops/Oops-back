@@ -27,7 +27,15 @@ public class JwtTokenProvider {
             @Value("${jwt.access-minutes}") long accessMinutes,
             @Value("${jwt.refresh-days}") long refreshDays
     ) {
-        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret));
+        System.out.println("주입된 Secret 길이: " + (base64Secret != null ? base64Secret.length() : "null"));
+
+        try {
+            byte[] decodedKey = Decoders.BASE64.decode(base64Secret);
+            this.key = Keys.hmacShaKeyFor(decodedKey);
+        } catch (Exception e) {
+            System.err.println("JWT 키 생성 중 에러 발생: " + e.getMessage());
+            throw e;
+        }
         this.accessMinutes = accessMinutes;
         this.refreshDays = refreshDays;
     }
