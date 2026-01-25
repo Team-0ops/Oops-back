@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -22,11 +24,16 @@ public class KakaoController {
     private final KakaoService kakaoService;
 
     @GetMapping("/callback")
-    public ResponseEntity<BaseResponse> callback(@RequestParam String code,
-                                                 @RequestParam(value="redirect-url", required=false) String redirectUrl, HttpServletResponse response) {
+    public void callback(@RequestParam String code,
+                                                 @RequestParam(value="redirect-url", required=false) String redirectUrl, HttpServletResponse response) throws IOException {
         kakaoService.loginAndSetCookie(code, redirectUrl, response);
+        String target = (redirectUrl != null && !redirectUrl.isBlank())
+                ? redirectUrl
+                : "https://oops-ivory.vercel.app/";
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 인증 완료");
+        log.info("Kakao Login ...");
+        response.sendRedirect(target);
+        // return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 인증 완료");
     }
 
 

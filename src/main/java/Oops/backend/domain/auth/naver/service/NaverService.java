@@ -63,10 +63,8 @@ public class NaverService {
         if (requestDto == null || !StringUtils.hasText(requestDto.getCode())) {
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "code가 필요합니다.");
         }
-        String redirect = StringUtils.hasText(requestDto.getRedirectUrl())
-                ? requestDto.getRedirectUrl()
-                : naverRedirectUri;
-        return login(requestDto.getCode(), requestDto.getState(), redirect);
+
+        return login(requestDto.getCode(), requestDto.getState(), naverRedirectUri);
     }
 
 

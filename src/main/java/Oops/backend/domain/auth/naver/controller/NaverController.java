@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 
 @Slf4j
 @RestController
@@ -37,13 +39,20 @@ public class NaverController {
     }
 
     @GetMapping("/callback")
-    public ResponseEntity<BaseResponse> callback(@RequestParam("code") String code,
-                                                 @RequestParam(value = "state", required = false) String state,
-                                                 @RequestParam(value = "redirect-url", required = false) String redirectUrl,
-                                                 HttpServletResponse response) {
+    public void callback(@RequestParam("code") String code,
+                         @RequestParam(value = "state", required = false) String state,
+                         @RequestParam(value = "redirect-url", required = false) String redirectUrl,
+                         HttpServletResponse response) throws IOException, IOException {
+
         naverService.loginAndSetCookie(code, state, redirectUrl, response);
-        return BaseResponse.onSuccess(SuccessStatus._OK, "네이버 인증 완료");
+
+        String target = (redirectUrl != null && !redirectUrl.isBlank())
+                ? redirectUrl
+                : "https://oops-ivory.vercel.app/";
+
+        response.sendRedirect(target);
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<BaseResponse> login(@RequestBody NaverLoginRequestDto dto) {

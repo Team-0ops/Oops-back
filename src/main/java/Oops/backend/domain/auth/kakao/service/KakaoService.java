@@ -53,26 +53,19 @@ public class KakaoService {
     private static final String PROVIDER_KAKAO = "Kakao";
 
     @Transactional
-    public void loginAndSetCookie(String code, String redirectUrl, HttpServletResponse response) {
-        TokenResponseDto tokens = login(code, redirectUrl);
+    public void loginAndSetCookie(String code, String RedirectUrl, HttpServletResponse response) {
+        TokenResponseDto tokens = login(code);
         tokenService.setLoginCookies(response, tokens);
     }
 
     @Transactional
-    public TokenResponseDto login(String code, String redirectUrl) {
-        log.info("login code: {}", code);
-        if (code == null || code.isBlank()) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "code가 필요합니다.");
-        }
-        String redirect = (redirectUrl != null && !redirectUrl.isBlank()) ? redirectUrl : kakaoRedirectUri;
-
-        String kakaoAccessToken = exchangeToken(code, redirect);
+    public TokenResponseDto login(String code) {
+        String kakaoAccessToken = exchangeToken(code, kakaoRedirectUri);
         KakaoUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
-
         User user = loginOrLink(kakaoUser);
-        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getEmail(), user.getUserName());
         return tokenService.issue(user);
     }
+
 
     @Transactional
     public TokenResponseDto login(KakaoLoginRequestDto requestDto) {
