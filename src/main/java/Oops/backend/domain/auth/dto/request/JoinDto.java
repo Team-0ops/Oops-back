@@ -1,6 +1,5 @@
 package Oops.backend.domain.auth.dto.request;
 
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -22,4 +21,8 @@ public class JoinDto {
     @Schema(description = "사용자 비밀번호", example = "1234abcd!")
     @NotBlank(message = "비밀번호가 비어있습니다.")
     private String password;
+
+    @Schema(description = "회원가입 이메일 인증 토큰", example = "d9f1a2...", required = true)
+    @NotBlank(message = "이메일 인증이 필요합니다.")
+    private String verificationToken;
 }
