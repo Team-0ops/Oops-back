@@ -69,6 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             log.info("doFilterInternal");
+
             String token = resolveAccessToken(request);
             if (token != null && !token.isBlank()) {
                 if (jwtTokenProvider.validate(token)) {
@@ -97,6 +98,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String resolveAccessToken(HttpServletRequest request) {
         String authz = request.getHeader(HttpHeaders.AUTHORIZATION);
         log.info("resolveAccessToken Authorization: {}", authz);
+        log.info("Authorization: {}", request.getHeader(HttpHeaders.AUTHORIZATION));
+        log.info("Cookie header: {}", request.getHeader("Cookie"));
+        log.info("request.getCookies() is null? {}", request.getCookies() == null);
 
         if (authz != null && !authz.isBlank()) {
             if (authz.startsWith("Bearer ")) {
