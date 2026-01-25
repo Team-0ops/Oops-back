@@ -5,6 +5,7 @@ import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -27,10 +28,17 @@ public class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentR
                                 NativeWebRequest webRequest,
                                 WebDataBinderFactory binderFactory) {
 
-        User principal = authenticationContext.getPrincipal();
-        if (principal == null || principal.getId() == null) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getPrincipal() == null || "anonymousUser".equals(auth.getPrincipal())) {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        return principal;
+
+        Object principal = auth.getPrincipal();
+        if (principal instanceof User u && u.getId() != null) {
+            return u;
+        }
+
+        throw new GeneralException(ErrorStatus._UNAUTHORIZED, "로그인이 필요합니다.");
     }
+
 }
