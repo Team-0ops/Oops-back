@@ -56,7 +56,10 @@ public class MyPageController {
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getMyProfile(
             @Parameter(hidden = true)@AuthenticatedUser  User user) {
-        log.info("User: " + user.getUserName());
+        log.info("Injected user => id={}, name={}, email={}",
+                user == null ? null : user.getId(),
+                user == null ? null : user.getUserName(),
+                user == null ? null : user.getEmail());
         return BaseResponse.onSuccess(SuccessStatus._OK, myPageQueryService.getMyProfile(user));
     }
 
