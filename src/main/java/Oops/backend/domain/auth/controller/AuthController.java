@@ -5,10 +5,9 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
-import Oops.backend.domain.auth.JwtEncoder;
+import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
-import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
@@ -25,24 +24,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.GeneratedReferenceTypeDelegate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 
 
 @Tag(name = "로그인 및 회원가입 API")
 @RestController
-@RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@RequestMapping("/api/auth")
 @Slf4j
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtEncoder jwtEncoder;
 
     @Operation(
             summary = "회원가입",
@@ -102,7 +101,7 @@ public class AuthController {
                             }
                     )
             )
-            @Valid @org.springframework.web.bind.annotation.RequestBody  JoinDto joinDto,
+            @Valid @RequestBody  JoinDto joinDto,
             HttpServletResponse response
     ) {
         this.authService.join(joinDto);
@@ -155,24 +154,6 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "로그아웃 성공");
     }
 
-    // refreshToken
-    @Operation(
-            summary = "AccessToken 갱신",
-            description = "RefreshToken을 사용하여 새로운 AccessToken을 발급합니다."
-            // Swagger 보안 스키마를 쓰는 경우: @SecurityRequirement(name = "RefreshTokenHeader")
-    )
-    @PostMapping("/refresh")
-    public ResponseEntity<BaseResponse> refreshToken(
-            HttpServletResponse response,
-            HttpServletRequest request,
-            @RequestHeader(value = "X-Refresh-Token", required = false) String refreshHeader
-    ) {
-        String refreshToken = extractRefreshToken(request, refreshHeader);
-        TokenResponseDto dto = authService.refreshAccessToken(refreshToken);
-        authService.setCookie(response, dto.getAccessToken());
-        authService.setCookieForRefreshToken(response, dto.getRefreshToken());
-        return BaseResponse.onSuccess(SuccessStatus._OK, dto);
-    }
 
     private String extractRefreshToken(HttpServletRequest request, String header) {
         if (header != null && !header.isBlank()) {
@@ -183,13 +164,11 @@ public class AuthController {
         Cookie[] cookies = request.getCookies();
         log.info("AuthController cookies: {}", Arrays.toString(cookies));
         if (cookies == null) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "쿠키 없음");
-
         String raw = Arrays.stream(cookies)
                 .filter(c -> "RefreshToken".equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 없음"));
-
         String v = raw.trim();
         if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length() - 1);
         if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim();

@@ -39,11 +39,11 @@ public class SpecFeedController {
     @GetMapping("/best/all")
     @Operation(summary = "베스트 Failers 피드 조회 API",description = "베스트 지표에 따라 선정된 베스트 실패담 50개를 정렬 기준에 따라 조회합니다.")
     public ResponseEntity<BaseResponse> getBestPostList(@Parameter(description = "페이지 번호 (0부터 시작)")
-                                                            @RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "0") int page,
                                                         @Parameter(description = "페이지당 게시글 수")
-                                                            @RequestParam(defaultValue = "10") int limit,
+                                                        @RequestParam(defaultValue = "10") int limit,
                                                         @Parameter(description = "정렬 기준 (BEST, LATEST, LIKE, VIEW, COMMENT)")
-                                                            @RequestParam(defaultValue = "LATEST") SortType sort) {
+                                                        @RequestParam(defaultValue = "LATEST") SortType sort) {
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit);
 
@@ -57,16 +57,16 @@ public class SpecFeedController {
     @GetMapping("/bookmarked/{categoryId}/all")
     @Operation(summary = "즐겨찾기한 카테고리 피드 조회 API",description = "즐겨찾기한 카테고리 중 선택된 카테고리의 글 중 요청 situation인 게시글을 정렬 기준에 따라 조회합니다.")
     public ResponseEntity<BaseResponse> getMarkedPostList(@Parameter(description = "카테고리 아이디: 0이면 전체 카테고리 조회입니다.")
-                                                              @PathVariable Long categoryId,
+                                                          @PathVariable Long categoryId,
                                                           @Parameter(description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)")
-                                                              @RequestParam("situation") Situation situation,
+                                                          @RequestParam("situation") Situation situation,
                                                           @Parameter(description = "페이지 번호 (0부터 시작)")
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @Parameter(description = "페이지당 게시글 수")
-                                                        @RequestParam(defaultValue = "10") int limit,
+                                                          @RequestParam(defaultValue = "10") int limit,
                                                           @Parameter(hidden = true) @AuthenticatedUser User user,
                                                           @Parameter(description = "정렬 기준 (LATEST, LIKE, VIEW, COMMENT)")
-                                                              @RequestParam(defaultValue = "LATEST") SortType sort) {
+                                                          @RequestParam(defaultValue = "LATEST") SortType sort) {
         if(categoryId<0 || categoryId>15){
             throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
         }
@@ -91,9 +91,9 @@ public class SpecFeedController {
                                                           @Parameter(description = "페이지 번호 (0부터 시작)")
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @Parameter(description = "페이지당 게시글 수")
-                                                              @RequestParam(defaultValue = "10") int limit,
+                                                          @RequestParam(defaultValue = "10") int limit,
                                                           @Parameter(description = "정렬 기준 (LATEST, LIKE, VIEW, COMMENT)")
-                                                              @RequestParam(defaultValue = "LATEST") SortType sort) {
+                                                          @RequestParam(defaultValue = "LATEST") SortType sort) {
 
         if(categoryId<1 || categoryId>15){
             throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
@@ -112,15 +112,15 @@ public class SpecFeedController {
     @GetMapping("/randomTopic/current/all")
     @Operation(summary = "이번주 랜덤주제 피드 API",description = "이번주 랜덤주제의 글 중 요청 situation인 게시글을 정렬 기준에 따라 조회합니다.")
     public ResponseEntity<BaseResponse> getThisWeekPostList(@Parameter(
-                                                                  description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
-                                                          )
-                                                          @RequestParam("situation") Situation situation,
-                                                          @Parameter(description = "페이지 번호 (0부터 시작)")
-                                                          @RequestParam(defaultValue = "0") int page,
-                                                          @Parameter(description = "페이지당 게시글 수")
-                                                          @RequestParam(defaultValue = "10") int limit,
+            description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
+    )
+                                                            @RequestParam("situation") Situation situation,
+                                                            @Parameter(description = "페이지 번호 (0부터 시작)")
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @Parameter(description = "페이지당 게시글 수")
+                                                            @RequestParam(defaultValue = "10") int limit,
                                                             @Parameter(description = "정렬 기준 (LATEST, LIKE, VIEW, COMMENT)")
-                                                                @RequestParam(defaultValue = "LATEST") SortType sort) {
+                                                            @RequestParam(defaultValue = "LATEST") SortType sort) {
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit);
 
@@ -135,15 +135,15 @@ public class SpecFeedController {
     @GetMapping("/randomTopic/last/all")
     @Operation(summary = "저번주 랜덤주제 피드 API",description = "저번주 랜덤주제 top3 글과 요청 situation인 게시글을 정렬 기준에 따라 조회합니다.")
     public ResponseEntity<BaseResponse> getLastWeekPostList(@Parameter(
-                                                                    description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
-                                                            )
+            description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
+    )
                                                             @RequestParam("situation") Situation situation,
                                                             @Parameter(description = "페이지 번호 (0부터 시작)")
                                                             @RequestParam(defaultValue = "0") int page,
                                                             @Parameter(description = "페이지당 게시글 수")
                                                             @RequestParam(defaultValue = "10") int limit,
                                                             @Parameter(description = "정렬 기준 (LATEST, LIKE, VIEW, COMMENT)")
-                                                                @RequestParam(defaultValue = "LATEST") SortType sort) {
+                                                            @RequestParam(defaultValue = "LATEST") SortType sort) {
 
         LocalDateTime cutoff = LocalDateTime.now();
         Pageable pageable = PageRequest.of(page, limit);
