@@ -77,6 +77,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     User user = userRepository.findById(userId)
                             .orElse(null);
+                    log.info("JWT userId={}, userFound={}, dbId={}",
+                            userId, user != null, (user == null ? null : user.getId()));
+
                     if (user != null) {
                         authenticationContext.setPrincipal(user);
 
@@ -89,8 +92,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception ex) {
+            log.error("JWT filter exception", ex);
             SecurityContextHolder.clearContext();
         }
+
 
         filterChain.doFilter(request, response);
     }
