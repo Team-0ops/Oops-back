@@ -7,6 +7,7 @@ import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
+import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
@@ -126,6 +127,7 @@ public class AuthService {
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
+                .provider(Provider.LOCAL)
                 .build();
 
         authRepository.save(user);
