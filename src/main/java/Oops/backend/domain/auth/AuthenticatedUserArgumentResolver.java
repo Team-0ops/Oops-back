@@ -1,5 +1,7 @@
 package Oops.backend.domain.auth;
 
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -20,10 +22,15 @@ public class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentR
     }
 
     @Override
-    public User resolveArgument(final MethodParameter parameter,
-                                final ModelAndViewContainer mavContainer,
-                                final NativeWebRequest webRequest,
-                                final WebDataBinderFactory binderFactory) {
-        return authenticationContext.getPrincipal();
+    public User resolveArgument(MethodParameter parameter,
+                                ModelAndViewContainer mavContainer,
+                                NativeWebRequest webRequest,
+                                WebDataBinderFactory binderFactory) {
+
+        User principal = authenticationContext.getPrincipal();
+        if (principal == null || principal.getId() == null) {
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        return principal;
     }
 }
