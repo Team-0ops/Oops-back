@@ -92,11 +92,14 @@ public class AuthController {
                             examples = {
                                     @ExampleObject(
                                             name = "join_request_example",
-                                            value = "{\n" +
-                                                    "  \"email\": \"test1@example.com\",\n" +
-                                                    "  \"userName\": \"홍길동\",\n" +
-                                                    "  \"password\": \"1234abcd!\",\n" +
-                                                    "}"
+                                            value = """
+    {
+      "email": "test1@example.com",
+      "userName": "홍길동",
+      "password": "1234abcd!",
+      "verificationToken": "3a33fd776bba4cab87ea1f13cf841eb9"
+    }
+    """
                                     )
                             }
                     )
