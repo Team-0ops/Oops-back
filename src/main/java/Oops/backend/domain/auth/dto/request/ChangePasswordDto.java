@@ -15,7 +15,7 @@ public class ChangePasswordDto {
 
     @Schema(description = "비밀번호 재설정 토큰(이메일 인증 성공 후 발급)", example = "a1b2c3...", required = true)
     @NotBlank
-    private String resetToken;
+    private String verificationToken;
 
     @Schema(description = "새 비밀번호", example = "newSecurePassword123!", required = true)
     @NotBlank
