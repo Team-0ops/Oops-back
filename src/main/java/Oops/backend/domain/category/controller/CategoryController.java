@@ -5,7 +5,7 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
-import Oops.backend.domain.category.dto.CategoryResponse;
+import Oops.backend.domain.category.dto.CategoryResponseDto;
 import Oops.backend.domain.category.service.CategoryService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +35,7 @@ public class CategoryController {
 
         log.info("Get /api/categories 호출, User = {}", user.getUserName());
 
-        List<CategoryResponse.CategoryResponseDto> result = categoryService.getCategories(user);
+        List<CategoryResponseDto> result = categoryService.getCategories(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
@@ -53,7 +53,7 @@ public class CategoryController {
             throw new GeneralException(ErrorStatus.INVALID_SEARCH_KEYWORD);
         }
 
-        List<CategoryResponse.CategoryResponseDto> result = categoryService.searchCategory(searchName, user);
+        List<CategoryResponseDto> result = categoryService.searchCategory(searchName, user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
@@ -81,6 +81,18 @@ public class CategoryController {
 
         categoryService.deleteFavoriteCategory(categoryId, user);
         return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
+    /**
+     * 즐겨찾기한 카테고리 전체 조회
+     */
+    @GetMapping("/bookmarked/all")
+    @Operation(summary = "즐겨찾기한 카테고리 전체 조회 API",description = "사용자가 즐겨찾기한 카테고리를 모두 조회합니다.")
+    public ResponseEntity<BaseResponse> getBookmarkedPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+
+        List<CategoryResponseDto> result = categoryService.getBookmarkedCategories(user);
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
 }

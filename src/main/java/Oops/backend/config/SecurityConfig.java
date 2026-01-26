@@ -59,9 +59,14 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/webjars/**",
-                                "/api/feeds/home/first-auth",
                                 "/v3/api-docs/**",
                                 "/api/feeds/home/best",
+                                "/api/feeds/home/categories",
+                                "/api/feeds/home/banners",
+                                "/api/feeds/best/all",
+                                "/api/feeds/categories/{categoryId}/all",
+                                "/api/feeds/randomTopic/current/all",
+                                "/api/feeds/randomTopic/last/all",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()

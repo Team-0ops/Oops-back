@@ -11,17 +11,17 @@ import java.util.List;
 
 public interface SpecFeedService {
     // 베스트 피드
-    PostResponse.PostPreviewListDto getBestPostList(LocalDateTime cutoff, Pageable pageable, SortType sort);
+    PostResponse.PostPreviewListDto getBestPostList(User user, LocalDateTime cutoff, Pageable pageable, SortType sort);
 
     // 즐겨찾기 피드
     PostResponse.PostPreviewListDto getMarkedPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, User user, SortType sort, Long categoryId);
 
     // 각 카테고리별 피드
-    PostResponse.PostPreviewListDto getPostByCategoryList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId, SortType sort);
+    PostResponse.PostPreviewListDto getPostByCategoryList(User user, Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId, SortType sort);
 
     // 이번주 주제 피드
-    PostResponse.PostPreviewListDto getThisWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort);
+    PostResponse.PostPreviewListDto getThisWeekPostList(User user, Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort);
 
     // 저번주 주제 피드
-    List<PostResponse.PostPreviewListDto> getLastWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort);
+    List<PostResponse.PostPreviewListDto> getLastWeekPostList(User user, Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort);
 }
