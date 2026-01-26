@@ -96,8 +96,7 @@ public class AuthController {
     {
       "email": "test1@example.com",
       "userName": "홍길동",
-      "password": "1234abcd!",
-      "verificationToken": "3a33fd776bba4cab87ea1f13cf841eb9"
+      "password": "1234abcd!"
     }
     """
                                     )
