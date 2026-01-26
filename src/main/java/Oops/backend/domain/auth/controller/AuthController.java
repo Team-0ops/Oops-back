@@ -8,6 +8,7 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
@@ -156,27 +157,36 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "로그아웃 성공");
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<BaseResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
 
-    private String extractRefreshToken(HttpServletRequest request, String header) {
-        if (header != null && !header.isBlank()) {
-            String v = header.trim();
-            if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim(); // 옵션
-            if (!v.isEmpty()) return v;
-        }
+        String refreshToken = extractRefreshTokenOnlyFromCookie(request);
+
+        TokenResponseDto tokenDto = authService.refreshAccessToken(refreshToken);
+
+        authService.setCookie(response, tokenDto.getAccessToken());
+        authService.setCookieForRefreshToken(response, tokenDto.getRefreshToken());
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenDto);
+    }
+
+    private String extractRefreshTokenOnlyFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         log.info("AuthController cookies: {}", Arrays.toString(cookies));
         if (cookies == null) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "쿠키 없음");
+
         String raw = Arrays.stream(cookies)
                 .filter(c -> "RefreshToken".equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 없음"));
+
         String v = raw.trim();
         if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length() - 1);
-        if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim();
         if (v.isEmpty()) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 비어있음");
         return v;
     }
+
 
 
 }
