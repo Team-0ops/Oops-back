@@ -40,10 +40,10 @@ public class AuthService {
     public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
         Optional<User> user = this.authRepository.findByEmail(loginDto.getEmail());
-
-        if(user == null) {
+        if (user.isEmpty()) {
             throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
         }
+
 
         if (!passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword())) {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
@@ -134,19 +134,24 @@ public class AuthService {
     }
 
      //refresh token 관련
-     public TokenResponseDto refreshAccessToken(String refreshToken) {
-        RefreshToken stored = findExistingRefreshToken(refreshToken);
+     @Transactional
+     public TokenResponseDto refreshAccessToken(String refreshTokenValue) {
+         RefreshToken stored = findExistingRefreshToken(refreshTokenValue);
 
-        // 만료 검사
-        validateRefreshToken(stored);
+         validateRefreshToken(stored);
 
-        User user = findExistingUserByRefreshToken(stored);
+         User user = findExistingUserByRefreshToken(stored);
 
-        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
+         String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
 
-        log.info("new AccessToken: " + newAccess);
-        return new TokenResponseDto(newAccess, stored.getToken());
-    }
+         String newRefresh = jwtTokenProvider.generateRefreshToken(user.getId());
+         stored.setToken(newRefresh);
+         refreshTokenRepository.save(stored);
+
+         log.info("new AccessToken: {}", newAccess);
+         return TokenResponseDto.of(newAccess, newRefresh);
+     }
+
 
 
     private TokenResponseDto createToken(User user) {
