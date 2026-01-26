@@ -4,7 +4,6 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.mypage.dto.request.UpdateProfileRequestDto;
-import Oops.backend.domain.mypage.dto.response.MyProfileResponseDto;
 import Oops.backend.domain.mypage.service.MyPageCommandService;
 import Oops.backend.domain.mypage.service.MyPageQueryService;
 import Oops.backend.domain.post.model.Situation;
@@ -13,9 +12,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/my-page")
 @RequiredArgsConstructor
+@Slf4j
 public class MyPageController {
 
     private final MyPageQueryService myPageQueryService;
@@ -33,7 +32,7 @@ public class MyPageController {
     @Operation(summary = "내가 쓴 실패담 조회", description = "내가 작성한 실패담 목록을 조회합니다. 선택적으로 카테고리 ID로 필터링할 수 있습니다.")
     @GetMapping("/posts")
     public ResponseEntity<BaseResponse> getMyPosts(
-            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @Parameter(hidden = true)@AuthenticatedUser User user,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long topicId,
             @RequestParam(required = false) Situation situation
@@ -46,7 +45,7 @@ public class MyPageController {
 
     @Operation(summary = "내가 쓴 교훈 조회", description = "내가 작성한 교훈(레슨) 목록을 조회합니다. 선택적으로 태그로 필터링할 수 있습니다.")
     @GetMapping("/lessons")
-    public ResponseEntity<BaseResponse> getMyLessons(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getMyLessons(@Parameter(hidden = true)@AuthenticatedUser  User user,
                                                      @RequestParam(required = false) String tag) {
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 myPageQueryService.getMyLessons(user, tag));
@@ -56,7 +55,11 @@ public class MyPageController {
     @Operation(summary = "내 프로필 조회", description = "내 이메일, 닉네임, 포인트, 신고 수 등의 프로필 정보를 조회합니다.")
     @GetMapping("/profile")
     public ResponseEntity<BaseResponse> getMyProfile(
-            @Parameter(hidden = true) @AuthenticatedUser User user) {
+            @Parameter(hidden = true)@AuthenticatedUser  User user) {
+        log.info("Injected user => id={}, name={}, email={}",
+                user == null ? null : user.getId(),
+                user == null ? null : user.getUserName(),
+                user == null ? null : user.getEmail());
         return BaseResponse.onSuccess(SuccessStatus._OK, myPageQueryService.getMyProfile(user));
     }
 

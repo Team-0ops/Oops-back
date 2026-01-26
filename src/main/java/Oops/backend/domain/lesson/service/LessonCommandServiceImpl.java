@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,9 +38,7 @@ public class LessonCommandServiceImpl implements LessonCommandService{
     public Lesson createLesson(User user, Long postId, CreateLessonRequest request) {
 
         Post post = postQueryService.findPost(postId);
-
-        User user1 = authRepository.findByEmail(user.getEmail());
-
+        Optional<User> user1 = authRepository.findById(user.getId());
         // 게시글 작성자는 교훈을 작성할 수 없음
         log.info("게시글 작성자와 비교");
         if (user.getId() == post.getUser().getId()){
@@ -54,11 +53,11 @@ public class LessonCommandServiceImpl implements LessonCommandService{
 
         String title = request.getTitle();
         String content = request.getContent();
-        
+
         // 태그들을 가져오고, 없다면 생성해서 가져온다.
         LinkedHashSet<Tag> tags = tagCommandService.findOrCreateTagsByNames(request.getTags());
 
-        Lesson newLesson = Lesson.of(title, content, user1, post);
+        Lesson newLesson = Lesson.of(title, content, user1.get(), post);
 
         // 추후 Lesson과 Tag가 서로 참조할 수 있도록 LessonTag도 생성한다.
         LinkedHashSet<LessonTag> lessonTags = tags.stream()
@@ -74,12 +73,11 @@ public class LessonCommandServiceImpl implements LessonCommandService{
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         // 양방향 연관 관계 연결
-        userTags.forEach(user1::addUserTag);
+        userTags.forEach(user1.get()::addUserTag);
 
         log.info("저장");
         return lessonRepository.save(newLesson);
     }
-
     @Override
     public void deleteAllLessonsOfPost(Post post) {
         lessonRepository.deleteAllByPost(post);

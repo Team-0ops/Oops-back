@@ -5,7 +5,6 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.post.dto.*;
-import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.service.PostCommandService;
 import Oops.backend.domain.post.service.PostQueryService;
 import Oops.backend.domain.post.service.PostRecommendationQueryService;
@@ -14,12 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -27,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.List;
 
 @Tag(name = "실패담 관련 API")
@@ -46,7 +39,7 @@ public class PostRestController {
     @Operation(summary = "응원하기 API")
     @PostMapping("/{postId}/cheers")
     public ResponseEntity<BaseResponse> postCheer(@PathVariable Long postId,
-                                                  @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                  @Parameter(hidden = true)@AuthenticatedUser User user){
 
         log.info("Post /api/posts/{postId}/cheers 호출, User = {}", user.getUserName());
 
