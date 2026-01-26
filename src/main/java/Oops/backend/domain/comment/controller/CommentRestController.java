@@ -4,6 +4,7 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.comment.dto.CommentRequestDto;
+import Oops.backend.domain.comment.entity.SortType;
 import Oops.backend.domain.comment.service.CommentCommandService;
 import Oops.backend.domain.comment.service.CommentQueryService;
 import Oops.backend.domain.user.entity.User;
@@ -66,10 +67,14 @@ public class CommentRestController {
 
     @Operation(summary = "게시글에 대한 댓글 조회")
     @GetMapping("/post/{postId}/comments")
-    public ResponseEntity<BaseResponse> getCommentsOfPost(@PathVariable Long postId,
-                                                          @Parameter(hidden = true)@AuthenticatedUser  User user){
+    public ResponseEntity<BaseResponse> getCommentsOfPost(
+            @Parameter(name = "postId", description = "게시글 ID", required = true, example = "1")
+            @PathVariable("postId") Long postId,
+            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @Parameter(name = "sortType", description = "정렬 타입 (LIKE: 좋아요순, RECENT: 최신순)", required = true, example = "LIKE")
+            @RequestParam("sortType") SortType sortType){
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, commentQueryService.findCommentsOfPost(postId, user));
+        return BaseResponse.onSuccess(SuccessStatus._OK, commentQueryService.findCommentsOfPost(postId, user, sortType));
     }
 
 
