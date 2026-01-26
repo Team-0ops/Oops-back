@@ -81,7 +81,7 @@ public class AuthService {
                 .maxAge(Duration.ofMillis(Duration.ofMinutes(30).toMillis()))
                 .httpOnly(true)
                 .sameSite("LAX")
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .build();
 

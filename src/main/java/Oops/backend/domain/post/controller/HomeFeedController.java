@@ -51,11 +51,17 @@ public class HomeFeedController {
      */
     @GetMapping("/home/best")
     @Operation(summary = "홈화면 베스트 실패담 조회 API",description = "베스트 실패담 5개를 조회합니다.")
-    public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true)
+                                                            @AuthenticatedUser(required = false) User user) {
+        if (user == null){
+            PostResponse.PostPreviewListDto result1 = feedService.getBestPostList(null);
+            return BaseResponse.onSuccess(SuccessStatus._OK, result1);
 
-        PostResponse.PostPreviewListDto result = feedService.getBestPostList(user);
+        }else{
+            PostResponse.PostPreviewListDto result2 = feedService.getBestPostList(user);
+            return BaseResponse.onSuccess(SuccessStatus._OK, result2);
+        }
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
     /**
