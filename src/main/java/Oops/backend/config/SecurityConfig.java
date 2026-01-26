@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/public/**",
                                 "/api/auth/join",
                                 "/api/auth/login",
+                                "api/auth/refresh",
                                 "/auth/naver/callback",
                                 "/css/**",
                                 "/js/**",
@@ -60,6 +61,7 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/api/feeds/home/first-auth",
                                 "/v3/api-docs/**",
+                                "/api/feeds/home/best",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
