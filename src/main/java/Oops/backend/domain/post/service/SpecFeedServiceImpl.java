@@ -9,6 +9,7 @@ import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.entity.SortType;
 import Oops.backend.domain.post.model.Situation;
+import Oops.backend.domain.post.repository.PostLikeRepository;
 import Oops.backend.domain.post.repository.SpecFeedRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
@@ -34,13 +35,14 @@ public class SpecFeedServiceImpl implements SpecFeedService {
     private final CategoryRepository categoryRepository;
     private final RandomTopicRepository randomTopicRepository;
     private final S3ImageService s3ImageService;
+    private final PostLikeRepository postLikeRepository;
 
     /**
      * 베스트 실패담 50개 정렬 기준에 맞춰 조회
      */
     @Override
     @Transactional(readOnly = true)
-    public PostResponse.PostPreviewListDto getBestPostList(LocalDateTime cutoff, Pageable pageable, SortType sort){
+    public PostResponse.PostPreviewListDto getBestPostList(User user, LocalDateTime cutoff, Pageable pageable, SortType sort){
         // 1. 베스트 50개 확정
         Page<Post> bestPosts = specFeedRepository.findTopBestPosts(
                 PageRequest.of(0, 50, Sort.unsorted())
@@ -63,12 +65,12 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                 // pageable 적용 (50개 안에서)
                 int start = (int) pageable.getOffset();
                 if (start >= sorted.size()) {
-                    return toPreviewListDto(new PageImpl<>(List.of(), pageable, sorted.size()), "베스트 Failers");
+                    return toPreviewListDto(new PageImpl<>(List.of(), pageable, sorted.size()), "베스트 Failers", user);
                 }
                 int end = Math.min(start + pageable.getPageSize(), sorted.size());
 
                 Page<Post> paged = new PageImpl<>(sorted.subList(start, end), pageable, sorted.size());
-                return toPreviewListDto(paged, "베스트 Failers");
+                return toPreviewListDto(paged, "베스트 Failers", user);
             }
             best50.sort(toComparator(sort));
         }
@@ -77,7 +79,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         int start = (int) pageable.getOffset();
         // page offset 범위 체크
         if (start >= best50.size()) {
-            return toPreviewListDto(new PageImpl<>(List.of(), pageable, best50.size()), "베스트 Failers");
+            return toPreviewListDto(new PageImpl<>(List.of(), pageable, best50.size()), "베스트 Failers", user);
         }
         int end = Math.min(start + pageable.getPageSize(), best50.size());
 
@@ -89,7 +91,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                 best50.size()
         );
 
-        return toPreviewListDto(pagedPosts, "베스트 Failers");
+        return toPreviewListDto(pagedPosts, "베스트 Failers", user);
     }
 
     /**
@@ -102,7 +104,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
     public PostResponse.PostPreviewListDto getMarkedPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, User user, SortType sort, Long categoryId){
         /** 로그인하지 않은 사용자의 경우 null 리스트 반환 */
         if (user == null){
-            return toPreviewListDto(null, "로그인한 사용자만 이용할 수 있습니다.");
+            return toPreviewListDto(null, "로그인한 사용자만 이용할 수 있습니다.", user);
         }
 
         List<Long> categoryIds = new ArrayList<>();
@@ -126,7 +128,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                     categoryIds, situation, cutoff,
                     PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
             );
-            return toPreviewListDto(posts, "즐겨찾기한 실패담 " + sort + "순");
+            return toPreviewListDto(posts, "즐겨찾기한 실패담 " + sort + "순", user);
         }
 
         // 다른 정렬 기준인 경우 Sort 이용
@@ -141,7 +143,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                         categoryIds, situation, cutoff, sortedPageable
                 );
 
-        return toPreviewListDto(posts, "즐겨찾기한 실패담 " + sort + "순");
+        return toPreviewListDto(posts, "즐겨찾기한 실패담 " + sort + "순", user);
     }
 
     /**
@@ -149,7 +151,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional(readOnly = true)
-    public PostResponse.PostPreviewListDto getPostByCategoryList(Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId, SortType sort){
+    public PostResponse.PostPreviewListDto getPostByCategoryList(User user, Situation situation, LocalDateTime cutoff, Pageable pageable, Long categoryId, SortType sort){
 
         String categoryName = categoryRepository.findNameById(categoryId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.CATEGORY_NOT_FOUND));
@@ -160,7 +162,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                     categoryId, situation, cutoff,
                     PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
             );
-            return toPreviewListDto(posts, categoryName + " 카테고리");
+            return toPreviewListDto(posts, categoryName + " 카테고리", user);
         }
 
         // 다른 정렬 기준인 경우 Sort 이용
@@ -172,7 +174,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
 
         Page<Post> posts = specFeedRepository.findByCategoryIdAndSituationAndCreatedAtBeforeWithCategory(categoryId, situation, cutoff, sortedPageable);
 
-        return toPreviewListDto(posts, categoryName + " 카테고리");
+        return toPreviewListDto(posts, categoryName + " 카테고리", user);
     }
 
     /**
@@ -180,7 +182,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional(readOnly = true)
-    public PostResponse.PostPreviewListDto getThisWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort){
+    public PostResponse.PostPreviewListDto getThisWeekPostList(User user, Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort){
 
         // 이번주 랜덤 주제 조회
         RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
@@ -198,7 +200,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                     currentTopicId, situation, cutoff,
                     PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
             );
-            return toPreviewListDto(posts, topicName);
+            return toPreviewListDto(posts, topicName, user);
         }
 
         // 다른 정렬 기준인 경우 Sort 이용
@@ -210,7 +212,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
 
         Page<Post> posts = specFeedRepository.findByTopicIdAndSituationAndCreatedAtBefore(currentTopicId, situation, cutoff, sortedPageable);
 
-        return toPreviewListDto(posts, topicName);
+        return toPreviewListDto(posts, topicName, user);
     }
 
     /**
@@ -218,7 +220,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse.PostPreviewListDto> getLastWeekPostList(Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort){
+    public List<PostResponse.PostPreviewListDto> getLastWeekPostList(User user, Situation situation, LocalDateTime cutoff, Pageable pageable, SortType sort){
 
         // 이번주 랜덤 주제 조회
         RandomTopic currentTopic = randomTopicRepository.findCurrentTopic()
@@ -239,7 +241,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         if (bestPosts.isEmpty()){
             throw new GeneralException(ErrorStatus.NO_POST, "TOP 3 실패담이 없습니다.");
         }
-        PostResponse.PostPreviewListDto bestPostDto = toPreviewListDto(bestPosts, "최고의 " + topicName + " 실패담 top 3");
+        PostResponse.PostPreviewListDto bestPostDto = toPreviewListDto(bestPosts, "최고의 " + topicName + " 실패담 top 3", user);
         result.add(bestPostDto);
 
         // top 3 실패담의 아이디 수집
@@ -254,7 +256,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                     lastTopicId, situation, cutoff, bestPostIds,
                     PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted())
             );
-            PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts, topicName);
+            PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts, topicName, user);
             result.add(postDto);
             return result;
         }
@@ -275,7 +277,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
         }
 
         // posts 추가
-        PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts,  topicName + " 실패담");
+        PostResponse.PostPreviewListDto postDto = toPreviewListDto(posts,  topicName + " 실패담", user);
         result.add(postDto);
 
         return result;
@@ -284,7 +286,7 @@ public class SpecFeedServiceImpl implements SpecFeedService {
     /**
      * 결과 DTO 변환 메서드
      */
-    private PostResponse.PostPreviewListDto toPreviewListDto(Page<Post> posts, String listName){
+    private PostResponse.PostPreviewListDto toPreviewListDto(Page<Post> posts, String listName, User user){
 
         if (posts == null) {
             return PostResponse.PostPreviewListDto.builder()
@@ -294,29 +296,39 @@ public class SpecFeedServiceImpl implements SpecFeedService {
                     .build();
         }
 
-        List<PostResponse.PostPreviewDto> previews = posts.getContent().stream()
+        final Set<Long> likedPostIds =
+                (user != null && !posts.isEmpty())
+                        ? new HashSet<>(
+                        postLikeRepository.findLikedPostIds(
+                                user,
+                                posts.stream().map(Post::getId).toList()
+                        )
+                )
+                        : Collections.emptySet();
+
+        List<PostResponse.PostPreviewDto> previews = posts.stream()
                 .map(post -> {
-                    String CategoryOrTopicName;
+                    String name = (post.getCategory() != null && post.getTopic() == null)
+                            ? post.getCategory().getName()
+                            : (post.getCategory() == null && post.getTopic() != null)
+                            ? post.getTopic().getName()
+                            : null;
+
+                    if (name == null) {
+                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID,
+                                "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
+                    }
+
                     String imageUrl = null;
-
-                    if (post.getCategory() != null && post.getTopic() == null) {        // 카테고리 게시물인 경우
-                        CategoryOrTopicName = post.getCategory().getName();
-                    } else if (post.getCategory() == null && post.getTopic() != null) {  // 랜덤 주제 게시물인 경우
-                        CategoryOrTopicName = post.getTopic().getName();
-                    } else{
-                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID, "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
-                    }
-
-                    // 이미지 키 뽑기
                     if (post.getImages() != null && !post.getImages().isEmpty()) {
-                        String firstKey = post.getImages().get(0);
-                        imageUrl = s3ImageService.getPreSignedUrl(firstKey);
+                        imageUrl = s3ImageService.getPreSignedUrl(post.getImages().get(0));
                     }
 
-                    // DTO 생성
-                    return PostResponse.PostPreviewDto.from(post, CategoryOrTopicName, imageUrl);
+                    Boolean isLiked = (user == null) ? null : likedPostIds.contains(post.getId());
+
+                    return PostResponse.PostPreviewDto.from(post, name, imageUrl, isLiked);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return PostResponse.PostPreviewListDto.builder()
                 .comment(listName)

@@ -3,7 +3,7 @@ package Oops.backend.domain.category.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
-import Oops.backend.domain.category.dto.CategoryResponse;
+import Oops.backend.domain.category.dto.CategoryResponseDto;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.category.repository.UserAndCategoryRepository;
@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryResponse.CategoryResponseDto> getCategories(User user){
+    public List<CategoryResponseDto> getCategories(User user){
 
         // 1. 전체 카테고리 조회 (15개 고정)
         List<Category> allCategories = categoryRepository.findAll();
@@ -41,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         // 3. 결과 조합
         return allCategories.stream()
-                .map(category -> new CategoryResponse.CategoryResponseDto(
+                .map(category -> new CategoryResponseDto(
                         category.getId(),
                         category.getName(),
                         storedSet.contains(category.getId()) // 즐겨찾기 여부
@@ -54,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryResponse.CategoryResponseDto> searchCategory (String searchName, User user) {
+    public List<CategoryResponseDto> searchCategory (String searchName, User user) {
         // 이름 기준 카테고리 검색
         List<Category> matchedCategories = categoryRepository.findByNameContainingIgnoreCase(searchName);
 
@@ -71,7 +72,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         // 결과 조합
         return matchedCategories.stream()
-                .map(category -> new CategoryResponse.CategoryResponseDto(
+                .map(category -> new CategoryResponseDto(
                         category.getId(),
                         category.getName(),
                         favoriteCategoryIds.contains(category.getId()) // 즐겨찾기 여부
@@ -130,5 +131,15 @@ public class CategoryServiceImpl implements CategoryService {
         }else if (categoryId < 1 || categoryId > 15){
             throw new GeneralException(ErrorStatus.INVALID_CATEGORY_ID);
         }
+    }
+
+    /**
+     * 즐겨찾기한 카테고리 목록 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponseDto> getBookmarkedCategories(User user){
+        if (user == null) return Collections.emptyList();
+        return userAndCategoryRepository.findBookmarkedCategoryDtos(user.getId());
     }
 }

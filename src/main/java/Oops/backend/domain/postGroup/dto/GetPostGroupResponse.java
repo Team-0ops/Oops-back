@@ -1,13 +1,10 @@
 package Oops.backend.domain.postGroup.dto;
 
-import Oops.backend.domain.category.dto.CategoryResponse;
+import Oops.backend.domain.category.dto.CategoryResponseDto;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.randomTopic.dto.RandomTopicResponse;
-import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.Optional;
 
 
 @Getter
@@ -17,7 +14,7 @@ public class GetPostGroupResponse {
     Long groupId;
 
     // 카테고리 ID
-    CategoryResponse.CategoryResponseDto category;
+    CategoryResponseDto category;
 
     // 랜덤 주제 ID
     RandomTopicResponse.RandomTopicOfPostDto randomTopic;
@@ -33,7 +30,7 @@ public class GetPostGroupResponse {
 
     @Builder
     private GetPostGroupResponse(Long groupId,
-                                 CategoryResponse.CategoryResponseDto category,
+                                 CategoryResponseDto category,
                                  RandomTopicResponse.RandomTopicOfPostDto randomTopic,
                                  PostResponse.PostViewDto postFailure,
                                  PostResponse.PostViewDto postOvercoming,
@@ -47,7 +44,7 @@ public class GetPostGroupResponse {
     }
 
     public static GetPostGroupResponse of(Long groupId,
-                                          CategoryResponse.CategoryResponseDto category,
+                                          CategoryResponseDto category,
                                           RandomTopicResponse.RandomTopicOfPostDto randomTopic,
                                           PostResponse.PostViewDto postFailure,
                                           PostResponse.PostViewDto postOvercoming,

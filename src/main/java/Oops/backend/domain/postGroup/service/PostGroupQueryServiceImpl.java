@@ -4,7 +4,7 @@ package Oops.backend.domain.postGroup.service;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.config.s3.S3ImageService;
-import Oops.backend.domain.category.dto.CategoryResponse;
+import Oops.backend.domain.category.dto.CategoryResponseDto;
 import Oops.backend.domain.comment.dto.CommentResponse;
 import Oops.backend.domain.comment.service.CommentLikeService;
 import Oops.backend.domain.post.dto.PostResponse;
@@ -51,8 +51,8 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
         }
 
         // 카테고리 DTO 생성
-        CategoryResponse.CategoryResponseDto categoryResponseDto
-                = CategoryResponse.CategoryResponseDto.from(postGroup.getCategory());
+        CategoryResponseDto categoryResponseDto
+                = CategoryResponseDto.from(postGroup.getCategory());
 
         // 조회한 게시글 조회수 +1
         postCommandService.watchPost(postId);

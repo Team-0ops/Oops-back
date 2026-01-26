@@ -77,9 +77,9 @@ public class HomeFeedController {
      */
     @GetMapping("/home/categories")
     @Operation(summary = "카테고리별 최신글 1개씩 조회 API",description ="카테고리별 최신글 하나씩 조회합니다.")
-    public ResponseEntity<BaseResponse> getCategoriesPostList() {
+    public ResponseEntity<BaseResponse> getCategoriesPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
 
-        PostResponse.PostPreviewListDto result = feedService.getCategoriesPostList();
+        PostResponse.PostPreviewListDto result = feedService.getCategoriesPostList(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
@@ -88,14 +88,15 @@ public class HomeFeedController {
      */
     @GetMapping("/search")
     @Operation(summary = "실패담 검색 API",description ="검색어가 제목, 내용, 카테고리에 포함된 모든 글들을 최신순으로 조회한다. 페이지는 0부터 시작한다.")
-    public ResponseEntity<BaseResponse> getAllPostsByKeyword(@RequestParam String keyword,
+    public ResponseEntity<BaseResponse> getAllPostsByKeyword(@Parameter(hidden = true) @AuthenticatedUser User user,
+                                                             @RequestParam String keyword,
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "10") int limit) {
 
         log.info("Get /api/feeds/search 호출");
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
-        PostResponse.PostPreviewListDto result = feedService.searchPosts(keyword, pageable);
+        PostResponse.PostPreviewListDto result = feedService.searchPosts(user, keyword, pageable);
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
