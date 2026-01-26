@@ -56,7 +56,6 @@ public class HomeFeedController {
         PostResponse.PostPreviewListDto result = feedService.getBestPostList(user);
 
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
-
     }
 
     /**
