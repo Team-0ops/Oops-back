@@ -37,7 +37,7 @@ public class SpecFeedController {
      */
     @GetMapping("/best/all")
     @Operation(summary = "베스트 Failers 피드 조회 API",description = "베스트 지표에 따라 선정된 베스트 실패담 50개를 정렬 기준에 따라 조회합니다.")
-    public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
                                                         @Parameter(description = "페이지 번호 (0부터 시작)")
                                                             @RequestParam(defaultValue = "0") int page,
                                                         @Parameter(description = "페이지당 게시글 수")
@@ -64,7 +64,7 @@ public class SpecFeedController {
                                                           @RequestParam(defaultValue = "0") int page,
                                                           @Parameter(description = "페이지당 게시글 수")
                                                         @RequestParam(defaultValue = "10") int limit,
-                                                          @Parameter(hidden = true) @AuthenticatedUser User user,
+                                                          @Parameter(hidden = true) User user,
                                                           @Parameter(description = "정렬 기준 (LATEST, LIKE, VIEW, COMMENT)")
                                                               @RequestParam(defaultValue = "LATEST") SortType sort) {
         if(categoryId<0 || categoryId>15){
@@ -83,7 +83,7 @@ public class SpecFeedController {
      */
     @GetMapping("/categories/{categoryId}/all")
     @Operation(summary = "카테고리별 피드 조회 API",description = "선택된 카테고리의 글 중 요청 situation인 게시글을 정렬 기준에 따라 조회합니다.")
-    public ResponseEntity<BaseResponse> getMarkedPostList(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getMarkedPostList(@Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
                                                           @PathVariable Long categoryId,
                                                           @Parameter(
                                                                   description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)"
@@ -112,7 +112,7 @@ public class SpecFeedController {
      */
     @GetMapping("/randomTopic/current/all")
     @Operation(summary = "이번주 랜덤주제 피드 API",description = "이번주 랜덤주제의 글 중 요청 situation인 게시글을 정렬 기준에 따라 조회합니다.")
-    public ResponseEntity<BaseResponse> getThisWeekPostList(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getThisWeekPostList(@Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
                                                             @Parameter(description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)")
                                                           @RequestParam("situation") Situation situation,
                                                           @Parameter(description = "페이지 번호 (0부터 시작)")
@@ -134,7 +134,7 @@ public class SpecFeedController {
      */
     @GetMapping("/randomTopic/last/all")
     @Operation(summary = "저번주 랜덤주제 피드 API",description = "저번주 랜덤주제 top3 글과 요청 situation인 게시글을 정렬 기준에 따라 조회합니다.")
-    public ResponseEntity<BaseResponse> getLastWeekPostList(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getLastWeekPostList(@Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
                                                             @Parameter(description = "게시글 상태 (OOPS: 웁스중, OVERCOMING: 극복중, OVERCOME: 극복완료)")
                                                             @RequestParam("situation") Situation situation,
                                                             @Parameter(description = "페이지 번호 (0부터 시작)")

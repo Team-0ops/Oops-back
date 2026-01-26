@@ -39,7 +39,7 @@ public class HomeFeedController {
      */
     @GetMapping("/home/banners")
     @Operation(summary = "홈화면 배너 API",description = "홈화면의 배너에 필요한 정보를 조회하는 api입니다. ")
-    public ResponseEntity<BaseResponse> getBannarInfo (@Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> getBannarInfo (@Parameter(hidden = true) @AuthenticatedUser(required = false) User user) {
 
         RandomTopicResponse.BannarsInfoDto result = randomTopicService.getBannarInfo(user);
 
@@ -53,14 +53,9 @@ public class HomeFeedController {
     @Operation(summary = "홈화면 베스트 실패담 조회 API",description = "베스트 실패담 5개를 조회합니다.")
     public ResponseEntity<BaseResponse> getBestPostList(@Parameter(hidden = true)
                                                             @AuthenticatedUser(required = false) User user) {
-        if (user == null){
-            PostResponse.PostPreviewListDto result1 = feedService.getBestPostList(null);
-            return BaseResponse.onSuccess(SuccessStatus._OK, result1);
+        PostResponse.PostPreviewListDto result = feedService.getBestPostList(user);
 
-        }else{
-            PostResponse.PostPreviewListDto result2 = feedService.getBestPostList(user);
-            return BaseResponse.onSuccess(SuccessStatus._OK, result2);
-        }
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
 
     }
 
@@ -83,7 +78,7 @@ public class HomeFeedController {
      */
     @GetMapping("/home/categories")
     @Operation(summary = "카테고리별 최신글 1개씩 조회 API",description ="카테고리별 최신글 하나씩 조회합니다.")
-    public ResponseEntity<BaseResponse> getCategoriesPostList(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> getCategoriesPostList(@Parameter(hidden = true) @AuthenticatedUser(required = false) User user) {
 
         PostResponse.PostPreviewListDto result = feedService.getCategoriesPostList(user);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
@@ -94,7 +89,7 @@ public class HomeFeedController {
      */
     @GetMapping("/search")
     @Operation(summary = "실패담 검색 API",description ="검색어가 제목, 내용, 카테고리에 포함된 모든 글들을 최신순으로 조회한다. 페이지는 0부터 시작한다.")
-    public ResponseEntity<BaseResponse> getAllPostsByKeyword(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> getAllPostsByKeyword(@Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
                                                              @RequestParam String keyword,
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "10") int limit) {
