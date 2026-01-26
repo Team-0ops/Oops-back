@@ -96,7 +96,13 @@ public class EmailVerificationService {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(email);
         msg.setSubject(purpose == VerificationPurpose.SIGNUP ? "[Oops] 회원가입 인증코드" : "[Oops] 비밀번호 재설정 인증코드");
-        msg.setText("인증코드: " + code + "\n유효시간: " + CODE_TTL_MIN + "분");
+        msg.setText(
+                "Oops에서 인증코드를 보내드립니다.\n" +
+                        "인증코드는 " + code + " 입니다.\n" +
+                        "유효시간은 " + CODE_TTL_MIN + "분입니다.\n" +
+                        "정확하게 기입해주세요."
+        );
+
         mailSender.send(msg);
     }
 

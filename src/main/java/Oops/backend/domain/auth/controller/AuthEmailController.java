@@ -61,7 +61,7 @@ public class AuthEmailController {
 
     @Operation(
             summary = "이메일 인증코드 검증",
-            description = "코드가 일치하면 verificationToken(15분 유효)을 발급합니다. 회원가입(join) 요청에 이 토큰을 포함해야 합니다.",
+            description = "코드가 일치하면 verificationToken(10분 유효)을 발급합니다. 회원가입(join) 요청에 이 토큰을 포함해야 합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
