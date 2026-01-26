@@ -43,7 +43,7 @@ public class CommentRestController {
     @DeleteMapping("posts/{postId}/comments/{commentId}")
     public ResponseEntity<BaseResponse> deleteComment(@PathVariable("postId") Long postId,
                                                       @PathVariable("commentId") Long commentId,
-                                                      @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                      @Parameter(hidden = true)@AuthenticatedUser  User user){
 
         log.info("Delete /api/{postId}/comments/{commentId} 호출, User = {}", user.getUserName());
 
@@ -55,7 +55,7 @@ public class CommentRestController {
     @Operation(summary = "댓글 좋아요 누르기")
     @PostMapping("/comments/{commentId}/cheers")
     public ResponseEntity<BaseResponse> cheerComment(@PathVariable Long commentId,
-                                                     @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                     @Parameter(hidden = true)@AuthenticatedUser  User user){
 
         log.info("Post /api/comments/{commentId}/cheers 호출, User = {}", user.getUserName());
 
@@ -67,7 +67,7 @@ public class CommentRestController {
     @Operation(summary = "게시글에 대한 댓글 조회")
     @GetMapping("/post/{postId}/comments")
     public ResponseEntity<BaseResponse> getCommentsOfPost(@PathVariable Long postId,
-                                                          @Parameter(hidden = true) @AuthenticatedUser User user){
+                                                          @Parameter(hidden = true)@AuthenticatedUser  User user){
 
         return BaseResponse.onSuccess(SuccessStatus._OK, commentQueryService.findCommentsOfPost(postId, user));
     }

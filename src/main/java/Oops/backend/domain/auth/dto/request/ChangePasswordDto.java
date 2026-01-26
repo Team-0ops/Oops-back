@@ -1,7 +1,7 @@
 package Oops.backend.domain.auth.dto.request;
 
-import lombok.Getter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
 @Getter
 public class ChangePasswordDto {

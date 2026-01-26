@@ -27,7 +27,7 @@ public class LuckyDrawController {
 
     @PostMapping
     @Operation(summary = "행운부적 추첨 API",description = "사용자 포인트가 150 이상이면 추첨 가능합니다. 가장 최근 뽑힌 3개의 부적은 제외하고 랜덤 추첨합니다.")
-    public ResponseEntity<BaseResponse> getLuckyDraw(@Parameter(hidden = true) @AuthenticatedUser User user) {
+    public ResponseEntity<BaseResponse> getLuckyDraw(@Parameter(hidden = true)@AuthenticatedUser User user) {
 
         log.info("Post /api/lucky-draw 호출, User = {}", user.getUserName());
 
