@@ -8,6 +8,7 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.service.AuthService;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
@@ -156,6 +157,25 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "로그아웃 성공");
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<BaseResponse> refresh(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        String header = request.getHeader("RefreshToken");
+        if (header == null || header.isBlank()) {
+            header = request.getHeader("Authorization");
+        }
+
+        String refreshToken = extractRefreshToken(request, header);
+
+        TokenResponseDto tokenDto = authService.refreshAccessToken(refreshToken);
+
+        authService.setCookie(response, tokenDto.getAccessToken());
+        authService.setCookieForRefreshToken(response, tokenDto.getRefreshToken());
+
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenDto);
+    }
 
     private String extractRefreshToken(HttpServletRequest request, String header) {
         if (header != null && !header.isBlank()) {
