@@ -36,7 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String[] WHITELIST = {
             "/auth/kakao/callback",
             "/auth/naver/callback",
-            "/api/login/**",
+            "/api/auth/refresh",
+            "/api/auth/login",
             "/api/auth/join",
             "/oauth2/**",
             "/public/**",
@@ -71,6 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("doFilterInternal");
 
             String token = resolveAccessToken(request);
+            log.info("AccessToken present? {}", token != null && !token.isBlank());
             if (token != null && !token.isBlank()) {
                 if (jwtTokenProvider.validate(token)) {
                     Long userId = jwtTokenProvider.getUserId(token);
@@ -101,45 +103,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveAccessToken(HttpServletRequest request) {
-        String authz = request.getHeader(HttpHeaders.AUTHORIZATION);
-        log.info("resolveAccessToken Authorization: {}", authz);
-        log.info("Authorization: {}", request.getHeader(HttpHeaders.AUTHORIZATION));
-        log.info("Cookie header: {}", request.getHeader("Cookie"));
-        log.info("request.getCookies() is null? {}", request.getCookies() == null);
+        String v = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String token = normalizeToken(v);
+        if (token != null) return token;
 
-        if (authz != null && !authz.isBlank()) {
-            if (authz.startsWith("Bearer ")) {
-                return authz.substring(7).trim();
-            }
-            if (looksLikeJwt(authz)) {
-                return authz.trim();
-            }
-        }
+        v = request.getHeader("X-Access-Token");
+        token = normalizeToken(v);
+        if (token != null) return token;
 
-        String accessTokenHeader = request.getHeader("AccessToken");
-        if (accessTokenHeader != null && !accessTokenHeader.isBlank()) {
-            log.info("resolveAccessToken AccessToken header: {}", accessTokenHeader);
-            if (accessTokenHeader.startsWith("Bearer ")) return accessTokenHeader.substring(7).trim();
-            return accessTokenHeader.trim();
-        }
-
-        String xAccessTokenHeader = request.getHeader("X-Access-Token");
-        if (xAccessTokenHeader != null && !xAccessTokenHeader.isBlank()) {
-            log.info("resolveAccessToken X-Access-Token header: {}", xAccessTokenHeader);
-            if (xAccessTokenHeader.startsWith("Bearer ")) return xAccessTokenHeader.substring(7).trim();
-            return xAccessTokenHeader.trim();
-        }
+        v = request.getHeader("AccessToken");
+        token = normalizeToken(v);
+        if (token != null) return token;
 
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
                 if ("AccessToken".equals(c.getName())) {
-                    log.info("resolveAccessToken cookie AccessToken: present");
-                    return c.getValue();
+                    return normalizeToken(c.getValue());
                 }
             }
         }
 
         return null;
+    }
+
+    private String normalizeToken(String raw) {
+        if (raw == null) return null;
+        String v = raw.trim();
+        if (v.isEmpty()) return null;
+
+        if (v.startsWith("\"") && v.endsWith("\"") && v.length() > 1) {
+            v = v.substring(1, v.length() - 1).trim();
+        }
+
+        if (v.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            v = v.substring(7).trim();
+        }
+
+        return v.isEmpty() ? null : v;
     }
 
     private boolean looksLikeJwt(String s) {
