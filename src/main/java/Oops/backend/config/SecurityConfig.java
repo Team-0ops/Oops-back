@@ -58,7 +58,10 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/webjars/**",
-                                "/api/feeds/home/first-auth"
+                                "/api/feeds/home/first-auth",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
