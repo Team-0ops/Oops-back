@@ -3,6 +3,7 @@ package Oops.backend.domain.post.dto;
 import Oops.backend.domain.comment.dto.CommentResponse;
 import Oops.backend.domain.comment.model.CommentType;
 import Oops.backend.domain.post.entity.Post;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class PostResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PostPreviewDto {
         Long postId;
         String title;
@@ -28,8 +30,9 @@ public class PostResponse {
         int comments;
         int views;
         String image;  // 대표 이미지 한 장
+        Boolean isLiked;
 
-        public static PostPreviewDto from(Post post, String CategoryOrTopicName, String imageUrl) {
+        public static PostPreviewDto from(Post post, String CategoryOrTopicName, String imageUrl, Boolean isLiked) {
             return PostPreviewDto.builder()
                     .postId(post.getId())
                     .title(post.getTitle())
@@ -39,6 +42,7 @@ public class PostResponse {
                     .comments(post.getComments() != null ? post.getComments().size() : 0)
                     .views(post.getWatching())
                     .image(imageUrl)
+                    .isLiked(isLiked)
                     .build();
         }
     }
