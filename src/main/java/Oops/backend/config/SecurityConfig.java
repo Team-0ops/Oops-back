@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/public/**",
                                 "/api/auth/join",
                                 "/api/auth/login",
+                                "/api/auth/email/*",
                                 "/api/auth/refresh",
                                 "/auth/naver/callback",
                                 "/css/**",
