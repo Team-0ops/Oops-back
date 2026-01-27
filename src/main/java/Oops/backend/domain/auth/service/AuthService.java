@@ -4,16 +4,19 @@ import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.security.util.JwtTokenProvider;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.config.s3.S3ImageService;
+import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.auth.entity.RefreshToken;
+import Oops.backend.domain.auth.entity.VerificationPurpose;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
+import com.amazonaws.services.cloudformation.model.Change;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +39,7 @@ public class AuthService {
     private final S3ImageService s3ImageService;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
@@ -63,15 +67,16 @@ public class AuthService {
         }
 
         @Transactional
-        public void changePassword(User user, String oldPassword, String newPassword) {
+        public void changePassword(User user, ChangePasswordDto dto) {
             log.info(user.getUserName());
-            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-                throw new GeneralException(ErrorStatus._UNAUTHORIZED, "기존 비밀번호가 일치하지 않습니다.");
-            }
+            emailVerificationService.assertValidToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
+            User changePWUser = authRepository.findByEmail(dto.getEmail())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "해당 이메일의 사용자를 찾을 수 없습니다."));
 
-            String encryptedPassword = passwordEncoder.encode(newPassword);
-            user.setPassword(encryptedPassword);
-            authRepository.save(user);
+            changePWUser.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+            authRepository.save(changePWUser);
+
+            emailVerificationService.consumeToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
         }
 
 
@@ -120,6 +125,12 @@ public class AuthService {
     }
     @Transactional
     public void join(JoinDto joinDto) {
+        emailVerificationService.assertValidToken(
+                joinDto.getEmail(),
+                VerificationPurpose.SIGNUP,
+                joinDto.getVerificationToken()
+        );
+
         this.isIdExist(joinDto.getEmail());
         String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
         // 이메일이 존재하지 않는다면 새로운 User 생성

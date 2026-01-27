@@ -97,7 +97,8 @@ public class AuthController {
     {
       "email": "test1@example.com",
       "userName": "홍길동",
-      "password": "1234abcd!"
+      "password": "1234abcd!",
+      "verificationToken" : "78730a602f4a44839ccc64ac87c32689"
     }
     """
                                     )
@@ -133,14 +134,14 @@ public class AuthController {
 
     @Operation(
             summary = "비밀번호 변경",
-            description = "기존 비밀번호를 확인하고 새 비밀번호로 변경합니다."
+            description = "이메일을 확인하고 새 비밀번호로 변경합니다."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패 (기존 비밀번호 불일치 등)")})
+            @ApiResponse(responseCode = "401", description = "인증 실패 (이메일 인증 실패 등)")})
     @PostMapping("/reset-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto dto, @AuthenticatedUser User user) {
-        authService.changePassword(user, dto.getOldPassword(), dto.getNewPassword());
+        authService.changePassword(user, dto);
         return BaseResponse.onSuccess(SuccessStatus._OK, "비밀번호가 성공적으로 변경되었습니다.");
     }
 
@@ -186,7 +187,5 @@ public class AuthController {
         if (v.isEmpty()) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 비어있음");
         return v;
     }
-
-
 
 }
