@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,37 +28,57 @@ public class AuthEmailController {
 
     @Operation(
             summary = "이메일 인증코드 발송",
-            description = "purpose에 따라 회원가입/비밀번호 재설정 인증코드를 이메일로 전송합니다.",
+            description = "purpose에 따라 회원가입(SIGNUP) / 비밀번호 재설정(PASSWORD_RESET) 인증코드를 이메일로 전송합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             schema = @Schema(implementation = EmailRequestDto.class),
-                            examples = @ExampleObject(value = """
-                                    {
-                                      "email": "user@example.com",
-                                      "purpose": "SIGNUP"
-                                    }
-                                    """)
+                            examples = {
+                                    @ExampleObject(
+                                            name = "회원가입(SIGNUP)",
+                                            value = """
+                    {
+                      "email": "user@example.com",
+                      "purpose": "SIGNUP"
+                    }
+                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "비밀번호 재설정(PASSWORD_RESET)",
+                                            value = """
+                    {
+                      "email": "user@example.com",
+                      "purpose": "PASSWORD_RESET"
+                    }
+                    """
+                                    )
+                            }
                     )
             )
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "전송 성공",
-                    content = @Content(mediaType = "application/json",
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "전송 성공",
+                    content = @Content(
+                            mediaType = "application/json",
                             examples = @ExampleObject(value = """
-                                    {
-                                      "isSuccess": true,
-                                      "code": "OK",
-                                      "message": "입력하신 email 로 인증번호를 전송했습니다.",
-                                      "result": null
-                                    }
-                                    """))),
+            {
+              "isSuccess": true,
+              "code": "OK",
+              "message": "입력하신 email 로 인증번호를 전송했습니다.",
+              "result": null
+            }
+            """)
+                    )
+            )
     })
     @PostMapping("/send")
-    public ResponseEntity<BaseResponse> send(@RequestBody EmailRequestDto emailDto) {
+    public ResponseEntity<BaseResponse> send(@Valid @RequestBody EmailRequestDto emailDto) {
         emailVerificationService.sendCode(emailDto.getEmail(), emailDto.getPurpose());
         return BaseResponse.onSuccess(SuccessStatus._OK, "입력하신 email 로 인증번호를 전송했습니다.");
     }
+
 
     @Operation(
             summary = "이메일 인증코드 검증",
