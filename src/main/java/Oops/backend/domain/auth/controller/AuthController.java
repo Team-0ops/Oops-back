@@ -140,7 +140,7 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
             @ApiResponse(responseCode = "401", description = "인증 실패 (이메일 인증 실패 등)")})
     @PostMapping("/reset-password")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto dto,  @AuthenticatedUser(required = false) User user) {
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto dto,  @AuthenticatedUser(required = false) User user) {
         authService.changePassword(user, dto);
         return BaseResponse.onSuccess(SuccessStatus._OK, "비밀번호가 성공적으로 변경되었습니다.");
     }
