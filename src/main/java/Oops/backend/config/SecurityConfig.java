@@ -59,6 +59,7 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
+                                "/api/auth/reset-password",
                                 "/webjars/**",
                                 "/v3/api-docs/**",
                                 "/api/feeds/home/best",

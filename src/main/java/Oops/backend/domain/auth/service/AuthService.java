@@ -68,7 +68,9 @@ public class AuthService {
 
         @Transactional
         public void changePassword(User user, ChangePasswordDto dto) {
+        if(user != null)
             log.info(user.getUserName());
+
             emailVerificationService.assertValidToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
             User changePWUser = authRepository.findByEmail(dto.getEmail())
                     .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "해당 이메일의 사용자를 찾을 수 없습니다."));
