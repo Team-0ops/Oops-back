@@ -55,6 +55,7 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/email/*",
                                 "/api/auth/refresh",
+                                "/api/auth/email-availability",
                                 "/auth/naver/callback",
                                 "/css/**",
                                 "/js/**",

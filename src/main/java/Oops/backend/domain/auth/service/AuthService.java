@@ -206,4 +206,10 @@ public class AuthService {
         return userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
     }
+
+    @Transactional(readOnly = true)
+    public boolean checkEmailAvailable(String emailRaw) {
+        String email = emailRaw.trim();
+        return !userRepository.existsByEmailIgnoreCase(email);
+    }
 }
