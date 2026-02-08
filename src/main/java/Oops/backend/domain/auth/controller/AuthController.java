@@ -6,7 +6,9 @@ import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
+import Oops.backend.domain.auth.dto.request.EmailRequestDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
+import Oops.backend.domain.auth.dto.response.EmailCheckDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.service.AuthService;
@@ -27,10 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 
@@ -188,4 +187,25 @@ public class AuthController {
         return v;
     }
 
+    @Operation(
+            summary = "이메일 중복 체크",
+            description = "email이 이미 가입되어 있으면 available=false, 아니면 true를 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 응답",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = EmailCheckDto.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "요청값 검증 실패")
+    })
+    @GetMapping("/email-availability")
+    public ResponseEntity<BaseResponse> checkEmail(@RequestParam String email) {
+        boolean available = authService.checkEmailAvailable(email);
+        EmailCheckDto dto = new EmailCheckDto(email, available);
+        return BaseResponse.onSuccess(SuccessStatus._OK, dto);
+    }
 }
