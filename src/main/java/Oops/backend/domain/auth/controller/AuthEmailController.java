@@ -127,4 +127,5 @@ public class AuthEmailController {
                 );
         return BaseResponse.onSuccess(SuccessStatus._CREATED, dto);
     }
+
 }
