@@ -6,6 +6,7 @@ import Oops.backend.domain.comment.model.CommentType;
 import Oops.backend.domain.common.BaseEntity;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.postGroup.entity.PostGroup;
+import Oops.backend.domain.postReport.entity.PostReport;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -61,6 +62,9 @@ public class Post extends BaseEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostLike> postLikes;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostReport> postReports;
 
     @ElementCollection
     @Column(name = "images", length = 500)
