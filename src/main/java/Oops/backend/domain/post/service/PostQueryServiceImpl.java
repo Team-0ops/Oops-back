@@ -1,5 +1,6 @@
 package Oops.backend.domain.post.service;
 
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.post.dto.PostDetailSummaryDto;
@@ -21,6 +22,7 @@ import java.util.List;
 public class PostQueryServiceImpl implements PostQueryService{
 
     private final PostRepository postRepository;
+    private final S3ImageService s3ImageService;
 
     @Override
     public Post findPost(Long postId) {
@@ -41,7 +43,17 @@ public class PostQueryServiceImpl implements PostQueryService{
     @Transactional(readOnly = true)
     public List<PostDetailSummaryDto> getMyPosts(User user) {
         return postRepository.findByUser(user).stream()
-                .map(PostDetailSummaryDto::from)
+                .map(post -> {
+                    String imageUrl = null;
+                    if (post.getImages() != null && !post.getImages().isEmpty()) {
+                        try {
+                            imageUrl = s3ImageService.getPreSignedUrl(post.getImages().get(0));
+                        } catch (Exception e) {
+                            imageUrl = null;
+                        }
+                    }
+                    return PostDetailSummaryDto.from(post, imageUrl);
+                })
                 .toList();
     }
 }

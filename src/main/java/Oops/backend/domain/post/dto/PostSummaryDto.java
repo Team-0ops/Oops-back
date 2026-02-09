@@ -12,12 +12,14 @@ public class PostSummaryDto {
     private Long postId;
     private String title;
     private String situation; // OOPS, OVERCOMING, OVERCOME
+    private String imageUrl;
 
-    public static PostSummaryDto from(Post post) {
+    public static PostSummaryDto from(Post post, String imageUrl) {
         return PostSummaryDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
                 .situation(post.getSituation().name()) // 그대로 Enum comment 사용
+                .imageUrl(imageUrl)
                 .build();
     }
 }
