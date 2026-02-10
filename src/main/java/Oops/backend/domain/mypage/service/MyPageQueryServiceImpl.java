@@ -9,6 +9,7 @@ import Oops.backend.domain.commentReport.repository.CommentReportRepository;
 import Oops.backend.domain.lesson.entity.Lesson;
 import Oops.backend.domain.lesson.repository.LessonRepository;
 import Oops.backend.domain.mypage.dto.response.*;
+import Oops.backend.domain.post.dto.PostSummaryDto;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
@@ -147,7 +148,22 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 }))
                 .toList();
 
-        return OtherProfileResponseDto.from(user, postDtos, bestFailers);
+        List<PostSummaryDto> bestFailerDtos = bestFailers.stream()
+                .map(p -> PostSummaryDto.from(p, getFirstImageUrl(p)))
+                .toList();
+
+        return OtherProfileResponseDto.from(user, postDtos, bestFailerDtos);
+    }
+
+    private String getFirstImageUrl(Post post) {
+        if (post.getImages() != null && !post.getImages().isEmpty()) {
+            try {
+                return s3ImageService.getPreSignedUrl(post.getImages().get(0));
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 
 

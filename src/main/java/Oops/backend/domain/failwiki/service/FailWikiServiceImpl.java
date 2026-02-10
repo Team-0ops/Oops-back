@@ -1,5 +1,7 @@
 package Oops.backend.domain.failwiki.service;
 
+import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.config.s3.S3ImageService;
 import Oops.backend.domain.failwiki.dto.FailWikiSummaryResponse;
 import Oops.backend.domain.failwiki.entity.FailWikiSummary;
 import Oops.backend.domain.failwiki.repository.FailWikiSummaryRepository;
@@ -30,6 +32,7 @@ public class FailWikiServiceImpl implements FailWikiService {
     private final FailWikiSummaryRepository failWikiSummaryRepository;
     private final PostRepository postRepository;
     private final GptService gptService;
+    private final S3ImageService s3ImageService;
 
     @Override
     @Transactional
@@ -161,8 +164,19 @@ public class FailWikiServiceImpl implements FailWikiService {
         List<Situation> bestSituations = List.of(Situation.OOPS, Situation.OVERCOMING, Situation.OVERCOME);
         return postRepository.findBestFailers(bestSituations, PageRequest.of(0, 6))
                 .stream()
-                .map(PostSummaryDto::from)
+                .map(p -> PostSummaryDto.from(p, getFirstImageUrl(p)))
                 .toList();
+    }
+
+    private String getFirstImageUrl(Post post) {
+        if (post.getImages() != null && !post.getImages().isEmpty()) {
+            try {
+                return s3ImageService.getPreSignedUrl(post.getImages().get(0));
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 }
 
