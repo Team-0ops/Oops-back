@@ -18,7 +18,7 @@ public class PostDetailSummaryDto {
     private String topicName;
     private String imageUrl;
 
-    public static PostDetailSummaryDto from(Post post) {
+    public static PostDetailSummaryDto from(Post post, String imageUrl) {
         return PostDetailSummaryDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
@@ -34,11 +34,7 @@ public class PostDetailSummaryDto {
                                 ? post.getTopic().getName()
                                 : null
                 )
-                .imageUrl(
-                        post.getImages() != null && !post.getImages().isEmpty()
-                                ? post.getImages().get(0) // 첫 번째 이미지 URL
-                                : null
-                )
+                .imageUrl(imageUrl)
                 .build();
     }
 }
