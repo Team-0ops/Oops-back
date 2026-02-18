@@ -15,7 +15,7 @@ public class CommentReport extends BaseEntity{
     @JoinColumn(name = "reporter")
     private User reportUser;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target")
     private Comment comment;
 

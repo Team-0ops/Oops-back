@@ -95,13 +95,16 @@ public class PostCommandServiceImpl implements PostCommandService{
         postsOfPostGroup.remove(post);
         post.setPostGroup(null);
 
+        if (postsOfPostGroup.isEmpty()){
+            postGroupCommandService.deletePostGroup(postGroup);
+        }
+
         // Lesson과의 연관 관계 제거
         List<Lesson> lessons = lessonQueryService.findLessonsByPost(post);
         lessons.forEach((lesson) -> lesson.setPost(null));
 
-        if (postsOfPostGroup.isEmpty()){
-            postGroupCommandService.deletePostGroup(postGroup);
-        }
+        // Post 엔티티의 cascade 설정으로 Comment가 자동 삭제되고,
+        // Comment 엔티티의 cascade 설정으로 CommentLike와 CommentReport도 자동 삭제됨
 
         postRepository.delete(post);
 
