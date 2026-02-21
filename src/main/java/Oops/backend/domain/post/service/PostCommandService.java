@@ -2,6 +2,7 @@ package Oops.backend.domain.post.service;
 
 import Oops.backend.domain.post.dto.PostCreateRequest;
 import Oops.backend.domain.post.dto.PostCreateResponse;
+import Oops.backend.domain.post.dto.PostUpdateRequest;
 import Oops.backend.domain.user.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,5 +16,6 @@ public interface PostCommandService {
 
     //PostCreateResponse createPost(User user, PostCreateRequest request);
     PostCreateResponse createPost(User user, PostCreateRequest request ,List<MultipartFile> imageFiles);
+    void updatePost(Long postId, User user, PostUpdateRequest request, List<MultipartFile> imageFiles);
 
 }

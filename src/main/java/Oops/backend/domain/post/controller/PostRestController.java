@@ -59,6 +59,43 @@ public class PostRestController {
         return BaseResponse.onSuccess(SuccessStatus._OK);
     }
 
+    @Operation(
+            summary = "실패담 수정 API",
+            description = """
+        Multipart/form-data 형식으로 data(JSON)와 images(이미지 파일)를 전송합니다.
+        모든 필드는 선택사항이며, 제공된 필드만 수정됩니다.
+        
+        **수정 예시(data)**: 
+        ```json
+        {
+          "title": "수정된 제목",
+          "content": "수정된 본문",
+          "categoryId": 2
+        }
+        ```
+        """
+    )
+    @PatchMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BaseResponse> updatePost(
+            @PathVariable("postId") Long postId,
+            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @Parameter(
+                    description = "수정할 실패담 데이터(JSON 문자열)",
+                    required = false
+            )
+            @RequestPart(value = "data", required = false) String dataJson,
+            @Parameter(description = "첨부 이미지 파일", required = false)
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) throws JsonProcessingException {
+
+        PostUpdateRequest request = dataJson != null && !dataJson.trim().isEmpty()
+                ? new ObjectMapper().readValue(dataJson, PostUpdateRequest.class)
+                : new PostUpdateRequest();
+
+        postCommandService.updatePost(postId, user, request, images);
+        return BaseResponse.onSuccess(SuccessStatus._OK);
+    }
+
    //실패담 작성
     @Operation(
             summary = "실패담 작성",
