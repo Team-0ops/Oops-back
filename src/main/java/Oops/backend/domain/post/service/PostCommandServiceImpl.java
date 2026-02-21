@@ -10,6 +10,7 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.lesson.service.LessonQueryService;
 import Oops.backend.domain.post.dto.PostCreateRequest;
 import Oops.backend.domain.post.dto.PostCreateResponse;
+import Oops.backend.domain.post.dto.PostUpdateRequest;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
@@ -211,6 +212,46 @@ public class PostCommandServiceImpl implements PostCommandService{
                 .message("실패담 작성 완료! 10포인트가 적립되었습니다.")
                 .imageUrls(uploadedImageUrls)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void updatePost(Long postId, User user, PostUpdateRequest request, List<MultipartFile> imageFiles) {
+        // 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
+
+        // 작성자 확인
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
+        }
+
+        // 제목 수정 (제공된 경우)
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            post.setTitle(request.getTitle());
+        }
+
+        // 본문 수정 (제공된 경우)
+        if (request.getContent() != null && !request.getContent().trim().isEmpty()) {
+            post.setContent(request.getContent());
+        }
+
+        // 카테고리 수정 (제공된 경우)
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "존재하지 않는 카테고리입니다."));
+            post.setCategory(category);
+        }
+
+        // 이미지 수정 (제공된 경우)
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> uploadedImageUrls = imageFiles.stream()
+                    .map((imageFile) -> s3ImageService.upload(imageFile, "posts", post.getId().toString()))
+                    .toList();
+            post.setImages(uploadedImageUrls);
+        }
+
+        postRepository.save(post);
     }
 
 
