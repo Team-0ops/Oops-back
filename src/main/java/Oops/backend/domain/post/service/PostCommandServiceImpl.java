@@ -198,9 +198,9 @@ public class PostCommandServiceImpl implements PostCommandService{
         List<String> uploadedImageUrls = new ArrayList<>();
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            uploadedImageUrls = imageFiles.stream()
+            uploadedImageUrls = new ArrayList<>(imageFiles.stream()
                     .map((imageFile) -> s3ImageService.upload(imageFile, "posts", saved.getId().toString()))
-                    .toList();
+                    .toList());
         }
         post.setImages(uploadedImageUrls);
 
@@ -242,9 +242,23 @@ public class PostCommandServiceImpl implements PostCommandService{
 
         // 이미지 수정 (제공된 경우)
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            List<String> uploadedImageUrls = imageFiles.stream()
+            // 기존 이미지가 있으면 S3에서 삭제
+            List<String> existingImages = post.getImages();
+            if (existingImages != null && !existingImages.isEmpty()) {
+                existingImages.forEach(imageKey -> {
+                    try {
+                        s3ImageService.deleteImageFromS3(imageKey);
+                    } catch (Exception e) {
+                        log.warn("기존 이미지 삭제 실패: {}", imageKey, e);
+                        // 삭제 실패해도 계속 진행 (이미지 업로드는 진행)
+                    }
+                });
+            }
+            
+            // 새 이미지 업로드
+            List<String> uploadedImageUrls = new ArrayList<>(imageFiles.stream()
                     .map((imageFile) -> s3ImageService.upload(imageFile, "posts", post.getId().toString()))
-                    .toList();
+                    .toList());
             post.setImages(uploadedImageUrls);
         }
 
