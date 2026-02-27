@@ -21,7 +21,8 @@ public class MyProfileResponseDto {
 
     public static MyProfileResponseDto from(User user, long commentReportCount, long postReportCount, String presignedUrl) {
         return MyProfileResponseDto.builder()
-                .userName(user.getEmail())
+                .userName(user.getUserName())
+                .email(user.getEmail())
                 .profileImageUrl(presignedUrl)
                 .point(user.getPoint() != null ? user.getPoint() : 0)
                 .commentReportCount(commentReportCount)
