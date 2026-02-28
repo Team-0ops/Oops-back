@@ -153,10 +153,10 @@ public class PostRestController {
     @Operation(summary = "실패담 추천 조회", description = "특정 실패담과 같은 카테고리의 실패담과 베스트 실패담을 추천해줍니다.")
     @GetMapping("/{postId}/recommendations")
     public ResponseEntity<BaseResponse> recommendPosts(
-            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
             @PathVariable Long postId) {
 
-        log.info("Get /api/posts/{postId}/recommendations 호출, User = {}", user.getUserName());
+        log.info("Get /api/posts/{postId}/recommendations 호출, User = {}", user != null ? user.getUserName() : "ANONYMOUS");
 
         PostRecommendationResponse response = postRecommendationQueryService.recommend(user, postId);
         return BaseResponse.onSuccess(SuccessStatus._OK, response);

@@ -66,11 +66,11 @@ public class CommentRestController {
     }
 
     @Operation(summary = "게시글에 대한 댓글 조회")
-    @GetMapping("/post/{postId}/comments")
+    @GetMapping({"/post/{postId}/comments", "/posts/{postId}/comments"})
     public ResponseEntity<BaseResponse> getCommentsOfPost(
             @Parameter(name = "postId", description = "게시글 ID", required = true, example = "1")
             @PathVariable("postId") Long postId,
-            @Parameter(hidden = true) @AuthenticatedUser User user,
+            @Parameter(hidden = true) @AuthenticatedUser(required = false) User user,
             @Parameter(name = "sortType", description = "정렬 타입 (LIKE: 좋아요순, RECENT: 최신순)", required = true, example = "LIKE")
             @RequestParam("sortType") SortType sortType){
 
