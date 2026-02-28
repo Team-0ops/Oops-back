@@ -74,7 +74,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/{postId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/recommendations").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/post/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
