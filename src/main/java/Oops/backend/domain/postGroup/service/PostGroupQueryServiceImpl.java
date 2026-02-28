@@ -102,14 +102,19 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
 
     public PostResponse.PostViewDto toPostViewDto(Post post, User user, String profileImage){
 
-        boolean liked = postLikeQueryService.findPostLike(user, post);
+        // 로그인하지 않은 사용자는 좋아요 여부를 false로 처리
+        boolean liked = (user != null) && postLikeQueryService.findPostLike(user, post);
 
         List<String> images = post.getImages().stream()
                 .map(s3ImageService::getPreSignedUrl)
                 .toList();
 
         List<CommentResponse> comments = post.getComments().stream()
-                .map((comment) -> CommentResponse.of(comment, commentLikeService.existsCommentLike(comment, user)))
+                .map((comment) -> {
+                    // 로그인하지 않은 사용자는 댓글 좋아요 여부를 false로 처리
+                    boolean commentLiked = (user != null) && commentLikeService.existsCommentLike(comment, user);
+                    return CommentResponse.of(comment, commentLiked);
+                })
                 .toList();
 
         return PostResponse.PostViewDto.of(post, images, profileImage, liked, comments);
