@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/{postId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
