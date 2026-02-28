@@ -64,12 +64,14 @@ public class CommentQueryService {
         
         for (Comment parentComment : parentComments) {
             // 일반 댓글 추가
-            result.add(CommentResponse.of(parentComment, commentLikeService.existsCommentLike(parentComment, user)));
+            boolean parentLiked = user != null && commentLikeService.existsCommentLike(parentComment, user);
+            result.add(CommentResponse.of(parentComment, parentLiked));
             
             // 해당 일반 댓글의 답글들 추가 (이미 최신순으로 정렬되어 있음)
             List<Comment> replies = repliesByParentId.getOrDefault(parentComment.getId(), Collections.emptyList());
             for (Comment reply : replies) {
-                result.add(CommentResponse.of(reply, commentLikeService.existsCommentLike(reply, user)));
+                boolean replyLiked = user != null && commentLikeService.existsCommentLike(reply, user);
+                result.add(CommentResponse.of(reply, replyLiked));
             }
         }
 
