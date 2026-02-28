@@ -48,7 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/.well-known/**",
             "/json",
             "/json/**",
-            "/devtools/**"
+            "/devtools/**",
+            "/api/posts/*"
     };
 
     @Override
