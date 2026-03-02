@@ -41,7 +41,7 @@ public class LessonCommandServiceImpl implements LessonCommandService{
         Optional<User> user1 = authRepository.findById(user.getId());
         // 게시글 작성자는 교훈을 작성할 수 없음
         log.info("게시글 작성자와 비교");
-        if (user.getId() == post.getUser().getId()){
+        if (user.getId().equals(post.getUser().getId())){
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "게시글 작성자는 교훈을 작성할 수 없습니다.");
         }
 

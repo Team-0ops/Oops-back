@@ -76,6 +76,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     @Transactional
     public void deletePost(Long postId, User user) {
 
+        // User 객체가 파라미터로 넘어오게 되면 영속 상태가 아니기 때문에 따로 조회해줘야 함
         User user1 = userRepository.findById(user.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
 
@@ -84,7 +85,7 @@ public class PostCommandServiceImpl implements PostCommandService{
 
 
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
-        if (post.getUser() != user1 ){
+        if (!post.getUser().getId().equals(user1.getId())){
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
         }
 
