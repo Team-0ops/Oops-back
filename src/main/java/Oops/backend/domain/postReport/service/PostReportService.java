@@ -1,5 +1,7 @@
 package Oops.backend.domain.postReport.service;
 
+import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.post.dto.PostReportRequest;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.service.PostQueryService;
@@ -21,6 +23,16 @@ public class PostReportService {
     public void reportPost(Long postId, User user, PostReportRequest request){
 
         Post post = postQueryService.findPost(postId);
+
+        // 자기 자신의 게시글 신고 방지
+        if (post.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorStatus.SELF_REPORT_NOT_ALLOWED);
+        }
+
+        // 중복 신고 방지
+        if (postReportRepository.existsByUserAndPost(user, post)) {
+            throw new GeneralException(ErrorStatus.DUPLICATE_REPORT);
+        }
 
         PostReport newPostReport = PostReport.of(user, post, request.getContent());
 
