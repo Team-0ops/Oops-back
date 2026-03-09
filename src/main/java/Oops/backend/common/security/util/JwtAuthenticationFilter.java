@@ -49,13 +49,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/json",
             "/json/**",
             "/devtools/**",
-            "/api/posts/*"
+            "/api/posts/*",
+            "/api/posts/*/recommendations"
     };
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         log.info("요청 url: "+path);
+
+        if ("/api/posts/my".equals(path)) {
+            return false;
+        }
+
         for (String p : WHITELIST) {
             if (matcher.match(p, path)) return true;
         }
