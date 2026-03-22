@@ -7,6 +7,8 @@ import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
 import Oops.backend.domain.auth.kakao.service.KakaoService;
 import Oops.backend.domain.user.entity.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +25,18 @@ public class KakaoController {
 
     private final KakaoService kakaoService;
 
+    @Operation(
+            summary = "카카오 콜백",
+            description = "카카오 서버가 호출하는 콜백 엔드포인트입니다. Swagger 수동 테스트보다는 브라우저 OAuth 흐름으로 확인하세요."
+    )
     @GetMapping("/callback")
-    public void callback(@RequestParam String code,
-                         @RequestParam(value = "state", required = false) String state,
-                         HttpServletResponse response) throws IOException {
+    public void callback(
+            @Parameter(description = "카카오가 전달하는 인가 코드", example = "실제_인가코드")
+            @RequestParam String code,
+            @Parameter(description = "로그인 완료 후 이동할 프론트 주소", example = "http://localhost:5173")
+            @RequestParam(value = "state", required = false) String state,
+            HttpServletResponse response
+    ) throws IOException {
         kakaoService.loginAndSetCookie(code, state, response);
 
         String target = (state != null && !state.isBlank())
