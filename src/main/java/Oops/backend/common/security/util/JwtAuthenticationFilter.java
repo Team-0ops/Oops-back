@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -48,9 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/.well-known/**",
             "/json",
             "/json/**",
-            "/devtools/**",
-            "/api/posts/*",
-            "/api/posts/*/recommendations"
+            "/devtools/**"
     };
 
     @Override
@@ -60,6 +59,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if ("/api/posts/my".equals(path)) {
             return false;
+        }
+
+        if (HttpMethod.GET.matches(request.getMethod())) {
+            if (matcher.match("/api/posts/*/recommendations", path)) {
+                return true;
+            }
+            if (matcher.match("/api/posts/*", path)) {
+                return true;
+            }
         }
 
         for (String p : WHITELIST) {
