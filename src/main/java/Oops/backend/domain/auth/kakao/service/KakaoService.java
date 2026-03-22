@@ -66,6 +66,18 @@ public class KakaoService {
         return tokenService.issue(user);
     }
 
+    @Transactional
+    public TokenResponseDto login(String code, String state) {
+        if (!StringUtils.hasText(code)) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "code가 필요합니다.");
+        }
+
+        String accessToken = exchangeToken(code, kakaoRedirectUri);
+        KakaoUserInfo kakaoUser = fetchUserOrThrow(accessToken);
+        User user = loginOrLink(kakaoUser);
+
+        return tokenService.issue(user);
+    }
 
     @Transactional
     public TokenResponseDto login(KakaoLoginRequestDto requestDto) {
