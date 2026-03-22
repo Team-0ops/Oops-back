@@ -246,6 +246,8 @@ public class KakaoService {
                         .email(email)
                         .userName(nickname)
                         .profileImageUrl(profileUrl)
+                        .provider(Provider.KAKAO)
+                        .providerId(providerId)
                         .build()
         );
         attachSocial(newUser, PROVIDER_KAKAO, providerId, email);
