@@ -201,7 +201,6 @@ public class NaverService {
                         .providerId(providerId)
                         .build()
         );
-        );
         attachSocial(newUser, PROVIDER_NAVER, providerId, email);
         return newUser;
     }
