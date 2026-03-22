@@ -66,18 +66,18 @@ public class KakaoController {
 //    }
 
 
-//    @GetMapping("/test")
-//    public ResponseEntity<BaseResponse> testKakaoLogin(
-//            @RequestParam(value = "code", required = false) String code, @AuthenticatedUser User user
-//    ) {
-//        log.info("카카오 로그인 테스트 호출됨, code={}", code + user.getUserName());
-//        log.info(user.getUserName());
-//
-//        if (code == null || code.isBlank()) {
-//            return BaseResponse.onSuccess(SuccessStatus._OK, "테스트 OK - code 없음");
-//        }
-//
-//        var result = kakaoService.login(code, null);
-//        return BaseResponse.onSuccess(SuccessStatus._OK, result);
-//    }
+    @GetMapping("/test")
+    public ResponseEntity<BaseResponse> testKakaoLogin(
+            @RequestParam(value = "code", required = false) String code, @AuthenticatedUser User user
+    ) {
+        log.info("카카오 로그인 테스트 호출됨, code={}", code + user.getUserName());
+        log.info(user.getUserName());
+
+        if (code == null || code.isBlank()) {
+            return BaseResponse.onSuccess(SuccessStatus._OK, "테스트 OK - code 없음");
+        }
+
+        var result = kakaoService.login(code);
+        return BaseResponse.onSuccess(SuccessStatus._OK, result);
+    }
 }
