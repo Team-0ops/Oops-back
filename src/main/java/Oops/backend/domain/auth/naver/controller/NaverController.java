@@ -18,7 +18,7 @@ import java.io.IOException;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth/naver")
+@RequestMapping("/api/auth/naver")
 public class NaverController {
 
     private final NaverService naverService;
