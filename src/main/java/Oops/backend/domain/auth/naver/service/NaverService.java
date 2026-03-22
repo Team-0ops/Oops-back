@@ -197,7 +197,10 @@ public class NaverService {
                         .email(email)
                         .userName(nickname)
                         .profileImageUrl(profileUrl)
+                        .provider(Provider.NAVER)
+                        .providerId(providerId)
                         .build()
+        );
         );
         attachSocial(newUser, PROVIDER_NAVER, providerId, email);
         return newUser;
