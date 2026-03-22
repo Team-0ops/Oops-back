@@ -36,18 +36,6 @@ public class NaverController {
 
         var result = naverService.login(code, null);
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
-<<<<<<< HEAD
-    }
-
-    @GetMapping("/callback")
-    public ResponseEntity<BaseResponse> callback(@RequestParam("code") String code,
-                                                 @RequestParam(value = "state", required = false) String state,
-                                                 @RequestParam(value = "redirect-url", required = false) String redirectUrl,
-                                                 HttpServletResponse response) {
-        naverService.loginAndSetCookie(code, state, redirectUrl, response);
-        return BaseResponse.onSuccess(SuccessStatus._OK, "네이버 인증 완료");
-=======
->>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
     }
 
     @GetMapping("/callback")
@@ -60,7 +48,7 @@ public class NaverController {
 
         String target = (redirectUrl != null && !redirectUrl.isBlank())
                 ? redirectUrl
-                : "https://oops-ivory.vercel.app/";
+                : "https://www.oops-oopsie.com/";
 
         response.sendRedirect(target);
     }

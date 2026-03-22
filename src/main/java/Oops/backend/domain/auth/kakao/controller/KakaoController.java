@@ -29,7 +29,7 @@ public class KakaoController {
         kakaoService.loginAndSetCookie(code, redirectUrl, response);
         String target = (redirectUrl != null && !redirectUrl.isBlank())
                 ? redirectUrl
-                : "https://oops-ivory.vercel.app/";
+                : "https://www.oops-oopsie.com/";
 
         log.info("Kakao Login ...");
         response.sendRedirect(target);
