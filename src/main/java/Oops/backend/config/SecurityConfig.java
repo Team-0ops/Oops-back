@@ -51,6 +51,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/posts/my").authenticated()
                         .requestMatchers(
                                 "/auth/kakao/callback",
+                                "/auth/kakao/login",
+                                "/auth/naver/login",
                                 "/public/**",
                                 "/api/auth/join",
                                 "/api/auth/login",
