@@ -48,7 +48,7 @@ public class NaverController {
 
         String target = (redirectUrl != null && !redirectUrl.isBlank())
                 ? redirectUrl
-                : "https://www.oops-oopsie.com/";
+                : "https://oops-ivory.vercel.app/";
 
         response.sendRedirect(target);
     }

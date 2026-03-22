@@ -18,13 +18,8 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-<<<<<<< HEAD
-    @CreatedDate
-    @Column(updatable = false)
-=======
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
->>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
     private LocalDateTime createdAt;
 
     @LastModifiedDate
