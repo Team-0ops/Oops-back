@@ -25,15 +25,15 @@ public class KakaoController {
 
     @GetMapping("/callback")
     public void callback(@RequestParam String code,
-                                                 @RequestParam(value="redirect-url", required=false) String redirectUrl, HttpServletResponse response) throws IOException {
-        kakaoService.loginAndSetCookie(code, redirectUrl, response);
-        String target = (redirectUrl != null && !redirectUrl.isBlank())
-                ? redirectUrl
-                : "https://oops-ivory.vercel.app/";
+                         @RequestParam(value = "state", required = false) String state,
+                         HttpServletResponse response) throws IOException {
+        kakaoService.loginAndSetCookie(code, state, response);
 
-        log.info("Kakao Login ...");
+        String target = (state != null && !state.isBlank())
+                ? state
+                : "https://www.oops-oopsie.com/";
+
         response.sendRedirect(target);
-        // return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 인증 완료");
     }
 
 
