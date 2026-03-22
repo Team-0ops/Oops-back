@@ -5,10 +5,14 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
+<<<<<<< HEAD
+import Oops.backend.domain.auth.dto.request.JoinDto;
+=======
 import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 import Oops.backend.domain.auth.dto.request.EmailRequestDto;
 import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.EmailCheckDto;
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.service.AuthService;
@@ -29,7 +33,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.web.bind.annotation.*;
+import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
 
 import java.util.Arrays;
 
@@ -42,6 +48,7 @@ import java.util.Arrays;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtEncoder jwtEncoder;
 
     @Operation(
             summary = "회원가입",
@@ -92,6 +99,13 @@ public class AuthController {
                             examples = {
                                     @ExampleObject(
                                             name = "join_request_example",
+<<<<<<< HEAD
+                                            value = "{\n" +
+                                                    "  \"email\": \"test1@example.com\",\n" +
+                                                    "  \"userName\": \"홍길동\",\n" +
+                                                    "  \"password\": \"1234abcd!\",\n" +
+                                                    "}"
+=======
                                             value = """
     {
       "email": "test1@example.com",
@@ -100,11 +114,16 @@ public class AuthController {
       "verificationToken" : "78730a602f4a44839ccc64ac87c32689"
     }
     """
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
                                     )
                             }
                     )
             )
+<<<<<<< HEAD
+            @Valid @org.springframework.web.bind.annotation.RequestBody  JoinDto joinDto,
+=======
             @Valid @RequestBody  JoinDto joinDto,
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
             HttpServletResponse response
     ) {
         this.authService.join(joinDto);
@@ -133,11 +152,19 @@ public class AuthController {
 
     @Operation(
             summary = "비밀번호 변경",
+<<<<<<< HEAD
+            description = "기존 비밀번호를 확인하고 새 비밀번호로 변경합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (기존 비밀번호 불일치 등)")})
+=======
             description = "이메일을 확인하고 새 비밀번호로 변경합니다."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
             @ApiResponse(responseCode = "401", description = "인증 실패 (이메일 인증 실패 등)")})
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
     @PostMapping("/reset-password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto dto) {
         authService.changePassword(dto);
@@ -157,6 +184,15 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "로그아웃 성공");
     }
 
+<<<<<<< HEAD
+
+    private String extractRefreshToken(HttpServletRequest request, String header) {
+        if (header != null && !header.isBlank()) {
+            String v = header.trim();
+            if (v.regionMatches(true, 0, "Bearer ", 0, 7)) v = v.substring(7).trim(); // 옵션
+            if (!v.isEmpty()) return v;
+        }
+=======
     @PostMapping("/refresh")
     public ResponseEntity<BaseResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
 
@@ -171,22 +207,24 @@ public class AuthController {
     }
 
     private String extractRefreshTokenOnlyFromCookie(HttpServletRequest request) {
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
         Cookie[] cookies = request.getCookies();
         log.info("AuthController cookies: {}", Arrays.toString(cookies));
         if (cookies == null) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "쿠키 없음");
-
         String raw = Arrays.stream(cookies)
                 .filter(c -> "RefreshToken".equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElseThrow(() -> new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 없음"));
-
         String v = raw.trim();
         if (v.startsWith("\"") && v.endsWith("\"")) v = v.substring(1, v.length() - 1);
         if (v.isEmpty()) throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN, "RefreshToken 비어있음");
         return v;
     }
 
+<<<<<<< HEAD
+
+=======
     @Operation(
             summary = "이메일 중복 체크",
             description = "email이 이미 가입되어 있으면 available=false, 아니면 true를 반환합니다."
@@ -208,4 +246,5 @@ public class AuthController {
         EmailCheckDto dto = new EmailCheckDto(email, available);
         return BaseResponse.onSuccess(SuccessStatus._OK, dto);
     }
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
 }

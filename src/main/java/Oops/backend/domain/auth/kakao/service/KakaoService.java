@@ -1,7 +1,10 @@
 package Oops.backend.domain.auth.kakao.service;
 
 
+<<<<<<< HEAD
+=======
 import Oops.backend.common.exception.GeneralException;
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
 import Oops.backend.common.security.token.TokenService;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
