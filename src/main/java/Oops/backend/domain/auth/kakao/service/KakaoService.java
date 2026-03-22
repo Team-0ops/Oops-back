@@ -1,12 +1,19 @@
 package Oops.backend.domain.auth.kakao.service;
 
 
+<<<<<<< HEAD
+=======
+import Oops.backend.common.exception.GeneralException;
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
 import Oops.backend.common.security.token.TokenService;
+import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
+import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
+import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.auth.entity.SocialAccount;
-import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.auth.repository.AuthRepository;
+import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +22,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-import Oops.backend.common.exception.GeneralException;
-import Oops.backend.common.status.ErrorStatus;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -47,29 +53,22 @@ public class KakaoService {
 
     @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
     private String kakaoUserInfoUri;
-    private static final String PROVIDER_NAVER = "Kakao";
+    private static final String PROVIDER_KAKAO = "Kakao";
 
     @Transactional
-    public void loginAndSetCookie(String code, String redirectUrl, HttpServletResponse response) {
-        TokenResponseDto tokens = login(code, redirectUrl);
+    public void loginAndSetCookie(String code, String RedirectUrl, HttpServletResponse response) {
+        TokenResponseDto tokens = login(code);
         tokenService.setLoginCookies(response, tokens);
     }
 
     @Transactional
-    public TokenResponseDto login(String code, String redirectUrl) {
-        log.info("login code: {}", code);
-        if (code == null || code.isBlank()) {
-            throw new GeneralException(ErrorStatus._BAD_REQUEST, "code가 필요합니다.");
-        }
-        String redirect = (redirectUrl != null && !redirectUrl.isBlank()) ? redirectUrl : kakaoRedirectUri;
-
-        String kakaoAccessToken = exchangeToken(code, redirect);
+    public TokenResponseDto login(String code) {
+        String kakaoAccessToken = exchangeToken(code, kakaoRedirectUri);
         KakaoUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
-
         User user = loginOrLink(kakaoUser);
-        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getId(), user.getEmail());
         return tokenService.issue(user);
     }
+
 
     @Transactional
     public TokenResponseDto login(KakaoLoginRequestDto requestDto) {
@@ -153,7 +152,7 @@ public class KakaoService {
             Map<String, Object> body = res.getBody();
             if (body == null) throw new GeneralException(ErrorStatus._BAD_REQUEST, "카카오 사용자 응답이 비어있습니다.");
 
-            Long id = getAsLong(body, "id");
+            String id = getAsString(body, "id");
             if (id == null) throw new GeneralException(ErrorStatus._BAD_REQUEST, "카카오 사용자 ID 없음");
 
             Map<String, Object> account = getAsMap(body, "kakao_account");
@@ -207,20 +206,22 @@ public class KakaoService {
 
     @Transactional
     protected User loginOrLink(KakaoUserInfo kakaoUserInfo) {
-        final String providerId = String.valueOf(kakaoUserInfo.id);
-        final String email      = kakaoUserInfo.email;
-        final String nickname   = kakaoUserInfo.nickname;
-        final String profileUrl = kakaoUserInfo.profileImageUrl;
+        final String providerId = kakaoUserInfo.id();
+        final String email      = kakaoUserInfo.email();
+        final String nickname   = kakaoUserInfo.nickname();
+        final String profileUrl = kakaoUserInfo.profileImageUrl();
+
         var socialOpt = socialAccountRepository
-                .findByProviderAndProviderId(PROVIDER_NAVER, providerId);
+                .findByProviderAndProviderId(PROVIDER_KAKAO, providerId);
         if (socialOpt.isPresent()) {
             return socialOpt.get().getUser();
         }
+
         if (email != null && !email.isBlank()) {
             var userOpt = authRepository.findByEmail(email);
             if (userOpt.isPresent()) {
                 var user = userOpt.get();
-                attachSocial(user, PROVIDER_NAVER, providerId, email);
+                attachSocial(user, PROVIDER_KAKAO, providerId, email);
                 if (user.getUserName() == null || user.getUserName().isBlank()) {
                     user.setUserName(nickname);
                 }
@@ -230,6 +231,7 @@ public class KakaoService {
                 return user;
             }
         }
+
         var newUser = authRepository.save(
                 User.builder()
                         .email(email)
@@ -237,7 +239,7 @@ public class KakaoService {
                         .profileImageUrl(profileUrl)
                         .build()
         );
-        attachSocial(newUser, PROVIDER_NAVER, providerId, email);
+        attachSocial(newUser, PROVIDER_KAKAO, providerId, email);
         return newUser;
     }
 
@@ -251,32 +253,24 @@ public class KakaoService {
     }
     @Transactional
     protected User upsertUser(KakaoUserInfo kuser) {
-        String email = normalizeEmail(kuser);
-        Optional<User> existing = authRepository.findByEmail(email);
+        String email = StringUtils.hasText(kuser.email())
+                ? kuser.email()
+                : null;
 
-        if (!existing.isPresent()) {
-            User u = existing.get();
-            boolean dirty = false;
-            if (kuser.nickname() != null && !kuser.nickname().equals(u.getUserName())) {
-                u.setUserName(kuser.nickname());
-                dirty = true;
-            }
-            if (kuser.profileImageUrl() != null && !kuser.profileImageUrl().equals(u.getProfileImageUrl())) {
-                u.setProfileImageUrl(kuser.profileImageUrl());
-                dirty = true;
-            }
-            if (dirty) authRepository.save(u);
-            return u;
-        }
-
-        User created = User.builder()
-                .email(email)
-                .userName(kuser.nickname())
-                .provider("KAKAO")
-                .profileImageUrl(kuser.profileImageUrl())
-                .providerId(existing.get().getProviderId())
-                .build();
-        return authRepository.save(created);
+        Optional<User> found = (email != null)
+                ? authRepository.findByEmail(email)
+                : authRepository.findByProviderAndProviderId(PROVIDER_KAKAO, kuser.id());
+        return authRepository
+                .findByProviderAndProviderId(PROVIDER_KAKAO, kuser.id)
+                .orElseGet(() -> authRepository.save(
+                        User.builder()
+                                .email(kuser.email())
+                                .userName(kuser.nickname)
+                                .provider(Provider.KAKAO)
+                                .providerId(kuser.id)
+                                .profileImageUrl(kuser.profileImageUrl())
+                                .build()
+                ));
     }
 
 
@@ -317,7 +311,7 @@ public class KakaoService {
 
     /** 내부 전용 record */
     private record KakaoUserInfo(
-            Long id,
+            String id,
             String email,
             String nickname,
             String profileImageUrl,

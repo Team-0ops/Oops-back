@@ -1,10 +1,13 @@
 package Oops.backend.common.security.token;
 
 
+<<<<<<< HEAD
+=======
+import Oops.backend.common.security.util.JwtTokenProvider;
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.RefreshToken;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
-import Oops.backend.common.security.util.JwtTokenProvider;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

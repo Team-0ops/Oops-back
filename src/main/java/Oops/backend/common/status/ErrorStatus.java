@@ -51,6 +51,10 @@ public enum ErrorStatus {
     UNAUTHORIZED_FOR_COMMENT(HttpStatus.UNAUTHORIZED, "COMMENT401", "댓글 삭제 권한이 없습니다."),
     ALREADY_LIKED_COMMENT(HttpStatus.BAD_REQUEST, "COMMENT405", "이미 공감한 댓글입니다."),
 
+    // 신고 관련 에러
+    DUPLICATE_REPORT(HttpStatus.BAD_REQUEST, "REPORT400", "이미 신고한 댓글/게시글입니다."),
+    SELF_REPORT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REPORT401", "자기 자신의 댓글/게시글은 신고할 수 없습니다."),
+
     // 행운부적 관련 에러
     NO_LUCKY_DRAW(HttpStatus.INTERNAL_SERVER_ERROR, "LUCKYDRAW500", "행운부적이 존재하지 않습니다."),
 

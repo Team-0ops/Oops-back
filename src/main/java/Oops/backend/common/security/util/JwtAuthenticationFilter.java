@@ -36,8 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String[] WHITELIST = {
             "/auth/kakao/callback",
             "/auth/naver/callback",
-            "/api/login/**",
-            "api/auth/join",
+            "/api/auth/refresh",
+            "/api/auth/login",
+            "/api/auth/join",
             "/oauth2/**",
             "/public/**",
             "/favicon.ico",
@@ -47,13 +48,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/.well-known/**",
             "/json",
             "/json/**",
-            "/devtools/**"
+            "/devtools/**",
+            "/api/posts/*",
+            "/api/posts/*/recommendations"
     };
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         log.info("요청 url: "+path);
+
+        if ("/api/posts/my".equals(path)) {
+            return false;
+        }
+
         for (String p : WHITELIST) {
             if (matcher.match(p, path)) return true;
         }
@@ -68,13 +76,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
+            log.info("doFilterInternal");
+
             String token = resolveAccessToken(request);
+            log.info("AccessToken present? {}", token != null && !token.isBlank());
             if (token != null && !token.isBlank()) {
                 if (jwtTokenProvider.validate(token)) {
                     Long userId = jwtTokenProvider.getUserId(token);
 
                     User user = userRepository.findById(userId)
                             .orElse(null);
+                    log.info("JWT userId={}, userFound={}, dbId={}",
+                            userId, user != null, (user == null ? null : user.getId()));
+
                     if (user != null) {
                         authenticationContext.setPrincipal(user);
 
@@ -87,24 +101,58 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception ex) {
+            log.error("JWT filter exception", ex);
             SecurityContextHolder.clearContext();
         }
+
 
         filterChain.doFilter(request, response);
     }
 
     private String resolveAccessToken(HttpServletRequest request) {
-        String authz = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authz != null && authz.startsWith("Bearer ")) {
-            return authz.substring(7);
-        }
+        String v = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String token = normalizeToken(v);
+        if (token != null) return token;
+
+        v = request.getHeader("X-Access-Token");
+        token = normalizeToken(v);
+        if (token != null) return token;
+
+        v = request.getHeader("AccessToken");
+        token = normalizeToken(v);
+        if (token != null) return token;
+
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
                 if ("AccessToken".equals(c.getName())) {
-                    return c.getValue();
+                    return normalizeToken(c.getValue());
                 }
             }
         }
+
         return null;
     }
+
+    private String normalizeToken(String raw) {
+        if (raw == null) return null;
+        String v = raw.trim();
+        if (v.isEmpty()) return null;
+
+        if (v.startsWith("\"") && v.endsWith("\"") && v.length() > 1) {
+            v = v.substring(1, v.length() - 1).trim();
+        }
+
+        if (v.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            v = v.substring(7).trim();
+        }
+
+        return v.isEmpty() ? null : v;
+    }
+
+    private boolean looksLikeJwt(String s) {
+        int dots = 0;
+        for (int i = 0; i < s.length(); i++) if (s.charAt(i) == '.') dots++;
+        return dots == 2 && s.startsWith("ey");
+    }
+
 }

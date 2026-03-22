@@ -1,36 +1,32 @@
 package Oops.backend.domain.auth.service;
 
-import Oops.backend.common.security.util.JwtTokenProvider;
-import Oops.backend.config.s3.S3ImageService;
-import Oops.backend.domain.auth.entity.RefreshToken;
-import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.security.util.JwtTokenProvider;
 import Oops.backend.common.status.ErrorStatus;
+import Oops.backend.config.s3.S3ImageService;
+import Oops.backend.domain.auth.dto.request.ChangePasswordDto;
+import Oops.backend.domain.auth.dto.request.JoinDto;
 import Oops.backend.domain.auth.dto.response.LoginResponse;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
+import Oops.backend.domain.auth.entity.Provider;
+import Oops.backend.domain.auth.entity.RefreshToken;
+import Oops.backend.domain.auth.entity.VerificationPurpose;
+import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.RefreshTokenRepository;
-import Oops.backend.domain.terms.repository.TermsRepository;
-import Oops.backend.domain.terms.repository.UserAndTermsRepository;
 import Oops.backend.domain.user.dto.request.LoginDto;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
+import com.amazonaws.services.cloudformation.model.Change;
 import jakarta.servlet.http.HttpServletResponse;
-import Oops.backend.domain.auth.dto.request.AgreeToTermDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import Oops.backend.domain.auth.repository.AuthRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 
 @Service
@@ -43,14 +39,15 @@ public class AuthService {
     private final S3ImageService s3ImageService;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     public LoginResponse login(LoginDto loginDto, HttpServletResponse response) {
         log.info("login 진입");
         Optional<User> user = this.authRepository.findByEmail(loginDto.getEmail());
-
-        if(user == null) {
+        if (user.isEmpty()) {
             throw new GeneralException(ErrorStatus._NOT_FOUND, "User를 찾을 수 없습니다.");
         }
+
 
         if (!passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword())) {
             throw new GeneralException(ErrorStatus._UNAUTHORIZED, "비밀번호를 확인해 주세요.");
@@ -61,25 +58,25 @@ public class AuthService {
         setCookie(response, tokenResponseDto.getAccessToken());
         setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
 
-            log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
-            log.info("AccessToken: " + tokenResponseDto.getAccessToken());
+        log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
+        log.info("AccessToken: " + tokenResponseDto.getAccessToken());
 
-            String profileImage = s3ImageService.getPreSignedUrl(user.get().getProfileImageUrl());
+        String profileImage = s3ImageService.getPreSignedUrl(user.get().getProfileImageUrl());
 
-            return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
-        }
+        return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
+    }
 
-        @Transactional
-        public void changePassword(User user, String oldPassword, String newPassword) {
-            log.info(user.getUserName());
-            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-                throw new GeneralException(ErrorStatus._UNAUTHORIZED, "기존 비밀번호가 일치하지 않습니다.");
-            }
+    @Transactional
+    public void changePassword(ChangePasswordDto dto) {
+        emailVerificationService.assertValidToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
+        User changePWUser = authRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "해당 이메일의 사용자를 찾을 수 없습니다."));
 
-            String encryptedPassword = passwordEncoder.encode(newPassword);
-            user.setPassword(encryptedPassword);
-            authRepository.save(user);
-        }
+        changePWUser.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        authRepository.save(changePWUser);
+
+        emailVerificationService.consumeToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
+    }
 
 
     // login
@@ -127,17 +124,46 @@ public class AuthService {
     }
     @Transactional
     public void join(JoinDto joinDto) {
-        this.isEmailExist(joinDto.getEmail());
+        emailVerificationService.assertValidToken(
+                joinDto.getEmail(),
+                VerificationPurpose.SIGNUP,
+                joinDto.getVerificationToken()
+        );
+
+        this.isIdExist(joinDto.getEmail());
         String encryptedPassword = this.passwordEncoder.encode(joinDto.getPassword());
         // 이메일이 존재하지 않는다면 새로운 User 생성
         User user = User.builder()
                 .email(joinDto.getEmail())
                 .password(encryptedPassword)
                 .userName(joinDto.getUserName())
+                .provider(Provider.LOCAL)
                 .build();
 
         authRepository.save(user);
     }
+
+    //refresh token 관련
+    @Transactional
+    public TokenResponseDto refreshAccessToken(String refreshTokenValue) {
+        RefreshToken stored = findExistingRefreshToken(refreshTokenValue);
+
+        validateRefreshToken(stored);
+
+        User user = findExistingUserByRefreshToken(stored);
+
+        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
+
+        String newRefresh = jwtTokenProvider.generateRefreshToken(user.getId());
+        stored.setToken(newRefresh);
+        refreshTokenRepository.save(stored);
+
+        log.info("new AccessToken: {}", newAccess);
+        return TokenResponseDto.of(newAccess, newRefresh);
+    }
+
+
+
     private TokenResponseDto createToken(User user) {
         log.info("UserId: "+ user.getId());
 
@@ -155,31 +181,19 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
         return TokenResponseDto.of(accessToken, refreshTokenValue);
     }
-    public TokenResponseDto refreshAccessToken(String refreshToken) {
-        RefreshToken stored = findExistingRefreshToken(refreshToken);
 
-        // 만료 검사
-        validateRefreshToken(stored);
-
-        User user = findExistingUserByRefreshToken(stored);
-
-        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
-
-        log.info("new AccessToken: " + newAccess);
-        return new TokenResponseDto(newAccess, stored.getToken());
-    }
-
-    public void isEmailExist(String email) {
-        Optional<User> user = this.authRepository.findByEmail(email);
+    public void isIdExist(String email) {
+        Optional<User> user = this.authRepository.findByEmail(email) ;
         if (user.isPresent()) {
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "이미 존재하는 이메일 입니다.");
         }
     }
     public void validateRefreshToken(RefreshToken refreshToken) {
-        if (jwtTokenProvider.validate(refreshToken.getToken())) {
+        if (!jwtTokenProvider.validate(refreshToken.getToken())) {
             throw new GeneralException(ErrorStatus.INVALID_REFRESH_TOKEN);
         }
     }
+
 
 
     public RefreshToken findExistingRefreshToken(String refreshToken) {
@@ -190,4 +204,9 @@ public class AuthService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
+    public boolean checkEmailAvailable(String emailRaw) {
+        String email = emailRaw.trim();
+        return !userRepository.existsByEmailIgnoreCase(email);
+    }
 }

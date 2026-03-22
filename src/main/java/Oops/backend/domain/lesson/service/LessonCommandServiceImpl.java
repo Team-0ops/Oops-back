@@ -41,7 +41,7 @@ public class LessonCommandServiceImpl implements LessonCommandService{
         Optional<User> user1 = authRepository.findById(user.getId());
         // 게시글 작성자는 교훈을 작성할 수 없음
         log.info("게시글 작성자와 비교");
-        if (user.getId() == post.getUser().getId()){
+        if (user.getId().equals(post.getUser().getId())){
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "게시글 작성자는 교훈을 작성할 수 없습니다.");
         }
 
@@ -53,7 +53,7 @@ public class LessonCommandServiceImpl implements LessonCommandService{
 
         String title = request.getTitle();
         String content = request.getContent();
-        
+
         // 태그들을 가져오고, 없다면 생성해서 가져온다.
         LinkedHashSet<Tag> tags = tagCommandService.findOrCreateTagsByNames(request.getTags());
 
@@ -78,7 +78,6 @@ public class LessonCommandServiceImpl implements LessonCommandService{
         log.info("저장");
         return lessonRepository.save(newLesson);
     }
-
     @Override
     public void deleteAllLessonsOfPost(Post post) {
         lessonRepository.deleteAllByPost(post);

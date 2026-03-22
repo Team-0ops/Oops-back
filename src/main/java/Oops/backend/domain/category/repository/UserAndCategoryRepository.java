@@ -1,5 +1,6 @@
 package Oops.backend.domain.category.repository;
 
+import Oops.backend.domain.category.dto.CategoryResponseDto;
 import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.entity.UserAndCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,14 @@ public interface UserAndCategoryRepository extends JpaRepository<UserAndCategory
     boolean existsByUserIdAndCategoryId(Long userId, Long categoryId);
 
     Optional<UserAndCategory> findByUserIdAndCategoryId(Long userId, Long categoryId);
+
+    @Query("""
+select new Oops.backend.domain.category.dto.CategoryResponseDto(
+    c.id, c.name, true
+)
+from UserAndCategory uc
+join uc.category c
+where uc.user.id = :userId
+""")
+    List<CategoryResponseDto> findBookmarkedCategoryDtos(@Param("userId") Long userId);
 }

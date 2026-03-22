@@ -29,7 +29,7 @@ public class LessonController {
 
     @Operation(summary = "교훈 작성 API")
     @PostMapping
-    public ResponseEntity<BaseResponse> createLesson(@Parameter(hidden = true) @AuthenticatedUser User user,
+    public ResponseEntity<BaseResponse> createLesson(@Parameter(hidden = true)@AuthenticatedUser User user,
                                                     @PathVariable Long postId,
                                                     @Valid @RequestBody CreateLessonRequest request){
 

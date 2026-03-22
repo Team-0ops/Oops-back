@@ -10,6 +10,7 @@ import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.lesson.service.LessonQueryService;
 import Oops.backend.domain.post.dto.PostCreateRequest;
 import Oops.backend.domain.post.dto.PostCreateResponse;
+import Oops.backend.domain.post.dto.PostUpdateRequest;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.model.Situation;
 import Oops.backend.domain.post.repository.PostRepository;
@@ -76,6 +77,7 @@ public class PostCommandServiceImpl implements PostCommandService{
     @Transactional
     public void deletePost(Long postId, User user) {
 
+        // User 객체가 파라미터로 넘어오게 되면 영속 상태가 아니기 때문에 따로 조회해줘야 함
         User user1 = userRepository.findById(user.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
 
@@ -84,7 +86,7 @@ public class PostCommandServiceImpl implements PostCommandService{
 
 
         // 사용자가 게시글을 작성한 사용자와 일치하지 않을 경우
-        if (post.getUser() != user1 ){
+        if (!post.getUser().getId().equals(user1.getId())){
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
         }
 
@@ -95,13 +97,16 @@ public class PostCommandServiceImpl implements PostCommandService{
         postsOfPostGroup.remove(post);
         post.setPostGroup(null);
 
+        if (postsOfPostGroup.isEmpty()){
+            postGroupCommandService.deletePostGroup(postGroup);
+        }
+
         // Lesson과의 연관 관계 제거
         List<Lesson> lessons = lessonQueryService.findLessonsByPost(post);
         lessons.forEach((lesson) -> lesson.setPost(null));
 
-        if (postsOfPostGroup.isEmpty()){
-            postGroupCommandService.deletePostGroup(postGroup);
-        }
+        // Post 엔티티의 cascade 설정으로 Comment가 자동 삭제되고,
+        // Comment 엔티티의 cascade 설정으로 CommentLike와 CommentReport도 자동 삭제됨
 
         postRepository.delete(post);
 
@@ -197,9 +202,9 @@ public class PostCommandServiceImpl implements PostCommandService{
         List<String> uploadedImageUrls = new ArrayList<>();
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            uploadedImageUrls = imageFiles.stream()
+            uploadedImageUrls = new ArrayList<>(imageFiles.stream()
                     .map((imageFile) -> s3ImageService.upload(imageFile, "posts", saved.getId().toString()))
-                    .toList();
+                    .toList());
         }
         post.setImages(uploadedImageUrls);
 
@@ -208,6 +213,60 @@ public class PostCommandServiceImpl implements PostCommandService{
                 .message("실패담 작성 완료! 10포인트가 적립되었습니다.")
                 .imageUrls(uploadedImageUrls)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void updatePost(Long postId, User user, PostUpdateRequest request, List<MultipartFile> imageFiles) {
+        // 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_POST));
+
+        // 작성자 확인
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorStatus.UNAUTHORIZED_FOR_POST);
+        }
+
+        // 제목 수정 (제공된 경우)
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            post.setTitle(request.getTitle());
+        }
+
+        // 본문 수정 (제공된 경우)
+        if (request.getContent() != null && !request.getContent().trim().isEmpty()) {
+            post.setContent(request.getContent());
+        }
+
+        // 카테고리 수정 (제공된 경우)
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "존재하지 않는 카테고리입니다."));
+            post.setCategory(category);
+        }
+
+        // 이미지 수정 (제공된 경우)
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            // 기존 이미지가 있으면 S3에서 삭제
+            List<String> existingImages = post.getImages();
+            if (existingImages != null && !existingImages.isEmpty()) {
+                existingImages.forEach(imageKey -> {
+                    try {
+                        s3ImageService.deleteImageFromS3(imageKey);
+                    } catch (Exception e) {
+                        log.warn("기존 이미지 삭제 실패: {}", imageKey, e);
+                        // 삭제 실패해도 계속 진행 (이미지 업로드는 진행)
+                    }
+                });
+            }
+            
+            // 새 이미지 업로드
+            List<String> uploadedImageUrls = new ArrayList<>(imageFiles.stream()
+                    .map((imageFile) -> s3ImageService.upload(imageFile, "posts", post.getId().toString()))
+                    .toList());
+            post.setImages(uploadedImageUrls);
+        }
+
+        postRepository.save(post);
     }
 
 

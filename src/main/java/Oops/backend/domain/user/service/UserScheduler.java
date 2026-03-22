@@ -2,15 +2,12 @@ package Oops.backend.domain.user.service;
 
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.SpecFeedRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
-import Oops.backend.domain.user.entity.User;
 import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

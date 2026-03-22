@@ -3,6 +3,7 @@ package Oops.backend.domain.comment.entity;
 import Oops.backend.domain.common.BaseEntity;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.user.entity.User;
+import Oops.backend.domain.commentReport.entity.CommentReport;
 import jakarta.persistence.*;
 import lombok.*;
 import org.yaml.snakeyaml.comments.CommentType;
@@ -42,6 +43,12 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Comment> replyComments;
 
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentLike> commentLikes;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentReport> commentReports;
+
     @Builder
     private Comment(Post post, User user, String content){
 
@@ -50,6 +57,8 @@ public class Comment extends BaseEntity {
         this.user = user;
         this.content = content;
         this.replyComments = new ArrayList<>();
+        this.commentLikes = new ArrayList<>();
+        this.commentReports = new ArrayList<>();
 
     }
 

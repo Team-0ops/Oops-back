@@ -21,11 +21,11 @@ public class OtherProfileResponseDto {
     // ✅ 새 오버로드: 서비스에서 이미 DTO로 만든 걸 받는 버전
     public static OtherProfileResponseDto from(User user,
                                                List<OtherUserPostDto> posts,
-                                               List<Post> bestFailers) {
+                                               List<PostSummaryDto> bestFailers) {
         return OtherProfileResponseDto.builder()
                 .userName(user.getUserName())
                 .posts(posts)
-                .bestFailers(bestFailers.stream().map(PostSummaryDto::from).toList())
+                .bestFailers(bestFailers)
                 .build();
     }
     /*

@@ -29,3 +29,4 @@ public class SocialAccount {
     @Column(length=255)
     private String emailFromProvider;
 }
+

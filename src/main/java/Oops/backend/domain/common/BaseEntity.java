@@ -2,6 +2,7 @@ package Oops.backend.domain.common;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -17,8 +18,13 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+<<<<<<< HEAD
     @CreatedDate
     @Column(updatable = false)
+=======
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
     private LocalDateTime createdAt;
 
     @LastModifiedDate

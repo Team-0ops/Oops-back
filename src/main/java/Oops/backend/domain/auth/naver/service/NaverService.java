@@ -6,6 +6,7 @@ import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
+import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.auth.entity.SocialAccount;
 import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.auth.repository.AuthRepository;
@@ -62,10 +63,8 @@ public class NaverService {
         if (requestDto == null || !StringUtils.hasText(requestDto.getCode())) {
             throw new GeneralException(ErrorStatus._BAD_REQUEST, "code가 필요합니다.");
         }
-        String redirect = StringUtils.hasText(requestDto.getRedirectUrl())
-                ? requestDto.getRedirectUrl()
-                : naverRedirectUri;
-        return login(requestDto.getCode(), requestDto.getState(), redirect);
+
+        return login(requestDto.getCode(), requestDto.getState(), naverRedirectUri);
     }
 
 
@@ -88,7 +87,11 @@ public class NaverService {
         NaverUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
 
         User user = loginOrLink(kakaoUser);
+<<<<<<< HEAD
         log.info("[KAKAO-LOGIN] userId={}, email={}", user.getId(), user.getEmail());
+=======
+        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getUserName(), user.getEmail());
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
         return tokenService.issue(user);
     }
 
@@ -195,6 +198,7 @@ public class NaverService {
         return newUser;
     }
 
+
     private void attachSocial(User user, String provider, String providerId, String emailFromProvider) {
         var sa = new SocialAccount();
         sa.setUser(user);
@@ -249,25 +253,21 @@ public class NaverService {
     }
 
     private User upsertUser(NaverUserInfo naverUser) {
-
-        String email = StringUtils.hasText(naverUser.getEmail())
-                ? naverUser.getEmail()
+        String email = StringUtils.hasText(naverUser.getEmail()) ? naverUser.getEmail()
                 : null;
-
-        Optional<User> found = (email != null)
-                ? authRepository.findByEmail(email)
+        Optional<User> found = (email != null) ? authRepository.findByEmail(email)
                 : authRepository.findByProviderAndProviderId("NAVER", naverUser.getId());
-
-        return found.orElseGet(() -> authRepository.save(
-                User.builder()
-                        .email(email)
-                        .userName(naverUser.getNickname())
-                        .provider("NAVER")
-                        .providerId(naverUser.getId())
-                        .profileImageUrl(naverUser.getProfileImage())
-                        .build()
-        ));
+        return found.orElseGet(()
+                -> authRepository.save(
+                        User.builder()
+                .email(email)
+                .userName(naverUser.getNickname())
+                .provider(Provider.NAVER)
+                .providerId(naverUser.getId())
+                .profileImageUrl(naverUser.getProfileImage())
+                .build() ));
     }
+
 
     private static String enc(String v) {
         return UriUtils.encode(v, StandardCharsets.UTF_8);

@@ -3,7 +3,6 @@ package Oops.backend.domain.mypage.service;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.config.s3.S3ImageService;
-import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.category.entity.Category;
 import Oops.backend.domain.category.repository.CategoryRepository;
 import Oops.backend.domain.commentReport.repository.CommentReportRepository;
@@ -22,11 +21,9 @@ import Oops.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -151,7 +148,22 @@ public class MyPageQueryServiceImpl implements MyPageQueryService {
                 }))
                 .toList();
 
-        return OtherProfileResponseDto.from(user, postDtos, bestFailers);
+        List<PostSummaryDto> bestFailerDtos = bestFailers.stream()
+                .map(p -> PostSummaryDto.from(p, getFirstImageUrl(p)))
+                .toList();
+
+        return OtherProfileResponseDto.from(user, postDtos, bestFailerDtos);
+    }
+
+    private String getFirstImageUrl(Post post) {
+        if (post.getImages() != null && !post.getImages().isEmpty()) {
+            try {
+                return s3ImageService.getPreSignedUrl(post.getImages().get(0));
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 
 

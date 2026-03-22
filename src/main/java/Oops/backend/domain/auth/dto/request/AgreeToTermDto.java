@@ -1,11 +1,7 @@
 package Oops.backend.domain.auth.dto.request;
 
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-
-import java.util.UUID;
 
 @Getter
 public class AgreeToTermDto {

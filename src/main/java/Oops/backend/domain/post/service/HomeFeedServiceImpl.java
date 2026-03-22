@@ -9,7 +9,7 @@ import Oops.backend.domain.category.repository.UserAndCategoryRepository;
 import Oops.backend.domain.post.dto.PostResponse;
 import Oops.backend.domain.post.entity.Post;
 import Oops.backend.domain.post.repository.HomeFeedRepository;
-import Oops.backend.domain.post.repository.PostRepository;
+import Oops.backend.domain.post.repository.PostLikeRepository;
 import Oops.backend.domain.randomTopic.Repository.RandomTopicRepository;
 import Oops.backend.domain.randomTopic.entity.RandomTopic;
 import Oops.backend.domain.user.entity.User;
@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static Oops.backend.common.status.ErrorStatus._BAD_REQUEST;
+
 @Service
 @RequiredArgsConstructor
 public class HomeFeedServiceImpl implements HomeFeedService {
@@ -33,88 +35,21 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     private final CategoryRepository categoryRepository;
     private final RandomTopicRepository randomTopicRepository;
     private final S3ImageService s3ImageService;
+    private final PostLikeRepository postLikeRepository;
 
     /**
-     * 홈화면 첫로딩 - 로그인 사용자
+     * 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
      */
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse.PostPreviewListDto> getFirstPostList(User user) {
-
-        List<PostResponse.PostPreviewListDto> result = new ArrayList<>();
-
-        // 1. 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
-        PostResponse.PostPreviewListDto bestListDto = convertBestListDto();
-        result.add(bestListDto);
-
-        // 2. 즐겨찾기한 카테고리의 최신 글 5개 조회
-        List<UserAndCategory> userCategories = userAndCategoryRepository.findByUserId(user.getId());
-        List<Long> categoryIds = userCategories.stream()
-                .map(uc -> uc.getCategory().getId())
-                .collect(Collectors.toList());
-
-        if (categoryIds.isEmpty()) {  // 즐겨찾기한 카테고리가 없는 경우
-            PostResponse.PostPreviewListDto emptyListDto = PostResponse.PostPreviewListDto.builder()
-                    .name("즐겨찾기한 카테고리가 없습니다.")
-                    .posts(Collections.emptyList())
-                    .build();
-
-            result.add(emptyListDto);
-            return result;
-        }
-
-        Pageable topFive = PageRequest.of(0, 5);
-        List<Post> posts = homeFeedRepository.findTop5ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topFive);
-
-        List<PostResponse.PostPreviewDto> markedPreviewDtos = postDtoConverter(posts);
-
-        PostResponse.PostPreviewListDto markedListDto = PostResponse.PostPreviewListDto.builder()
-                .name("즐겨찾기한 카테고리")
-                .posts(markedPreviewDtos)
-                .isLast(true)
-                .build();
-
-        result.add(markedListDto);
-
-        return result;
-    }
-
-    /**
-     * 홈화면 첫로딩 - 게스트 이용자
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<PostResponse.PostPreviewListDto> getFirstPostListForGuest() {
-
-        List<PostResponse.PostPreviewListDto> result = new ArrayList<>();
-
-        // 1. 전날 23:59까지 작성된 글 중 베스트 실패담 5개 조회
-        PostResponse.PostPreviewListDto bestListDto = convertBestListDto();
-        result.add(bestListDto);
-
-        // 2. 즐겨찾기 부분은 null
-        result.add(
-                PostResponse.PostPreviewListDto.builder()
-                        .name("즐겨찾기한 카테고리")
-                        .posts(Collections.emptyList())
-                        .isLast(true)
-                        .build()
-        );
-
-        return result;
-    }
-
-    /**
-     * 베스트 실패담 조회 및 dto 변환
-     */
-    private PostResponse.PostPreviewListDto convertBestListDto(){
+    public PostResponse.PostPreviewListDto getBestPostList(User user) {
         LocalDateTime cutoff = LocalDate.now().atStartOfDay().minusSeconds(1);
         List<Post> bestPosts = homeFeedRepository.findTopBestPostBefore(cutoff, PageRequest.of(0, 5));
 
-        List<PostResponse.PostPreviewDto> bestPreviewDtos = postDtoConverter(bestPosts);
+        List<PostResponse.PostPreviewDto> bestPreviewDtos = postDtoConverter(bestPosts, user);
 
         PostResponse.PostPreviewListDto bestListDto = PostResponse.PostPreviewListDto.builder()
-                .name("베스트 Failers")
+                .comment("베스트 Failers")
                 .posts(bestPreviewDtos)
                 .isLast(true)
                 .build();
@@ -123,17 +58,65 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     }
 
     /**
-     * 홈화면 이후 로딩
+     * 홈화면 특정 즐겨찾기 카테고리 실패담 5개 조회
+     * categoryId == 0 : 즐겨찾기 전체 카테고리에서 최신 5개
+     * categoryId > 0  : 특정 즐겨찾기 카테고리에서 최신 5개
      */
     @Override
     @Transactional(readOnly = true)
-    public PostResponse.PostPreviewListDto getLaterPostList() {
+    public PostResponse.PostPreviewListDto getBookmarkedPostList(User user, Long categoryId) {
+        /** 로그인하지 않은 사용자의 경우 null 리스트 반환 */
+        if (user == null){
+            return emptyResponse("로그인 후 이용할 수 있습니다.", true);
+        }
+
+        if (categoryId == null) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "categoryId는 필수입니다.");
+        }
+
+        Pageable topFive = PageRequest.of(0, 5);
+
+        /** 즐겨찾기 전체 카테고리에서 조회 */
+        if (categoryId == 0){
+            List<Long> categoryIds = userAndCategoryRepository.findByUserId(user.getId()).stream()
+                    .map(uc -> uc.getCategory().getId())
+                    .toList();
+
+            // 사용자가 즐겨찾기한 카테고리가 없는 경우
+            if (categoryIds.isEmpty()) {
+                return emptyResponse("즐겨찾기한 카테고리가 없습니다.", true);
+            }
+
+            List<Post> posts = homeFeedRepository.findTop5ByCategoryIdsOrderByCreatedAtDesc(categoryIds, topFive);
+            return successResponse("즐겨찾기 카테고리 - 전체", posts, true, user);
+        }
+
+        /** 특정 카테고리 존재 검증 */
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new GeneralException(ErrorStatus._BAD_REQUEST, "카테고리 아이디가 잘못되었습니다.");
+        }
+
+        /** 해당 카테고리를 즐겨찾기 했는지 검증 */
+        UserAndCategory userCategory = userAndCategoryRepository
+                .findByUserIdAndCategoryId(user.getId(), categoryId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST, "사용자가 해당 카테고리를 즐겨찾기하지 않습니다."));
+
+        List<Post> posts = homeFeedRepository.findLatestByCategory(categoryId, topFive);
+        return successResponse(userCategory.getCategory().getName() + " 카테고리", posts, true, user);
+    }
+
+    /**
+     * 홈화면 카테고리별 실패담 1개씩 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PostResponse.PostPreviewListDto getCategoriesPostList(User user) {
         List<Post> latestPostPerCategories = homeFeedRepository.findLatestPostPerCategory();
 
-        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(latestPostPerCategories);
+        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(latestPostPerCategories, user);
 
         PostResponse.PostPreviewListDto listDto = PostResponse.PostPreviewListDto.builder()
-                .name("카테고리 목록")
+                .comment("카테고리 목록")
                 .posts(previewDtos)
                 .isLast(true)
                 .build();
@@ -146,7 +129,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
      */
     @Override
     @Transactional(readOnly = true)
-    public PostResponse.PostPreviewListDto searchPosts(String keyword, Pageable pageable){
+    public PostResponse.PostPreviewListDto searchPosts(User user, String keyword, Pageable pageable){
         if (keyword == null || keyword.isEmpty()) {
             throw new GeneralException(ErrorStatus.INVALID_SEARCH_KEYWORD);
         }
@@ -191,10 +174,10 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 
         boolean isLast = end >= totalSize;
 
-        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(pagedPosts);
+        List<PostResponse.PostPreviewDto> previewDtos = postDtoConverter(pagedPosts, user);
 
         return PostResponse.PostPreviewListDto.builder()
-                .name("검색 결과")
+                .comment("검색 결과")
                 .posts(previewDtos)
                 .isLast(isLast)
                 .build();
@@ -203,28 +186,59 @@ public class HomeFeedServiceImpl implements HomeFeedService {
     /**
      * dto 변환 메서드
      */
-    private List<PostResponse.PostPreviewDto> postDtoConverter(List<Post> posts){
+    private List<PostResponse.PostPreviewDto> postDtoConverter(List<Post> posts, User user){
 
-        List<PostResponse.PostPreviewDto> bestPreviewDtos = posts.stream()
+        final Set<Long> likedPostIds =
+                (user != null && !posts.isEmpty())
+                        ? new HashSet<>(
+                        postLikeRepository.findLikedPostIds(
+                                user,
+                                posts.stream().map(Post::getId).toList()
+                        )
+                )
+                        : Collections.emptySet();
+
+        return posts.stream()
                 .map(post -> {
-                    String CategoryOrTopicName;
+                    String name = (post.getCategory() != null && post.getTopic() == null)
+                            ? post.getCategory().getName()
+                            : (post.getCategory() == null && post.getTopic() != null)
+                            ? post.getTopic().getName()
+                            : null;
+
+                    if (name == null) {
+                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID,
+                                "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
+                    }
+
                     String imageUrl = null;
-
-                    if (post.getCategory() != null && post.getTopic() == null) {        // 카테고리 게시물인 경우
-                        CategoryOrTopicName = post.getCategory().getName();
-                    } else if (post.getCategory() == null && post.getTopic() != null) {  // 랜덤 주제 게시물인 경우
-                        CategoryOrTopicName = post.getTopic().getName();
-                    } else{
-                        throw new GeneralException(ErrorStatus.POST_CATEGORY_TOPIC_INVALID, "카테고리 / 랜덤 주제 설정이 잘못된 게시글입니다.");
-                    }
-
                     if (post.getImages() != null && !post.getImages().isEmpty()) {
-                        String firstKey = post.getImages().get(0);
-                        imageUrl = s3ImageService.getPreSignedUrl(firstKey);
+                        imageUrl = s3ImageService.getPreSignedUrl(post.getImages().get(0));
                     }
-                    return PostResponse.PostPreviewDto.from(post, CategoryOrTopicName, imageUrl);
+
+                    Boolean isLiked = (user == null) ? null : likedPostIds.contains(post.getId());
+
+                    return PostResponse.PostPreviewDto.from(post, name, imageUrl, isLiked);
                 })
-                .collect(Collectors.toList());
-        return bestPreviewDtos;
+                .toList();
+    }
+
+
+    // 조회 내용이 없는 경우 응답
+    private PostResponse.PostPreviewListDto emptyResponse(String comment, boolean isLast) {
+        return PostResponse.PostPreviewListDto.builder()
+                .comment(comment)
+                .posts(Collections.emptyList())
+                .isLast(isLast)
+                .build();
+    }
+
+    // 성공 응답
+    private PostResponse.PostPreviewListDto successResponse(String comment, List<Post> posts, boolean isLast, User user) {
+        return PostResponse.PostPreviewListDto.builder()
+                .comment(comment)
+                .posts(postDtoConverter(posts,user))
+                .isLast(isLast)
+                .build();
     }
 }

@@ -4,7 +4,7 @@ package Oops.backend.domain.postGroup.service;
 import Oops.backend.common.exception.GeneralException;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.config.s3.S3ImageService;
-import Oops.backend.domain.category.dto.CategoryResponse;
+import Oops.backend.domain.category.dto.CategoryResponseDto;
 import Oops.backend.domain.comment.dto.CommentResponse;
 import Oops.backend.domain.comment.service.CommentLikeService;
 import Oops.backend.domain.post.dto.PostResponse;
@@ -51,8 +51,8 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
         }
 
         // 카테고리 DTO 생성
-        CategoryResponse.CategoryResponseDto categoryResponseDto
-                = CategoryResponse.CategoryResponseDto.from(postGroup.getCategory());
+        CategoryResponseDto categoryResponseDto
+                = CategoryResponseDto.from(postGroup.getCategory());
 
         // 조회한 게시글 조회수 +1
         postCommandService.watchPost(postId);
@@ -102,14 +102,19 @@ public class PostGroupQueryServiceImpl implements PostGroupQueryService {
 
     public PostResponse.PostViewDto toPostViewDto(Post post, User user, String profileImage){
 
-        boolean liked = postLikeQueryService.findPostLike(user, post);
+        // 로그인하지 않은 사용자는 좋아요 여부를 false로 처리
+        boolean liked = (user != null) && postLikeQueryService.findPostLike(user, post);
 
         List<String> images = post.getImages().stream()
                 .map(s3ImageService::getPreSignedUrl)
                 .toList();
 
         List<CommentResponse> comments = post.getComments().stream()
-                .map((comment) -> CommentResponse.of(comment, commentLikeService.existsCommentLike(comment, user)))
+                .map((comment) -> {
+                    // 로그인하지 않은 사용자는 댓글 좋아요 여부를 false로 처리
+                    boolean commentLiked = (user != null) && commentLikeService.existsCommentLike(comment, user);
+                    return CommentResponse.of(comment, commentLiked);
+                })
                 .toList();
 
         return PostResponse.PostViewDto.of(post, images, profileImage, liked, comments);

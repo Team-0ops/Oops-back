@@ -9,5 +9,10 @@ spring:
       show_sql: true
       format_sql: true
       use_sql_comments: true
+<<<<<<< HEAD
       ddl-auto: none
       default_batch_fetch_size: 1000
+=======
+      ddl-auto: update
+      default_batch_fetch_size: 1000
+>>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
