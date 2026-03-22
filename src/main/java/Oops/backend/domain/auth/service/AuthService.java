@@ -58,25 +58,25 @@ public class AuthService {
         setCookie(response, tokenResponseDto.getAccessToken());
         setCookieForRefreshToken(response, tokenResponseDto.getRefreshToken());
 
-        log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
-        log.info("AccessToken: " + tokenResponseDto.getAccessToken());
+            log.info("RefreshToken: "+ tokenResponseDto.getRefreshToken());
+            log.info("AccessToken: " + tokenResponseDto.getAccessToken());
 
-        String profileImage = s3ImageService.getPreSignedUrl(user.get().getProfileImageUrl());
+            String profileImage = s3ImageService.getPreSignedUrl(user.get().getProfileImageUrl());
 
-        return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
-    }
+            return LoginResponse.of(user.get(), tokenResponseDto.getAccessToken(), tokenResponseDto.getRefreshToken(), profileImage);
+        }
 
-    @Transactional
-    public void changePassword(ChangePasswordDto dto) {
-        emailVerificationService.assertValidToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
-        User changePWUser = authRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "해당 이메일의 사용자를 찾을 수 없습니다."));
+        @Transactional
+        public void changePassword(ChangePasswordDto dto) {
+            emailVerificationService.assertValidToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
+            User changePWUser = authRepository.findByEmail(dto.getEmail())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._NOT_FOUND, "해당 이메일의 사용자를 찾을 수 없습니다."));
 
-        changePWUser.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-        authRepository.save(changePWUser);
+            changePWUser.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+            authRepository.save(changePWUser);
 
-        emailVerificationService.consumeToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
-    }
+            emailVerificationService.consumeToken(dto.getEmail(), VerificationPurpose.PASSWORD_RESET, dto.getVerificationToken());
+        }
 
 
     // login
@@ -143,24 +143,24 @@ public class AuthService {
         authRepository.save(user);
     }
 
-    //refresh token 관련
-    @Transactional
-    public TokenResponseDto refreshAccessToken(String refreshTokenValue) {
-        RefreshToken stored = findExistingRefreshToken(refreshTokenValue);
+     //refresh token 관련
+     @Transactional
+     public TokenResponseDto refreshAccessToken(String refreshTokenValue) {
+         RefreshToken stored = findExistingRefreshToken(refreshTokenValue);
 
-        validateRefreshToken(stored);
+         validateRefreshToken(stored);
 
-        User user = findExistingUserByRefreshToken(stored);
+         User user = findExistingUserByRefreshToken(stored);
 
-        String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
+         String newAccess = jwtTokenProvider.generateAccessToken(user.getId());
 
-        String newRefresh = jwtTokenProvider.generateRefreshToken(user.getId());
-        stored.setToken(newRefresh);
-        refreshTokenRepository.save(stored);
+         String newRefresh = jwtTokenProvider.generateRefreshToken(user.getId());
+         stored.setToken(newRefresh);
+         refreshTokenRepository.save(stored);
 
-        log.info("new AccessToken: {}", newAccess);
-        return TokenResponseDto.of(newAccess, newRefresh);
-    }
+         log.info("new AccessToken: {}", newAccess);
+         return TokenResponseDto.of(newAccess, newRefresh);
+     }
 
 
 
