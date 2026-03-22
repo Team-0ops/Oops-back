@@ -1,15 +1,15 @@
 package Oops.backend.domain.auth.naver.service;
 
-import Oops.backend.common.security.token.TokenService;
 import Oops.backend.common.exception.GeneralException;
+import Oops.backend.common.security.token.TokenService;
 import Oops.backend.common.status.ErrorStatus;
 import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
 import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.auth.entity.SocialAccount;
-import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.auth.repository.AuthRepository;
+import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -87,11 +87,7 @@ public class NaverService {
         NaverUserInfo kakaoUser = fetchUserOrThrow(kakaoAccessToken);
 
         User user = loginOrLink(kakaoUser);
-<<<<<<< HEAD
-        log.info("[KAKAO-LOGIN] userId={}, email={}", user.getId(), user.getEmail());
-=======
         log.info("[KAKAO-LOGIN] userId={}, email={}", user.getUserName(), user.getEmail());
->>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
         return tokenService.issue(user);
     }
 

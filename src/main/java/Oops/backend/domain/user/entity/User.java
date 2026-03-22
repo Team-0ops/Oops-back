@@ -61,16 +61,11 @@ public class User extends BaseEntity {
 
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
-<<<<<<< HEAD
-    private String provider; // Oauth 제공자
-    private String providerId; //Oauth 별 유저 ID;
-=======
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Provider provider; // Oauth 제공자
     private String providerId; //Oauth 별 유저 ID
 
->>>>>>> f9bc24b276853b7295af4618fab93ac22a7d2719
 }
 
