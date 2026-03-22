@@ -38,21 +38,19 @@ public class NaverController {
         return BaseResponse.onSuccess(SuccessStatus._OK, result);
     }
 
+
     @GetMapping("/callback")
-    public void callback(@RequestParam("code") String code,
+    public void callback(@RequestParam String code,
                          @RequestParam(value = "state", required = false) String state,
-                         @RequestParam(value = "redirect-url", required = false) String redirectUrl,
-                         HttpServletResponse response) throws IOException, IOException {
+                         HttpServletResponse response) throws IOException {
+        naverService.loginAndSetCookie(code, state,  response);
 
-        naverService.loginAndSetCookie(code, state, redirectUrl, response);
-
-        String target = (redirectUrl != null && !redirectUrl.isBlank())
-                ? redirectUrl
-                : "https://oops-ivory.vercel.app/";
+        String target = (state != null && !state.isBlank())
+                ? state
+                : "https://www.oops-oopsie.com/";
 
         response.sendRedirect(target);
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<BaseResponse> login(@RequestBody NaverLoginRequestDto dto) {

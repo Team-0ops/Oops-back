@@ -8,6 +8,7 @@ import Oops.backend.domain.auth.dto.response.NaverUserInfo;
 import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.entity.Provider;
 import Oops.backend.domain.auth.entity.SocialAccount;
+import Oops.backend.domain.auth.kakao.service.KakaoService;
 import Oops.backend.domain.auth.repository.AuthRepository;
 import Oops.backend.domain.auth.repository.SocialAccountRepository;
 import Oops.backend.domain.user.entity.User;
@@ -53,9 +54,17 @@ public class NaverService {
     private static final String PROVIDER_NAVER = "NAVER";
 
     @Transactional
-    public void loginAndSetCookie(String code, String state, String redirectUrl, HttpServletResponse response) {
-        TokenResponseDto tokens = login(code, state, redirectUrl);
+    public void loginAndSetCookie(String code, String state, HttpServletResponse response) {
+        TokenResponseDto tokens = login(code, state, naverRedirectUri);
         tokenService.setLoginCookies(response, tokens);
+    }
+
+    @Transactional
+    public TokenResponseDto login(String code) {
+        String accessToken = exchangeToken(code, null, naverRedirectUri);
+        NaverUserInfo naverUser = fetchUserOrThrow(accessToken);
+        User user = loginOrLink(naverUser);
+        return tokenService.issue(user);
     }
 
     @Transactional
