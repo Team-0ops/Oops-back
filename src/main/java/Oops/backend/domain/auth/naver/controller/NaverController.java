@@ -4,6 +4,7 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.NaverLoginRequestDto;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.naver.service.NaverService;
 import Oops.backend.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,8 +55,8 @@ public class NaverController {
 
     @PostMapping("/login")
     public ResponseEntity<BaseResponse> login(@RequestBody NaverLoginRequestDto dto) {
-        naverService.login(dto);
-        return BaseResponse.onSuccess(SuccessStatus._OK, "네이버 로그인 성공");
+        TokenResponseDto tokenResponseDto = naverService.login(dto);
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto);
     }
 
     @PostMapping("/logout")
