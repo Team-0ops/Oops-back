@@ -5,6 +5,8 @@ import Oops.backend.common.response.BaseResponse;
 import Oops.backend.common.status.SuccessStatus;
 import Oops.backend.domain.auth.AuthenticatedUser;
 import Oops.backend.domain.auth.dto.request.KakaoLoginRequestDto;
+import Oops.backend.domain.auth.dto.response.LoginResponse;
+import Oops.backend.domain.auth.dto.response.TokenResponseDto;
 import Oops.backend.domain.auth.kakao.service.KakaoService;
 import Oops.backend.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,8 +51,8 @@ public class KakaoController {
 
     @PostMapping("/login")
     public ResponseEntity<BaseResponse> kakaoCallback(@RequestBody KakaoLoginRequestDto kakaoLoginRequestDto) {
-        this.kakaoService.login(kakaoLoginRequestDto);
-        return BaseResponse.onSuccess(SuccessStatus._OK, "카카오 로그인 성공");
+        TokenResponseDto tokenResponseDto = this.kakaoService.login(kakaoLoginRequestDto);
+        return BaseResponse.onSuccess(SuccessStatus._OK, tokenResponseDto);
     }
 
 
