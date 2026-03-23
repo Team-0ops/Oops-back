@@ -32,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Map;
 
 
 @Tag(name = "로그인 및 회원가입 API")
@@ -207,5 +208,19 @@ public class AuthController {
         boolean available = authService.checkEmailAvailable(email);
         EmailCheckDto dto = new EmailCheckDto(email, available);
         return BaseResponse.onSuccess(SuccessStatus._OK, dto);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<BaseResponse> me(@AuthenticatedUser User user) {
+        return BaseResponse.onSuccess(
+                SuccessStatus._OK,
+                Map.of(
+                        "id", user.getId(),
+                        "email", user.getEmail(),
+                        "userName", user.getUserName(),
+                        "profileImageUrl", user.getProfileImageUrl(),
+                        "provider", user.getProvider()
+                )
+        );
     }
 }
