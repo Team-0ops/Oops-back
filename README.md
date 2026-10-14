@@ -60,7 +60,8 @@
 
 ---
 ### 📁 서버 아키텍처
-![웁스](https://github.com/user-attachments/assets/9e07d2d3-826f-44f6-922c-9826c14b85fb)
+<img width="621" height="410" alt="웁스 서버 아키텍처" src="https://github.com/user-attachments/assets/2a719125-6cf2-4a13-a6d5-40746da953d0" />
+
 
 ---
 
